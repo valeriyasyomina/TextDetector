@@ -78,8 +78,8 @@ namespace DigitalImageProcessingTest
             patternImage.Pixels[2, 1].Color.Data = 100;
             patternImage.Pixels[2, 2].Color.Data = 45;
 
-            patternImage.Pixels[1, 1].Gradient.Angle = 126;
-            patternImage.Pixels[1, 1].Gradient.RoundGradientDirection = DigitalImageProcessingLib.GradientData.RoundGradientDirection.DEGREE_135;
+            patternImage.Pixels[1, 1].Gradient.Angle = 36;
+            patternImage.Pixels[1, 1].Gradient.RoundGradientDirection = DigitalImageProcessingLib.GradientData.RoundGradientDirection.DEGREE__45;
             patternImage.Pixels[1, 1].Gradient.Strength = 207;
 
             //act
@@ -147,28 +147,28 @@ namespace DigitalImageProcessingTest
             patternImage.Pixels[3, 4].Color.Data = 194;
 
             patternImage.Pixels[1, 1].Gradient.Strength = 207;
-            patternImage.Pixels[1, 1].Gradient.Angle = 126;
-            patternImage.Pixels[1, 1].Gradient.RoundGradientDirection = DigitalImageProcessingLib.GradientData.RoundGradientDirection.DEGREE_135;
+            patternImage.Pixels[1, 1].Gradient.Angle = 36;
+            patternImage.Pixels[1, 1].Gradient.RoundGradientDirection = DigitalImageProcessingLib.GradientData.RoundGradientDirection.DEGREE__45;
 
             patternImage.Pixels[1, 2].Gradient.Strength = 186;
-            patternImage.Pixels[1, 2].Gradient.Angle = 58;
-            patternImage.Pixels[1, 2].Gradient.RoundGradientDirection = DigitalImageProcessingLib.GradientData.RoundGradientDirection.DEGREE__45;
+            patternImage.Pixels[1, 2].Gradient.Angle = -32;
+            patternImage.Pixels[1, 2].Gradient.RoundGradientDirection = DigitalImageProcessingLib.GradientData.RoundGradientDirection.DEGREE_135;
 
             patternImage.Pixels[1, 3].Gradient.Strength = 305;
-            patternImage.Pixels[1, 3].Gradient.Angle = 72;
-            patternImage.Pixels[1, 3].Gradient.RoundGradientDirection = DigitalImageProcessingLib.GradientData.RoundGradientDirection.DEGREE_90;
+            patternImage.Pixels[1, 3].Gradient.Angle = -18;
+            patternImage.Pixels[1, 3].Gradient.RoundGradientDirection = DigitalImageProcessingLib.GradientData.RoundGradientDirection.DEGREE_0;
 
             patternImage.Pixels[2, 1].Gradient.Strength = 234;
-            patternImage.Pixels[2, 1].Gradient.Angle = 111;
-            patternImage.Pixels[2, 1].Gradient.RoundGradientDirection = DigitalImageProcessingLib.GradientData.RoundGradientDirection.DEGREE_90;
+            patternImage.Pixels[2, 1].Gradient.Angle = 21;
+            patternImage.Pixels[2, 1].Gradient.RoundGradientDirection = DigitalImageProcessingLib.GradientData.RoundGradientDirection.DEGREE_0;
 
             patternImage.Pixels[2, 2].Gradient.Strength = 205;
-            patternImage.Pixels[2, 2].Gradient.Angle = 49;
-            patternImage.Pixels[2, 2].Gradient.RoundGradientDirection = DigitalImageProcessingLib.GradientData.RoundGradientDirection.DEGREE__45;
+            patternImage.Pixels[2, 2].Gradient.Angle = -41;
+            patternImage.Pixels[2, 2].Gradient.RoundGradientDirection = DigitalImageProcessingLib.GradientData.RoundGradientDirection.DEGREE_135;
 
             patternImage.Pixels[2, 3].Gradient.Strength = 423;
-            patternImage.Pixels[2, 3].Gradient.Angle = 8;
-            patternImage.Pixels[2, 3].Gradient.RoundGradientDirection = DigitalImageProcessingLib.GradientData.RoundGradientDirection.DEGREE_0;
+            patternImage.Pixels[2, 3].Gradient.Angle = -82;
+            patternImage.Pixels[2, 3].Gradient.RoundGradientDirection = DigitalImageProcessingLib.GradientData.RoundGradientDirection.DEGREE_90;
 
             //act
             sobel.Apply(image);

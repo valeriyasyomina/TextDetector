@@ -71,18 +71,17 @@ namespace DigitalImageProcessingLib.Filters.FilterType.EdgeDetectionFilterType
                             }
                         else
                         {
-                            int gradientDirection = (int)((Math.Atan((double)gradientStrengthY / gradientStrengthX)) * (180 / Math.PI));
-                            gradientDirection += 90;
+                            int gradientDirection = (int)((Math.Atan((double)gradientStrengthY / gradientStrengthX)) * (180 / Math.PI));                           
                             image.Pixels[i, j].Gradient.Angle = gradientDirection;
 
-                            if ((gradientDirection >= 0 && gradientDirection <= 22) || (gradientDirection > 157 && gradientDirection <= 180))
+                            if ((gradientDirection >= -90 && gradientDirection <= -68) || (gradientDirection > 67 && gradientDirection <= 90))
+                                image.Pixels[i, j].Gradient.RoundGradientDirection = GradientData.RoundGradientDirection.DEGREE_90;
+                            else if (gradientDirection > -68 && gradientDirection <= -23)
+                                image.Pixels[i, j].Gradient.RoundGradientDirection = GradientData.RoundGradientDirection.DEGREE_135;
+                            else if (gradientDirection > -23 && gradientDirection <= 22)
                                 image.Pixels[i, j].Gradient.RoundGradientDirection = GradientData.RoundGradientDirection.DEGREE_0;
                             else if (gradientDirection > 22 && gradientDirection <= 67)
                                 image.Pixels[i, j].Gradient.RoundGradientDirection = GradientData.RoundGradientDirection.DEGREE__45;
-                            else if (gradientDirection > 67 && gradientDirection <= 112)
-                                image.Pixels[i, j].Gradient.RoundGradientDirection = GradientData.RoundGradientDirection.DEGREE_90;
-                            else if (gradientDirection > 112 && gradientDirection <= 157)
-                                image.Pixels[i, j].Gradient.RoundGradientDirection = GradientData.RoundGradientDirection.DEGREE_135;
                         }                  
                     }               
             }
