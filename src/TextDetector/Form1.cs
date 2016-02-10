@@ -43,6 +43,7 @@ namespace TextDetector
         //    SmoothingFilter f = new GaussFilter(5, 1.4);
        //     f.Apply(g);
 
+
             GreyImage image = new GreyImage(5, 4);
 
             image.Pixels[0, 0].Color.Data = 50;
