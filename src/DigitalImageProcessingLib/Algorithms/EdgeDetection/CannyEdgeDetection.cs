@@ -1,4 +1,5 @@
-﻿using DigitalImageProcessingLib.Filters.FilterType;
+﻿using DigitalImageProcessingLib.ColorType;
+using DigitalImageProcessingLib.Filters.FilterType;
 using DigitalImageProcessingLib.ImageType;
 using DigitalImageProcessingLib.Interface;
 using System;
@@ -27,7 +28,7 @@ namespace DigitalImageProcessingLib.Algorithms.EdgeDetection
                 throw new ArgumentException("lowTreshold must be > 0");
             if (highTreshold <= 0)
                 throw new ArgumentException("highTreshold must be > 0");
-            if (lowTreshold <= highTreshold)
+            if (lowTreshold >= highTreshold)
                 throw new ArgumentException("highTreshold must be > lowTreshold");
             this._smoothingFilter = smoothingFilter;
             this._edgeDetectionFilter = edgeDetectionFilter;
@@ -47,9 +48,11 @@ namespace DigitalImageProcessingLib.Algorithms.EdgeDetection
                     throw new ArgumentNullException("Null image in Detect");
                 _smoothingFilter.Apply(image);
                 _edgeDetectionFilter.Apply(image);
+                SetGradientDirection(image);
                 NonMaximaSuppression(image);
                 DoubleTresholding(image);
                 EdgeTrackingByHysteresis(image);
+                SetEdgesColor(image);
             }
             catch (Exception exception)
             {
@@ -63,6 +66,40 @@ namespace DigitalImageProcessingLib.Algorithms.EdgeDetection
         }
 
         /// <summary>
+        /// Устанавливает округленное значение направления градиента для каждого пикселя изображения
+        /// </summary>
+        /// <param name="image">Серое изображение</param>
+        private void SetGradientDirection(GreyImage image)
+        {
+            try
+            {
+                if (image == null)
+                    throw new ArgumentNullException("Null image in SetGradientDirection");
+
+                int lowIndex = _edgeDetectionFilter.Size / 2;
+                int highIndexI = image.Height - lowIndex;
+                int highIndexJ = image.Width - lowIndex;
+                for (int i = lowIndex; i < highIndexI; i++)
+                    for (int j = lowIndex; j < highIndexJ; j++)
+                    {
+                        int gradientDirection = image.Pixels[i, j].Gradient.Angle;
+                        if ((gradientDirection >= -90 && gradientDirection <= -68) || (gradientDirection > 67 && gradientDirection <= 90))
+                            image.Pixels[i, j].Gradient.RoundGradientDirection = GradientData.RoundGradientDirection.DEGREE_90;
+                        else if (gradientDirection > -68 && gradientDirection <= -23)
+                            image.Pixels[i, j].Gradient.RoundGradientDirection = GradientData.RoundGradientDirection.DEGREE_135;
+                        else if (gradientDirection > -23 && gradientDirection <= 22)
+                            image.Pixels[i, j].Gradient.RoundGradientDirection = GradientData.RoundGradientDirection.DEGREE_0;
+                        else if (gradientDirection > 22 && gradientDirection <= 67)
+                            image.Pixels[i, j].Gradient.RoundGradientDirection = GradientData.RoundGradientDirection.DEGREE__45;
+                    }
+            }
+            catch (Exception exception)
+            {
+                throw exception;
+            }
+        }
+
+        /// <summary>
         /// Подавление не максимумов. Границами считаются только точки локального максимума
         /// </summary>
         /// <param name="image">Серое изображение</param>
@@ -72,101 +109,40 @@ namespace DigitalImageProcessingLib.Algorithms.EdgeDetection
             {
                 if (image == null)
                     throw new ArgumentNullException("Null image in NonMaximasuppression");
-                int imageHeight = image.Height;
-                int imageWidth = image.Width;
-
-                for (int i = 0; i < imageHeight; i++)
-                    for (int j = 0; j < imageWidth; j++)
+                int lowIndex = _edgeDetectionFilter.Size / 2;
+                int highIndexI = image.Height - lowIndex;
+                int highIndexJ = image.Width - lowIndex;
+                for (int i = lowIndex; i < highIndexI; i++)
+                    for (int j = lowIndex; j < highIndexJ; j++)
                     {
                         GradientData.RoundGradientDirection gradientDirection = image.Pixels[i, j].Gradient.RoundGradientDirection;
                         if (gradientDirection == GradientData.RoundGradientDirection.DEGREE_0)
                         {
-                            int upPixelIndex = i - 1;
-                            int downPixelIndex = i + 1;
-                            if (upPixelIndex >= 0 && downPixelIndex < imageHeight)
-                            {
-                                int gradientStrength = image.Pixels[i, j].Gradient.Strength;
-                                if (!(gradientStrength > image.Pixels[upPixelIndex, j].Gradient.Strength &&
-                                gradientStrength > image.Pixels[downPixelIndex, j].Gradient.Strength))
-                                {
-                                    image.Pixels[i, j].Gradient.Strength = 0;
-                                    image.Pixels[i, j].BorderType = BorderType.Border.SUPPRESSED;
-                                }
-                            }
-                            else
-                            {
-                                image.Pixels[i, j].Gradient.Strength = 0;
-                                image.Pixels[i, j].BorderType = BorderType.Border.SUPPRESSED;
-                            }
+                            int gradientStrength = image.Pixels[i, j].Gradient.Strength;
+                            if (!(gradientStrength > image.Pixels[i, j - 1].Gradient.Strength &&   // i, j - 1
+                                gradientStrength > image.Pixels[i, j + 1].Gradient.Strength))   // i, j + 1                            
+                                image.Pixels[i, j].Gradient.Strength = 0;                                                  
                         }
                         else if (gradientDirection == GradientData.RoundGradientDirection.DEGREE__45)
                         {
-                            int upPixelIndexI = i - 1;
-                            int upPixelIndexJ = j + 1;
-
-                            int downPixelIndexI = i + 1;
-                            int downPixelIndexJ = j - 1;
-
-                            if (upPixelIndexI >= 0 && upPixelIndexJ < imageWidth && downPixelIndexI < imageHeight && downPixelIndexJ >= 0)
-                            {
-                                int gradientStrength = image.Pixels[i, j].Gradient.Strength;
-                                if (!(gradientStrength > image.Pixels[upPixelIndexI, upPixelIndexJ].Gradient.Strength &&
-                                gradientStrength > image.Pixels[downPixelIndexI, downPixelIndexJ].Gradient.Strength))
-                                {
-                                    image.Pixels[i, j].Gradient.Strength = 0;
-                                    image.Pixels[i, j].BorderType = BorderType.Border.SUPPRESSED;
-                                }
-                            }
-                            else
-                            {
-                                image.Pixels[i, j].Gradient.Strength = 0;
-                                image.Pixels[i, j].BorderType = BorderType.Border.SUPPRESSED;
-                            }
+                            int gradientStrength = image.Pixels[i, j].Gradient.Strength;
+                            if (!(gradientStrength > image.Pixels[i + 1, j - 1].Gradient.Strength && 
+                            gradientStrength > image.Pixels[i - 1, j + 1].Gradient.Strength))                            
+                                image.Pixels[i, j].Gradient.Strength = 0;                                                    
                         }
                         else if (gradientDirection == GradientData.RoundGradientDirection.DEGREE_90)
                         {
-                            int rightPixelIndexJ = j + 1;
-                            int leftPixelIndexJ = j - 1;
-
-                            if (rightPixelIndexJ < imageWidth && leftPixelIndexJ >= 0)
-                            {
-                                int gradientStrength = image.Pixels[i, j].Gradient.Strength;
-                                if (!(gradientStrength > image.Pixels[i, rightPixelIndexJ].Gradient.Strength &&
-                                gradientStrength > image.Pixels[i, leftPixelIndexJ].Gradient.Strength))
-                                {
-                                    image.Pixels[i, j].Gradient.Strength = 0;
-                                    image.Pixels[i, j].BorderType = BorderType.Border.SUPPRESSED;
-                                }
-                            }
-                            else
-                            {
-                                image.Pixels[i, j].Gradient.Strength = 0;
-                                image.Pixels[i, j].BorderType = BorderType.Border.SUPPRESSED;
-                            }
+                            int gradientStrength = image.Pixels[i, j].Gradient.Strength;
+                            if (!(gradientStrength > image.Pixels[i + 1, j].Gradient.Strength &&   // i + 1, j
+                            gradientStrength > image.Pixels[i - 1, j].Gradient.Strength))    // i - 1, j                            
+                                image.Pixels[i, j].Gradient.Strength = 0;                      
                         }
                         else if (gradientDirection == GradientData.RoundGradientDirection.DEGREE_135)                                                                                                  
                         {
-                            int upPixelIndexI = i - 1;
-                            int upPixelIndexJ = j - 1;
-
-                            int downPixelIndexI = i + 1;
-                            int downPixelIndexJ = j + 1;
-
-                            if (upPixelIndexI >= 0 && upPixelIndexJ >= 0 && downPixelIndexI < imageHeight && downPixelIndexJ < imageWidth)
-                            {
-                                int gradientStrength = image.Pixels[i, j].Gradient.Strength;
-                                if (!(gradientStrength > image.Pixels[upPixelIndexI, upPixelIndexJ].Gradient.Strength &&
-                                gradientStrength > image.Pixels[downPixelIndexI, downPixelIndexJ].Gradient.Strength))
-                                {
-                                    image.Pixels[i, j].Gradient.Strength = 0;
-                                    image.Pixels[i, j].BorderType = BorderType.Border.SUPPRESSED;
-                                }
-                            }
-                            else
-                            {
-                                image.Pixels[i, j].Gradient.Strength = 0;
-                                image.Pixels[i, j].BorderType = BorderType.Border.SUPPRESSED;
-                            }
+                            int gradientStrength = image.Pixels[i, j].Gradient.Strength;
+                            if (!(gradientStrength > image.Pixels[i - 1, j - 1].Gradient.Strength &&
+                            gradientStrength > image.Pixels[i + 1, j + 1].Gradient.Strength))                            
+                                image.Pixels[i, j].Gradient.Strength = 0;                   
                         }
                     }
             }
@@ -195,10 +171,10 @@ namespace DigitalImageProcessingLib.Algorithms.EdgeDetection
                         int gradientStrength = image.Pixels[i, j].Gradient.Strength;
                         if (gradientStrength >= this._lowTreshold)
                         {
-                            if (gradientStrength < this._highTreshold)
-                                image.Pixels[i, j].BorderType = BorderType.Border.WEAK;
-                            else
-                                image.Pixels[i, j].BorderType = BorderType.Border.STRONG;
+                              if (gradientStrength < this._highTreshold)
+                                  image.Pixels[i, j].BorderType = BorderType.Border.WEAK;
+                              else
+                                  image.Pixels[i, j].BorderType = BorderType.Border.STRONG;
                         }
                         else
                             image.Pixels[i, j].BorderType = BorderType.Border.SUPPRESSED;
@@ -230,13 +206,18 @@ namespace DigitalImageProcessingLib.Algorithms.EdgeDetection
             }
         }
 
+        /// <summary>
+        /// Трассировка области неоднозначности (крайние строки матрицы, представляющей изображение) 
+        /// </summary>
+        /// <param name="image">Серое изображение</param>
         private void TrackEdgeImageRows(GreyImage image)
         {
             try
             {
-                int imageWidth = image.Width - 1;
-                int imageHeight = image.Height - 1;
-                for (int i = 1; i < imageWidth; i++)
+                int lowIndex = _edgeDetectionFilter.Size / 2;
+                int imageWidth = image.Width - lowIndex;
+                int imageHeight = image.Height - lowIndex;
+                for (int i = lowIndex; i < imageWidth; i++)
                 {
                     if (image.Pixels[0, i].BorderType == BorderType.Border.WEAK)
                     {
@@ -269,13 +250,19 @@ namespace DigitalImageProcessingLib.Algorithms.EdgeDetection
                 throw exception;
             }
         }
+
+        /// <summary>
+        /// Трассировка области неоднозначности (крайние столбцы матрицы, представляющей изображение) 
+        /// </summary>
+        /// <param name="image">Серое изображение</param>
         private void TrackEdgeImageColumns(GreyImage image)
         {
             try
             {
-                int imageHeight = image.Height - 1;
-                int imageWidth = image.Width - 1;
-                for (int i = 1; i < imageHeight; i++)
+                int lowIndex = _edgeDetectionFilter.Size / 2;
+                int imageHeight = image.Height - lowIndex;
+                int imageWidth = image.Width - lowIndex;
+                for (int i = lowIndex; i < imageHeight; i++)
                 {
                     if (image.Pixels[i, 0].BorderType == BorderType.Border.WEAK)
                     {
@@ -309,16 +296,20 @@ namespace DigitalImageProcessingLib.Algorithms.EdgeDetection
             }
         }
 
-
+        /// <summary>
+        /// Трассировка области неоднозначности (середина матрицы начиная с элемента [1, 1] и заканчивая элементом [height - 1, width - 1]) 
+        /// </summary>
+        /// <param name="image">Серое изображение</param>
         private void TrackEdgeImageCenter(GreyImage image)
         {
             try
             {
-                int imageHeight = image.Height - 1;
-                int imageWidth = image.Width - 1;
+                int lowIndex = _edgeDetectionFilter.Size / 2;
+                int imageHeight = image.Height - lowIndex;
+                int imageWidth = image.Width - lowIndex;
 
-                for (int i = 1; i < imageHeight; i++)
-                    for (int j = 1; j < imageWidth; j++)
+                for (int i = lowIndex; i < imageHeight; i++)
+                    for (int j = lowIndex; j < imageWidth; j++)
                     {
                         if (image.Pixels[i, j].BorderType == BorderType.Border.WEAK)
                         {
@@ -335,6 +326,33 @@ namespace DigitalImageProcessingLib.Algorithms.EdgeDetection
                             else
                                 image.Pixels[i, j].BorderType = BorderType.Border.SUPPRESSED;
                         }
+                    }
+            }
+            catch (Exception exception)
+            {
+                throw exception;
+            }
+        }
+
+        /// <summary>
+        /// Установка цвета изображения. Границы выделяются черным, все остальное - белым цветом
+        /// </summary>
+        /// <param name="image">Серое изображение</param>
+        private void SetEdgesColor(GreyImage image)
+        {
+            try
+            {
+                if (image == null)
+                    throw new ArgumentNullException("Null image in SetEdgesColor");
+                int imageHeight = image.Height;
+                int imageWidth = image.Width;
+                for (int i = 0; i < imageHeight; i++)
+                    for (int j = 0; j < imageWidth; j++)
+                    {
+                        if (image.Pixels[i, j].BorderType == BorderType.Border.STRONG)
+                            image.Pixels[i, j].Color.Data = (byte) ColorBase.MIN_COLOR_VALUE;
+                        else
+                            image.Pixels[i, j].Color.Data = (byte) ColorBase.MAX_COLOR_VALUE;
                     }
             }
             catch (Exception exception)
