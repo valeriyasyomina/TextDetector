@@ -13,7 +13,7 @@ namespace DigitalImageProcessingLib.PixelData
     {
         public PixelData()
         {
-            this.Gradient = new Gradient();
+            this.Gradient = new Gradient() { Strength = 0, Angle = 0, RoundGradientDirection = RoundGradientDirection.UNDEFINED };
             this.BorderType = Border.UNDEFINED;         
             this.Color = new ColorType();
         }
