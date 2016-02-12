@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace DigitalImageProcessingLib.GradientData
 {
-    public enum RoundGradientDirection {DEGREE_0 = 0, DEGREE__45 = 45, DEGREE_90 = 90, DEGREE_135 = 135 }
+    public enum RoundGradientDirection {DEGREE_0 = 0, DEGREE__45 = 45, DEGREE_90 = 90, DEGREE_135 = 135, UNDEFINED }
     public class Gradient
     {
         public int Strength { get; set; }
