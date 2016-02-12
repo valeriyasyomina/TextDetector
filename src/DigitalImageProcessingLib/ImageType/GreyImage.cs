@@ -5,24 +5,26 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+
 namespace DigitalImageProcessingLib.ImageType
 {
     public class GreyImage: ImageBase<Grey>
     {
-        public GreyImage(int width, int height)
-        {
-            if (width <= 0)
-                throw new ArgumentException("Incorrect width value");
-            if (height <= 0)
-                throw new ArgumentException("Incorrect height value");
-            this.Width = width;
-            this.Height = height;            
-            AllocatePixels();
-        }
+        public GreyImage(int width, int height) : base(width, height) { }
+     
+        /// <summary>
+        /// Проверяет, являестя ли изображение цветным
+        /// </summary>
+        /// <returns>1 - цветное, 0 - иначе</returns>
         public override bool IsColored()
         {
             return false;
         }
+
+        /// <summary>
+        /// Создает копию изображения
+        /// </summary>
+        /// <returns>Копия изображения</returns>
         public override ImageBase<Grey> Copy()
         {
             try
@@ -47,6 +49,12 @@ namespace DigitalImageProcessingLib.ImageType
                 throw exception;
             }
         }
+
+        /// <summary>
+        /// Сравнивает два серых изображения
+        /// </summary>
+        /// <param name="image">Изображение, с которым сравниваем исходное</param>
+        /// <returns>1 - изображения равны, 0 - иначе</returns>
         public bool IsEqual(GreyImage image)
         {
             try
@@ -74,21 +82,7 @@ namespace DigitalImageProcessingLib.ImageType
             {
                 throw exception;
             }
-        }
+        }     
         
-        private void AllocatePixels()
-        {
-            try
-            {
-                this.Pixels = new PixelData.PixelData<Grey>[this.Height, this.Width];
-                for (int i = 0; i < this.Height; i++)
-                    for (int j = 0; j < this.Width; j++)                   
-                        this.Pixels[i, j] = new PixelData.PixelData<Grey>();               
-            }
-            catch (Exception exception)
-            {
-                throw exception;
-            }
-        }
     }
 }
