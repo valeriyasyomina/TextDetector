@@ -8,6 +8,8 @@ namespace DigitalImageProcessingLib.Filters.FilterType
 {
     public abstract class EdgeDetectionFilter: MatrixFilter
     {
+        public EdgeDetectionFilter() { }
+        public EdgeDetectionFilter(int size) : base(size) { }
         public int[,] Gx { get; protected set; }
         public int[,] Gy { get; protected set; }
     }

@@ -62,8 +62,7 @@ namespace DigitalImageProcessingLib.Filters.FilterType.EdgeDetectionFilterType
                           copyImage.Pixels[i + 1, j + 1].Color.Data * Gx[2, 2];
 
                         int gradientStrengthSqr = gradientStrengthX * gradientStrengthX + gradientStrengthY * gradientStrengthY;
-                        int gradientStrength = (int)Math.Sqrt((double)gradientStrengthSqr);
-                        image.Pixels[i, j].Gradient.Strength = gradientStrength;
+                        image.Pixels[i, j].Gradient.Strength = (int)Math.Sqrt((double)gradientStrengthSqr);
 
                         if (gradientStrengthSqr > TRESHOLD)
                             image.Pixels[i, j].Color.Data = (byte)ColorBase.MIN_COLOR_VALUE;

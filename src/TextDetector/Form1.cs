@@ -28,23 +28,9 @@ namespace TextDetector
             //GreyImage i = new GreyImage(640, 480);
 
             EdgeDetectionFilter sobel = new SobelFilter();
-            GreyImage image = new GreyImage(3, 3);
+           
 
-            image.Pixels[0, 0].Color.Data = 50;
-            image.Pixels[0, 1].Color.Data = 125;
-            image.Pixels[0, 2].Color.Data = 22;
-
-            image.Pixels[1, 0].Color.Data = 12;
-            image.Pixels[1, 1].Color.Data = 17;
-            image.Pixels[1, 2].Color.Data = 187;
-
-            image.Pixels[2, 0].Color.Data = 201;
-            image.Pixels[2, 1].Color.Data = 100;
-            image.Pixels[2, 2].Color.Data = 45;
-
-            sobel.Apply(image);
-
-            Bitmap bitmap = new Bitmap("1.jpg");
+            Bitmap bitmap = new Bitmap("4.jpg");
 
             BitmapConvertor conv = new BitmapConvertor();
             GreyImage image1 = conv.ToGreyImage(bitmap);
@@ -54,7 +40,7 @@ namespace TextDetector
            // sobel.Apply(image1);
             SmoothingFilter gauss = new GaussFilter(5, 1.4);
 
-        //    gauss.Apply(image1);
+         //   gauss.Apply(image1);
 
             CannyEdgeDetection canny = new CannyEdgeDetection(gauss, sobel, 20, 80);
 

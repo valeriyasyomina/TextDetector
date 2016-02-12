@@ -12,13 +12,12 @@ namespace DigitalImageProcessingLib.Filters.FilterType.SmoothingFilterType
     {
         public static double TRESHOLD = 0.85;
         public double Sigma { get; protected set; }
-        public GaussFilter(int size, double sigma)
+        public GaussFilter(int size, double sigma): base(size)
         {
             if (size <= 0)
                 throw new ArgumentException("Error filter size in GaussFilter");
             if (sigma < 0)
-                throw new ArgumentException("Error sigma in GaussFilter");
-            this.Size = size;
+                throw new ArgumentException("Error sigma in GaussFilter");         
             this.Sigma = sigma;
             this.NormalizationRatio = 0;
             FillKernel();
@@ -50,15 +49,10 @@ namespace DigitalImageProcessingLib.Filters.FilterType.SmoothingFilterType
                     for (int j = lowIndex; j < highIndexJ; j++)
                     {
                         int pixelColor = 0;
-                        for (int k = 0; k < filterSize; k++)
-                        {
-                            int indexI = k + i - lowIndex;
-                            for (int l = 0; l < filterSize; l++)
-                            {
-                                int indexJ = l + j - lowIndex;
-                                pixelColor += this.Kernel[k, l] * copyImage.Pixels[indexI, indexJ].Color.Data;                               
-                            }                            
-                        }
+                        for (int k = 0; k < filterSize; k++)                        
+                            for (int l = 0; l < filterSize; l++)                           
+                                pixelColor += this.Kernel[k, l] * copyImage.Pixels[k + i - lowIndex, l + j - lowIndex].Color.Data;                               
+                                
                         pixelColor /= this.NormalizationRatio;
                         if (pixelColor > ColorBase.MAX_COLOR_VALUE)
                             pixelColor = ColorBase.MAX_COLOR_VALUE;
@@ -76,18 +70,21 @@ namespace DigitalImageProcessingLib.Filters.FilterType.SmoothingFilterType
         {
             throw new NotImplementedException();
         }
+
         /// <summary>
         /// Заполняет ядро свертки
         /// </summary>
-        private void FillKernel()
+        protected  override void FillKernel()
         {
             try
             {
-                Kernel = new int[Size, Size];
-                int shift = Size / 2;
-                double firstValue = 0.0;
-                for (int i = 0; i < Size; i++)
-                    for (int j = 0; j < Size; j++)
+             //   FillOptimizedKernel();
+
+                int shift = this.Size / 2;
+                double firstValue = 0.0;            
+
+                for (int i = 0; i < this.Size; i++)
+                    for (int j = 0; j < this.Size; j++)
                     {
                         double value = KernelFunction(i - shift, j - shift, Sigma);
                         if (i == 0 && j == 0)
@@ -95,15 +92,35 @@ namespace DigitalImageProcessingLib.Filters.FilterType.SmoothingFilterType
                         value = value / firstValue * 2;
                         int integerPart = (int)Math.Floor(value);
                         if (value - (double)integerPart >= TRESHOLD)
-                            Kernel[i, j] = (int)Math.Ceiling(value);
+                            this.Kernel[i, j] = (int)Math.Ceiling(value);
                         else
-                            Kernel[i, j] = integerPart;
-                        NormalizationRatio += Kernel[i, j];
+                            this.Kernel[i, j] = integerPart;
+                        NormalizationRatio += Kernel[i, j];                        
                     }
             }
             catch (Exception exception)
             {
                 throw exception;
+            }
+        }
+
+        private void FillOptimizedKernel()
+        {
+            int shift = this.Size / 2;
+            double firstValue = 0.0;      
+
+            for (int i = 0; i < this.Size; i++)
+            {
+                double x = Math.Exp((-((i - shift) * (i - shift))) / (2 * Sigma * Sigma));  
+
+                if (i == 0)
+                    firstValue = x;
+                x = x / firstValue * 2;
+                int integerPart = (int)Math.Floor(x);
+                if (x - (double)integerPart >= TRESHOLD)
+                    x = (int)Math.Ceiling(x);
+                else
+                    x = integerPart;
             }
         }
 
