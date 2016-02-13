@@ -51,15 +51,20 @@ namespace DigitalImageProcessingLib.Filters.FilterType.EdgeDetectionFilterType
                 for (int i = lowIndex; i < highIndexI; i++)
                     for (int j = lowIndex; j < highIndexJ; j++)
                     {
-                        int gradientStrengthY = copyImage.Pixels[i - 1, j - 1].Color.Data * Gy[0, 0] +
-                          copyImage.Pixels[i - 1, j].Color.Data * Gy[0, 1] + copyImage.Pixels[i - 1, j + 1].Color.Data * Gy[0, 2] +
-                          copyImage.Pixels[i + 1, j - 1].Color.Data * Gy[2, 0] + copyImage.Pixels[i + 1, j].Color.Data * Gy[2, 1] +
-                          copyImage.Pixels[i + 1, j + 1].Color.Data * Gy[2, 2];
+                        byte pixelI_1J_1 = copyImage.Pixels[i - 1, j - 1].Color.Data;
+                        byte pixelI_1J1 = copyImage.Pixels[i - 1, j + 1].Color.Data;
+                        byte pixelI1J1 = copyImage.Pixels[i + 1, j + 1].Color.Data;
 
-                        int gradientStrengthX = copyImage.Pixels[i - 1, j - 1].Color.Data * Gx[0, 0] +
-                          copyImage.Pixels[i - 1, j + 1].Color.Data * Gx[0, 2] + copyImage.Pixels[i, j - 1].Color.Data * Gx[1, 0] +
+
+                        int gradientStrengthY = pixelI_1J_1 * Gy[0, 0] +
+                          copyImage.Pixels[i - 1, j].Color.Data * Gy[0, 1] + pixelI_1J1 * Gy[0, 2] +
+                          copyImage.Pixels[i + 1, j - 1].Color.Data * Gy[2, 0] + copyImage.Pixels[i + 1, j].Color.Data * Gy[2, 1] +
+                          pixelI1J1 * Gy[2, 2];
+
+                        int gradientStrengthX = pixelI_1J_1 * Gx[0, 0] +
+                          pixelI_1J1 * Gx[0, 2] + copyImage.Pixels[i, j - 1].Color.Data * Gx[1, 0] +
                           copyImage.Pixels[i, j + 1].Color.Data * Gx[1, 2] + copyImage.Pixels[i + 1, j - 1].Color.Data * Gx[2, 0] +
-                          copyImage.Pixels[i + 1, j + 1].Color.Data * Gx[2, 2];
+                          pixelI1J1 * Gx[2, 2];
 
                         int gradientStrengthSqr = gradientStrengthX * gradientStrengthX + gradientStrengthY * gradientStrengthY;
                         image.Pixels[i, j].Gradient.Strength = (int)Math.Sqrt((double)gradientStrengthSqr);

@@ -24,27 +24,27 @@ namespace TextDetector
         }
 
         private void button1_Click(object sender, EventArgs e)
-        {
-            //GreyImage i = new GreyImage(640, 480);
+        {    
 
-            EdgeDetectionFilter sobel = new SobelFilter();
-           
-
-            Bitmap bitmap = new Bitmap("4.jpg");
+            Bitmap bitmap = new Bitmap("3.jpg");
 
             BitmapConvertor conv = new BitmapConvertor();
             GreyImage image1 = conv.ToGreyImage(bitmap);
 
-          //  EdgeDetectionFilter sobel = new SobelFilter();
+            MessageBox.Show("Converted");
+
+            EdgeDetectionFilter sobel = new SobelFilter();
 
            // sobel.Apply(image1);
             SmoothingFilter gauss = new GaussFilter(5, 1.4);
 
-         //   gauss.Apply(image1);
+           // gauss.Apply(image1);
 
             CannyEdgeDetection canny = new CannyEdgeDetection(gauss, sobel, 20, 80);
 
             canny.Detect(image1);
+
+            MessageBox.Show("Edges detected");
 
             Bitmap convBitmap = conv.ToBitmap(image1);
 
