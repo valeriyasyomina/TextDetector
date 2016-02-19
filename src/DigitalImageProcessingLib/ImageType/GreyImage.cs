@@ -1,6 +1,7 @@
 ﻿using DigitalImageProcessingLib.ColorType;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -19,6 +20,34 @@ namespace DigitalImageProcessingLib.ImageType
         public override bool IsColored()
         {
             return false;
+        }
+
+        public void ToTxt(string filename)
+        {
+            try
+            {
+                using (StreamWriter streamWriter = new StreamWriter(filename))
+                {
+                    int imageHeight = this.Height;
+                    int imageWidth = this.Width;
+                    for (int i = 0; i < imageHeight; i++)
+                    {
+                        for (int j = 0; j < imageWidth; j++)
+                        {
+                            int strokeWidth = this.Pixels[i, j].StrokeWidth.Width;
+                            if (strokeWidth == SWTData.StrokeWidthData.UNDEFINED_WIDTH)
+                                streamWriter.Write("UN   ");
+                            else
+                                streamWriter.Write(strokeWidth.ToString() + "   ");
+                        }
+                        streamWriter.WriteLine();
+                    }
+                }
+            }
+            catch (Exception exception)
+            {
+                throw exception;
+            }
         }
 
         /// <summary>

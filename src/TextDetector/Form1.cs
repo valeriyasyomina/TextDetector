@@ -1,7 +1,9 @@
 ﻿using DigitalImageProcessingLib.Algorithms.EdgeDetection;
+using DigitalImageProcessingLib.Filters;
 using DigitalImageProcessingLib.Filters.FilterType;
 using DigitalImageProcessingLib.Filters.FilterType.EdgeDetectionFilterType;
 using DigitalImageProcessingLib.Filters.FilterType.SmoothingFilterType;
+using DigitalImageProcessingLib.Filters.FilterType.SWT;
 using DigitalImageProcessingLib.ImageType;
 using System;
 using System.Collections.Generic;
@@ -26,7 +28,7 @@ namespace TextDetector
         private void button1_Click(object sender, EventArgs e)
         {    
 
-            Bitmap bitmap = new Bitmap("9.jpg");
+            Bitmap bitmap = new Bitmap("7.jpg");
 
             BitmapConvertor conv = new BitmapConvertor();
             GreyImage image1 = conv.ToGreyImage(bitmap);
@@ -44,11 +46,23 @@ namespace TextDetector
 
             canny.Detect(image1);
 
-            MessageBox.Show("Edges detected");
+           // MessageBox.Show("Edges detected");
+
+            SWTFilter swt = new SWTFilter(canny.GreySmoothedImage());
+            
+            swt.Apply(image1);
+
+            
 
             Bitmap convBitmap = conv.ToBitmap(image1);
 
             pictureBox1.Image = convBitmap;
+
+            GreyImage min = swt.MinIntensityDirectionImage();
+            GreyImage max = swt.MaxIntensityDirectionImage();
+
+            min.ToTxt("swt.txt");
+            max.ToTxt("max.txt");
             
             
           

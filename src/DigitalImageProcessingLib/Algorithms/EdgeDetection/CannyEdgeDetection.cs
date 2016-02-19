@@ -14,6 +14,7 @@ namespace DigitalImageProcessingLib.Algorithms.EdgeDetection
     {
         private SmoothingFilter _smoothingFilter = null;
         private EdgeDetectionFilter _edgeDetectionFilter = null;
+        private GreyImage _greySmoothedImage = null;
         private int _lowTreshold = 0;
         private int _highTreshold = 0;
 
@@ -35,6 +36,8 @@ namespace DigitalImageProcessingLib.Algorithms.EdgeDetection
             this._lowTreshold = lowTreshold;
             this._highTreshold = highTreshold;
         }
+
+        public GreyImage GreySmoothedImage() { return this._greySmoothedImage; }
          
         /// <summary>
         /// Определяет границы серого изображения
@@ -47,6 +50,7 @@ namespace DigitalImageProcessingLib.Algorithms.EdgeDetection
                 if (image == null)
                     throw new ArgumentNullException("Null image in Detect");
                 _smoothingFilter.Apply(image);
+                _greySmoothedImage = (GreyImage)image.Copy();
                 _edgeDetectionFilter.Apply(image);
                 SetGradientDirection(image);
                 NonMaximaSuppression(image);
