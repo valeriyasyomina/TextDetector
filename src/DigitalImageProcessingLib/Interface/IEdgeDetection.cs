@@ -11,5 +11,6 @@ namespace DigitalImageProcessingLib.Interface
     {
         void Detect(GreyImage image);
         void Detect(RGBImage image);
+        GreyImage GreySmoothedImage();
     }
 }
