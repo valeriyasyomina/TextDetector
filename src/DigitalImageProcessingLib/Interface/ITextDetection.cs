@@ -1,4 +1,5 @@
-﻿using System;
+﻿using DigitalImageProcessingLib.ImageType;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -8,5 +9,7 @@ namespace DigitalImageProcessingLib.Interface
 {
     interface ITextDetection
     {
+        void DetectText(GreyImage image);
+        void DetectText(RGBImage image);
     }
 }
