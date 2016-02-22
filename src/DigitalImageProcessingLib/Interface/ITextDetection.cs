@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace DigitalImageProcessingLib.Interface
 {
-    interface ITextDetection
+    public interface ITextDetection
     {
         void DetectText(GreyImage image);
         void DetectText(RGBImage image);

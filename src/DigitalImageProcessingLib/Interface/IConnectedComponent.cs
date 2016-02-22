@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 namespace DigitalImageProcessingLib.Interface
 {
     public enum UnifyingFeature { StrokeWidth }
-    interface IConnectedComponent
+    public interface IConnectedComponent
     {
         UnifyingFeature Feature { get; set; }
         void FindComponents(GreyImage image);

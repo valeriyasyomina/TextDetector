@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace DigitalImageProcessingLib.Interface
 {
-    interface IEdgeDetection
+    public interface IEdgeDetection
     {
         void Detect(GreyImage image);
         void Detect(RGBImage image);
