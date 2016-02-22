@@ -42,7 +42,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Algorithms\ConnectedComponent\ConnectedComponentAlgorithm.cs" />
+    <Compile Include="Algorithms\ConnectedComponent\TwoPassCCAlgorithm.cs" />
     <Compile Include="Algorithms\EdgeDetection\CannyEdgeDetection.cs" />
     <Compile Include="BorderType\BorderType.cs" />
     <Compile Include="ColorType\ColorBase.cs" />

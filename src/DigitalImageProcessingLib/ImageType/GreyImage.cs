@@ -38,7 +38,10 @@ namespace DigitalImageProcessingLib.ImageType
                             if (strokeWidth == SWTData.StrokeWidthData.UNDEFINED_WIDTH)
                                 streamWriter.Write("UN   ");
                             else
-                                streamWriter.Write(strokeWidth.ToString() + "   ");
+                            {
+                                streamWriter.Write(strokeWidth.ToString(), "{0:3}");
+                                streamWriter.Write("  ");
+                            }
                         }
                         streamWriter.WriteLine();
                     }

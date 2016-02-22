@@ -28,7 +28,7 @@ namespace TextDetector
         private void button1_Click(object sender, EventArgs e)
         {    
 
-            Bitmap bitmap = new Bitmap("7.jpg");
+            Bitmap bitmap = new Bitmap("5.jpg");
 
             BitmapConvertor conv = new BitmapConvertor();
             GreyImage image1 = conv.ToGreyImage(bitmap);
