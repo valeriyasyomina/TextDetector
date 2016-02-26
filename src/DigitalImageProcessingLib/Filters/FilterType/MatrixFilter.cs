@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace DigitalImageProcessingLib.Filters
@@ -11,6 +12,8 @@ namespace DigitalImageProcessingLib.Filters
         public MatrixFilter() { }
         public MatrixFilter(int size) { this.Size = size; }
         public int Size { get; protected set; }
-        public int NormalizationRatio { get; protected set; }        
+        public int NormalizationRatio { get; protected set; }
+        public List<Thread> ThreadList { get; set; }
+        public int ThreadsNumber { get; set; }
     }
 }

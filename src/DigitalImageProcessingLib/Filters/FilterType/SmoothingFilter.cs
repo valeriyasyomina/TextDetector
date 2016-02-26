@@ -1,7 +1,9 @@
-﻿using System;
+﻿using DigitalImageProcessingLib.ImageType;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace DigitalImageProcessingLib.Filters.FilterType
@@ -20,7 +22,9 @@ namespace DigitalImageProcessingLib.Filters.FilterType
             }
         }
         public SmoothingFilter() { }
-        public int[,] Kernel { get; protected set; }
+        public int[,] Kernel { get; protected set; }        
+        public GreyImage GreySmoothedImage { get; set; }
+        public RGBImage RGBSmoothedImage { get; set; }
         protected abstract void FillKernel();
     }
 }
