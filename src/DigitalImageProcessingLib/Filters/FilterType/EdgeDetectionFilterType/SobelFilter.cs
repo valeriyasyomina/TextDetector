@@ -70,9 +70,15 @@ namespace DigitalImageProcessingLib.Filters.FilterType.EdgeDetectionFilterType
                         image.Pixels[i, j].Gradient.Strength = (int)Math.Sqrt((double)gradientStrengthSqr);
 
                         if (gradientStrengthSqr > TRESHOLD)
+                        {
                             image.Pixels[i, j].Color.Data = (byte)ColorBase.MIN_COLOR_VALUE;
+                            image.Pixels[i, j].BorderType = BorderType.Border.STRONG;
+                        }
                         else
+                        {
                             image.Pixels[i, j].Color.Data = (byte)ColorBase.MAX_COLOR_VALUE;
+                            image.Pixels[i, j].BorderType = BorderType.Border.WEAK;
+                        }
 
                         if (gradientStrengthX == 0)
                         {
