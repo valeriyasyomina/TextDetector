@@ -77,14 +77,12 @@ namespace DigitalImageProcessingTest
             patternImage.Pixels[4, 3].Color.Data = 94;
             patternImage.Pixels[4, 4].Color.Data = 112;
 
-            SmoothingFilter gaussFilter = new GaussFilter(5, 1.4, 2);   
+            SmoothingFilter gaussFilter = new GaussFilter(5, 1.4);   
             //act
-            gaussFilter.Apply(image);
-
-            GreyImage resultImage = gaussFilter.GreySmoothedImage;
+            gaussFilter.Apply(image);          
 
             //assert           
-            Assert.IsTrue(resultImage.IsEqual(patternImage));
+            Assert.IsTrue(image.IsEqual(patternImage));
         }
 
         [TestMethod]
@@ -93,7 +91,7 @@ namespace DigitalImageProcessingTest
         {
             //arrange
             GreyImage image = new GreyImage(5, 3);
-            SmoothingFilter gaussFilter = new GaussFilter(5, 1.4, 2); 
+            SmoothingFilter gaussFilter = new GaussFilter(5, 1.4); 
             //act
             gaussFilter.Apply(image);
         }
@@ -104,7 +102,7 @@ namespace DigitalImageProcessingTest
         {
             //arrange
             GreyImage image = new GreyImage(2, 3);
-            SmoothingFilter gaussFilter = new GaussFilter(5, 1.4, 2);
+            SmoothingFilter gaussFilter = new GaussFilter(5, 1.4);
             //act
             gaussFilter.Apply(image);
         }
@@ -115,7 +113,7 @@ namespace DigitalImageProcessingTest
         {
             //arrange
             GreyImage image = new GreyImage(4, 10);
-            SmoothingFilter gaussFilter = new GaussFilter(5, 1.4, 2);
+            SmoothingFilter gaussFilter = new GaussFilter(5, 1.4);
             //act
             gaussFilter.Apply(image);
         }
@@ -284,14 +282,12 @@ namespace DigitalImageProcessingTest
             patternImage.Pixels[6, 8].Color.Data = 57;
             patternImage.Pixels[6, 9].Color.Data = 200;
 
-            SmoothingFilter gaussFilter = new GaussFilter(5, 1.4, 2);
+            SmoothingFilter gaussFilter = new GaussFilter(5, 1.4);
             //act
-            gaussFilter.Apply(image);
-
-            GreyImage resultImage = gaussFilter.GreySmoothedImage;
+            gaussFilter.Apply(image);      
 
             //assert           
-            Assert.IsTrue(resultImage.IsEqual(patternImage));
+            Assert.IsTrue(image.IsEqual(patternImage));
         }
     }
 }
