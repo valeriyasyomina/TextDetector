@@ -72,6 +72,11 @@ namespace DigitalImageProcessingLib.ImageType
                         copyImage.Pixels[i, j].Gradient.Angle = this.Pixels[i, j].Gradient.Angle;
                         copyImage.Pixels[i, j].Gradient.RoundGradientDirection = this.Pixels[i, j].Gradient.RoundGradientDirection;
                         copyImage.Pixels[i, j].Gradient.Strength = this.Pixels[i, j].Gradient.Strength;
+
+                        copyImage.Pixels[i, j].StrokeWidth.WasProcessed = this.Pixels[i, j].StrokeWidth.WasProcessed;
+                        copyImage.Pixels[i, j].StrokeWidth.Width = this.Pixels[i, j].StrokeWidth.Width;
+
+                        copyImage.Pixels[i, j].RegionNumber = this.Pixels[i, j].RegionNumber;
                     }
 
                 return copyImage;
