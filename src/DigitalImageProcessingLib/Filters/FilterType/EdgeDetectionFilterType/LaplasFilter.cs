@@ -10,8 +10,6 @@ namespace DigitalImageProcessingLib.Filters.FilterType.EdgeDetectionFilterType
 {
     public class LaplasFilter: EdgeDetectionFilter
     {
-        static protected int FILTER_SIZE = 3;
-        static protected int TRESHOLD = 128 * 128;
         public LaplasFilter()
         {
             try

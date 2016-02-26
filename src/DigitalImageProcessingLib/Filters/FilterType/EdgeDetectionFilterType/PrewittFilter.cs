@@ -9,9 +9,7 @@ using System.Threading.Tasks;
 namespace DigitalImageProcessingLib.Filters.FilterType.EdgeDetectionFilterType
 {
     public class PrewittFilter : EdgeDetectionFilter
-    {
-        static protected int FILTER_SIZE = 3;
-        static protected int TRESHOLD = 128 * 128;
+    {        
         public PrewittFilter()
         {
             try
