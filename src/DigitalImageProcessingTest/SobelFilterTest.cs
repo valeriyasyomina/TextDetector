@@ -73,6 +73,7 @@ namespace DigitalImageProcessingTest
 
             patternImage.Pixels[1, 0].Color.Data = 12;
             patternImage.Pixels[1, 1].Color.Data = (byte) ColorBase.MIN_COLOR_VALUE;
+            patternImage.Pixels[1, 1].BorderType = DigitalImageProcessingLib.BorderType.Border.STRONG;
             patternImage.Pixels[1, 2].Color.Data = 187;
 
             patternImage.Pixels[2, 0].Color.Data = 201;
@@ -132,12 +133,22 @@ namespace DigitalImageProcessingTest
             patternImage.Pixels[1, 1].Color.Data = (byte) ColorBase.MIN_COLOR_VALUE;
             patternImage.Pixels[1, 2].Color.Data = (byte)ColorBase.MIN_COLOR_VALUE;
             patternImage.Pixels[1, 3].Color.Data = (byte)ColorBase.MIN_COLOR_VALUE;
+
+            patternImage.Pixels[1, 1].BorderType = DigitalImageProcessingLib.BorderType.Border.STRONG;
+            patternImage.Pixels[1, 2].BorderType = DigitalImageProcessingLib.BorderType.Border.STRONG;
+            patternImage.Pixels[1, 3].BorderType = DigitalImageProcessingLib.BorderType.Border.STRONG;
+
             patternImage.Pixels[1, 4].Color.Data = 15;
 
             patternImage.Pixels[2, 0].Color.Data = 201;
             patternImage.Pixels[2, 1].Color.Data = (byte)ColorBase.MIN_COLOR_VALUE;
             patternImage.Pixels[2, 2].Color.Data = (byte)ColorBase.MIN_COLOR_VALUE;
             patternImage.Pixels[2, 3].Color.Data = (byte)ColorBase.MIN_COLOR_VALUE;
+
+            patternImage.Pixels[2, 1].BorderType = DigitalImageProcessingLib.BorderType.Border.STRONG;
+            patternImage.Pixels[2, 2].BorderType = DigitalImageProcessingLib.BorderType.Border.STRONG;
+            patternImage.Pixels[2, 3].BorderType = DigitalImageProcessingLib.BorderType.Border.STRONG;
+
             patternImage.Pixels[2, 4].Color.Data = 17;
 
             patternImage.Pixels[3, 0].Color.Data = 100;
