@@ -9,6 +9,8 @@ namespace DigitalImageProcessingLib.Interface
 {
     public interface IEdgeDetection
     {
+        int LowTreshold { get; set; }
+        int HighTreshold { get; set; }
         void Detect(GreyImage image);
         void Detect(RGBImage image);
         GreyImage GreySmoothedImage();

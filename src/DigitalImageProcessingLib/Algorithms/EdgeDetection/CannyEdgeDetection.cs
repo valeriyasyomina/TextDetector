@@ -15,8 +15,8 @@ namespace DigitalImageProcessingLib.Algorithms.EdgeDetection
         private SmoothingFilter _smoothingFilter = null;
         private EdgeDetectionFilter _edgeDetectionFilter = null;
         private GreyImage _greySmoothedImage = null;
-        private int _lowTreshold = 0;
-        private int _highTreshold = 0;
+        public int LowTreshold { get; set; }
+        public int HighTreshold { get; set; }
 
         public CannyEdgeDetection(SmoothingFilter smoothingFilter, EdgeDetectionFilter edgeDetectionFilter, int lowTreshold,
                                     int highTreshold)
@@ -33,8 +33,8 @@ namespace DigitalImageProcessingLib.Algorithms.EdgeDetection
                 throw new ArgumentException("highTreshold must be > lowTreshold");
             this._smoothingFilter = smoothingFilter;
             this._edgeDetectionFilter = edgeDetectionFilter;
-            this._lowTreshold = lowTreshold;
-            this._highTreshold = highTreshold;
+            this.LowTreshold = lowTreshold;
+            this.HighTreshold = highTreshold;
         }
 
         public GreyImage GreySmoothedImage() { return this._greySmoothedImage; }
@@ -181,9 +181,9 @@ namespace DigitalImageProcessingLib.Algorithms.EdgeDetection
                     for (int j = lowIndex; j < imageWidth; j++)
                     {
                         int gradientStrength = image.Pixels[i, j].Gradient.Strength;
-                        if (gradientStrength >= this._lowTreshold)  
+                        if (gradientStrength >= this.LowTreshold)  
                         {
-                              if (gradientStrength < this._highTreshold)
+                              if (gradientStrength < this.HighTreshold)
                                   image.Pixels[i, j].BorderType = BorderType.Border.WEAK;
                               else
                                   image.Pixels[i, j].BorderType = BorderType.Border.STRONG;

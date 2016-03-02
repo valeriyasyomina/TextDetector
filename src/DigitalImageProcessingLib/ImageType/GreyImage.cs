@@ -22,6 +22,26 @@ namespace DigitalImageProcessingLib.ImageType
             return false;
         }
 
+        /// <summary>
+        /// Получение негатива изображения
+        /// </summary>
+        public override void Negative()
+        {
+            try
+            {
+                int imageHeight = this.Height;
+                int imageWidth = this.Width;
+
+                for (int i = 0; i < Height; i++)
+                    for (int j = 0; j < Width; j++)                    
+                        this.Pixels[i, j].Color.Data = (byte) (ColorBase.MAX_COLOR_VALUE - this.Pixels[i, j].Color.Data);                    
+            }
+            catch (Exception exception)
+            {
+                throw exception;
+            }
+        }
+
         public void ToTxt(string filename)
         {
             try

@@ -17,5 +17,9 @@ namespace DigitalImageProcessingLib.ImageType
         {
             throw new NotImplementedException();
         }
+        public override void Negative()
+        {
+            throw new NotImplementedException();
+        }
     }
 }

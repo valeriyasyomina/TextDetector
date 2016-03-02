@@ -245,13 +245,17 @@ namespace DigitalImageProcessingLib.Filters.FilterType.SWT
                     int intensityI = 0;
                     int intensityJ = 0;
                     GetNeighboringPixel(comparator, row, column, ref intensityI, ref intensityJ);
-                    // if (intensityI == row && intensityJ == column + 1)
-                    // {
-                    fillingImage.Pixels[row, column].StrokeWidth.WasProcessed = true;
-                   // FillRowWithStrokeWidth(fillingImage, column, columnFrom + 1, row, columnFrom - column + 1);
-                    // }
-                    //  else
-                    FillRowWithStrokeWidth(fillingImage, column + 1, columnFrom, row, columnFrom - column - 1);
+                    if (intensityI == row && intensityJ == column + 1)
+                    {
+                        fillingImage.Pixels[row, column].StrokeWidth.WasProcessed = true;
+                        fillingImage.Pixels[row, columnFrom].StrokeWidth.WasProcessed = true;
+                        FillRowWithStrokeWidth(fillingImage, column + 1, columnFrom, row, columnFrom - column - 1);
+                    }
+                    else
+                    {
+                        fillingImage.Pixels[row, columnFrom].StrokeWidth.WasProcessed = true;
+                        FillRowWithStrokeWidth(fillingImage, column + 1, columnFrom, row, columnFrom - column - 1);
+                    }
 
                 }
             }
@@ -285,13 +289,17 @@ namespace DigitalImageProcessingLib.Filters.FilterType.SWT
                     int intensityJ = 0;
                     GetNeighboringPixel(comparator, row, column, ref intensityI, ref intensityJ);
 
-                    // if (intensityI == row && intensityJ == column - 1)
-                    //  {
-                    fillingImage.Pixels[row, column].StrokeWidth.WasProcessed = true;
-                //    FillRowWithStrokeWidth(fillingImage, columnFrom, column + 1, row, column - columnFrom + 1);
-                    //  }
-                    //  else
-                    FillRowWithStrokeWidth(fillingImage, columnFrom + 1, column, row, column - columnFrom - 1);
+                    if (intensityI == row && intensityJ == column - 1)
+                    {
+                        fillingImage.Pixels[row, column].StrokeWidth.WasProcessed = true;
+                        fillingImage.Pixels[row, columnFrom].StrokeWidth.WasProcessed = true;
+                        FillRowWithStrokeWidth(fillingImage, columnFrom + 1, column, row, column - columnFrom - 1);
+                    }
+                    else
+                    {
+                        fillingImage.Pixels[row, columnFrom].StrokeWidth.WasProcessed = true;
+                        FillRowWithStrokeWidth(fillingImage, columnFrom + 1, column, row, column - columnFrom - 1);
+                    }
 
                 }
             }
@@ -318,8 +326,23 @@ namespace DigitalImageProcessingLib.Filters.FilterType.SWT
                 int rowFrom = row;
                 row -= 1;
 
-                while (row >= 0 && image.Pixels[row, column].BorderType != BorderType.Border.STRONG)
+              //  while (row >= 0 && image.Pixels[row, column].BorderType != BorderType.Border.STRONG)
+               //     --row;
+
+                for (; ;)
+                {
+                    if (row < 0 || image.Pixels[row, column].BorderType == BorderType.Border.STRONG ||
+                        (image.Pixels[row, column + 1].BorderType == BorderType.Border.STRONG &&
+                        image.Pixels[row, column - 1].BorderType == BorderType.Border.STRONG) ||
+
+                        (image.Pixels[row, column + 1].BorderType == BorderType.Border.STRONG &&
+                        image.Pixels[row - 1, column - 1].BorderType == BorderType.Border.STRONG) ||
+
+                        (image.Pixels[row, column - 1].BorderType == BorderType.Border.STRONG &&
+                        image.Pixels[row - 1, column + 1].BorderType == BorderType.Border.STRONG))
+                        break;
                     --row;
+                }
 
                 if (row >= 0)
                 {
@@ -327,13 +350,17 @@ namespace DigitalImageProcessingLib.Filters.FilterType.SWT
                     int intensityJ = 0;
                     GetNeighboringPixel(comparator, row, column, ref intensityI, ref intensityJ);
 
-                    // if (column == intensityJ && intensityI == row + 1)
-                    //  {
-                    fillingImage.Pixels[row, column].StrokeWidth.WasProcessed = true;
-                    //  FillColumnWithStrokeWidth(fillingImage, row, rowFrom + 1, column, rowFrom - row + 1);
-                    // }
-                    // else
-                    FillColumnWithStrokeWidth(fillingImage, row + 1, rowFrom, column, rowFrom - row - 1);
+                    if (column == intensityJ && intensityI == row + 1)
+                    {
+                        fillingImage.Pixels[row, column].StrokeWidth.WasProcessed = true;
+                        fillingImage.Pixels[rowFrom, column].StrokeWidth.WasProcessed = true;
+                        FillColumnWithStrokeWidth(fillingImage, row + 1, rowFrom, column, rowFrom - row - 1);
+                    }
+                    else
+                    {
+                        fillingImage.Pixels[rowFrom, column].StrokeWidth.WasProcessed = true;
+                        FillColumnWithStrokeWidth(fillingImage, row + 1, rowFrom, column, rowFrom - row - 1);
+                    }
                 }
             }
             catch (Exception exception)
@@ -367,13 +394,17 @@ namespace DigitalImageProcessingLib.Filters.FilterType.SWT
                     int intensityJ = 0;
                     GetNeighboringPixel(comparator, row, column, ref intensityI, ref intensityJ);
 
-                    // if (column == intensityJ && intensityI == row - 1)
-                    //    {
-                    fillingImage.Pixels[row, column].StrokeWidth.WasProcessed = true;
-                    //   FillColumnWithStrokeWidth(fillingImage, rowFrom, row + 1, column, row - rowFrom + 1);
-                    //  }
-                    // else
-                    FillColumnWithStrokeWidth(fillingImage, rowFrom + 1, row, column, row - rowFrom - 1);
+                    if (column == intensityJ && intensityI == row - 1)
+                    {
+                        fillingImage.Pixels[row, column].StrokeWidth.WasProcessed = true;
+                        fillingImage.Pixels[rowFrom, column].StrokeWidth.WasProcessed = true;
+                        FillColumnWithStrokeWidth(fillingImage, rowFrom + 1, row, column, row - rowFrom - 1);
+                    }
+                    else
+                    {
+                        fillingImage.Pixels[rowFrom, column].StrokeWidth.WasProcessed = true;
+                        FillColumnWithStrokeWidth(fillingImage, rowFrom + 1, row, column, row - rowFrom - 1);
+                    }
                 }
 
             }
@@ -403,25 +434,39 @@ namespace DigitalImageProcessingLib.Filters.FilterType.SWT
                 column -= 1;
                 row -= 1;
 
-                while (row >= 0 && column >= 0 && image.Pixels[row, column].BorderType != BorderType.Border.STRONG)
+               /* while (row >= 0 && column >= 0 && image.Pixels[row, column].BorderType != BorderType.Border.STRONG)
                 {
+                    --row;
+                    --column;
+                }*/
+
+                for (; ;)
+                {
+                    if (row - 1 < 0 || column - 1 < 0 || image.Pixels[row, column].BorderType == BorderType.Border.STRONG ||
+                        (image.Pixels[row, column - 1].BorderType == BorderType.Border.STRONG &&
+                        image.Pixels[row - 1, column].BorderType == BorderType.Border.STRONG))
+                        break;
                     --row;
                     --column;
                 }
 
-                if (row >= 0 && column >= 0)
+                if (row - 1 >= 0 && column - 1 >= 0)
                 {
                     int intensityI = 0;
                     int intensityJ = 0;
                     GetNeighboringPixel(comparator, row, column, ref intensityI, ref intensityJ);
 
-                    //  if (row == intensityI - 1 && column == intensityJ - 1)
-                    //  {
-                    fillingImage.Pixels[row, column].StrokeWidth.WasProcessed = true;
-                    // FillDiagonaWithStrokeWidth(fillingImage, row, rowfrom + 1, column, 1, rowfrom - row + 1);
-                    //  }
-                    // else
-                    FillDiagonaWithStrokeWidth(fillingImage, row + 1, rowfrom, column + 1, 1, rowfrom - row - 1);
+                    if (row == intensityI - 1 && column == intensityJ - 1)
+                    {
+                        fillingImage.Pixels[row, column].StrokeWidth.WasProcessed = true;
+                        fillingImage.Pixels[rowfrom, columnFrom].StrokeWidth.WasProcessed = true;
+                        FillDiagonaWithStrokeWidth(fillingImage, row + 1, rowfrom, column + 1, 1, rowfrom - row - 1);
+                    }
+                    else
+                    {
+                        fillingImage.Pixels[rowfrom, columnFrom].StrokeWidth.WasProcessed = true;
+                        FillDiagonaWithStrokeWidth(fillingImage, row + 1, rowfrom, column + 1, 1, rowfrom - row - 1);
+                    }
                 }
             }
             catch (Exception exception)
@@ -450,25 +495,39 @@ namespace DigitalImageProcessingLib.Filters.FilterType.SWT
                 column -= 1;
                 row += 1;
 
-                while (row < imageHeight && column >= 0 && image.Pixels[row, column].BorderType != BorderType.Border.STRONG)
+             /*   while (row < imageHeight && column >= 0 && image.Pixels[row, column].BorderType != BorderType.Border.STRONG)
                 {
+                    ++row;
+                    --column;
+                }*/
+
+                for (; ;)
+                {
+                    if (row + 1 >= imageHeight || column - 1 < 0 || image.Pixels[row, column].BorderType == BorderType.Border.STRONG ||
+                        (image.Pixels[row, column - 1].BorderType == BorderType.Border.STRONG &&
+                        image.Pixels[row + 1, column].BorderType == BorderType.Border.STRONG))
+                        break;
                     ++row;
                     --column;
                 }
 
-                if (row < imageHeight && column >= 0)
+                if (row + 1 < imageHeight && column - 1 >= 0)
                 {
                     int intensityI = 0;
                     int intensityJ = 0;
                     GetNeighboringPixel(comparator, row, column, ref intensityI, ref intensityJ);
 
-                    // if (row == intensityI + 1 && column == intensityJ - 1)
-                    // {
-                    fillingImage.Pixels[row, column].StrokeWidth.WasProcessed = true;
-                    //  FillDiagonaWithStrokeWidth(fillingImage, rowfrom, row + 1, columnFrom, -1, row - rowfrom + 1);
-                    // }
-                    //  else
-                    FillDiagonaWithStrokeWidth(fillingImage, rowfrom + 1, row, columnFrom - 1, -1, row - rowfrom - 1);
+                    if (row == intensityI + 1 && column == intensityJ - 1)
+                    {
+                        fillingImage.Pixels[row, column].StrokeWidth.WasProcessed = true;
+                        fillingImage.Pixels[rowfrom, columnFrom].StrokeWidth.WasProcessed = true;
+                        FillDiagonaWithStrokeWidth(fillingImage, rowfrom + 1, row, columnFrom - 1, -1, row - rowfrom - 1);
+                    }
+                    else
+                    {
+                        fillingImage.Pixels[rowfrom, columnFrom].StrokeWidth.WasProcessed = true;
+                        FillDiagonaWithStrokeWidth(fillingImage, rowfrom + 1, row, columnFrom - 1, -1, row - rowfrom - 1);
+                    }
                 }
 
             }
@@ -498,25 +557,40 @@ namespace DigitalImageProcessingLib.Filters.FilterType.SWT
                 column += 1;
                 row -= 1;
 
-                while (row >= 0 && column < imageWidth && image.Pixels[row, column].BorderType != BorderType.Border.STRONG)
+                /*  while (row >= 0 && column < imageWidth && image.Pixels[row, column].BorderType != BorderType.Border.STRONG &&
+                      (image.Pixels[row, column].BorderType != BorderType.Border.STRONG))
+                  {
+                      --row;
+                      ++column;
+                  }*/
+
+                for (;;)
                 {
+                    if (row - 1 < 0 || column + 1 >= imageWidth || image.Pixels[row, column].BorderType == BorderType.Border.STRONG ||
+                        (image.Pixels[row - 1, column].BorderType == BorderType.Border.STRONG && 
+                        image.Pixels[row, column + 1].BorderType == BorderType.Border.STRONG))
+                        break;
                     --row;
                     ++column;
                 }
 
-                if (column < imageWidth && row >= 0)
+                if (column + 1 < imageWidth && row - 1 >= 0)
                 {
                     int intensityI = 0;
                     int intensityJ = 0;
                     GetNeighboringPixel(comparator, row, column, ref intensityI, ref intensityJ);
 
-                    //  if (row == intensityI - 1 && column == intensityJ + 1)
-                    // {
-                    fillingImage.Pixels[row, column].StrokeWidth.WasProcessed = true;
-                    //   FillDiagonaWithStrokeWidth(fillingImage, row, rowfrom + 1, column, -1, rowfrom - row + 1);
-                    //   }
-                    //   else
-                    FillDiagonaWithStrokeWidth(fillingImage, row + 1, rowfrom, column - 1, -1, rowfrom - row - 1);
+                    if (row == intensityI - 1 && column == intensityJ + 1)
+                    {
+                        fillingImage.Pixels[row, column].StrokeWidth.WasProcessed = true;
+                        fillingImage.Pixels[rowfrom, columnFrom].StrokeWidth.WasProcessed = true;
+                        FillDiagonaWithStrokeWidth(fillingImage, row + 1, rowfrom, column - 1, -1, rowfrom - row - 1);
+                    }
+                    else
+                    {
+                        fillingImage.Pixels[rowfrom, columnFrom].StrokeWidth.WasProcessed = true;
+                        FillDiagonaWithStrokeWidth(fillingImage, row + 1, rowfrom, column - 1, -1, rowfrom - row - 1);
+                    }
                 }
             }
             catch (Exception exception)
@@ -545,25 +619,38 @@ namespace DigitalImageProcessingLib.Filters.FilterType.SWT
                 column += 1;
                 row += 1;
 
-                while (row < imageHeight && column < imageWidth && image.Pixels[row, column].BorderType != BorderType.Border.STRONG)
+                /*while (row < imageHeight && column < imageWidth && image.Pixels[row, column].BorderType != BorderType.Border.STRONG)
                 {
+                    ++row;
+                    ++column;
+                }*/
+                for (; ;)
+                {
+                    if (row + 1 >= imageHeight || column + 1 >= imageWidth || image.Pixels[row, column].BorderType == BorderType.Border.STRONG ||
+                        (image.Pixels[row, column + 1].BorderType == BorderType.Border.STRONG &&
+                        image.Pixels[row + 1, column].BorderType == BorderType.Border.STRONG))
+                        break;
                     ++row;
                     ++column;
                 }
 
-                if (row < imageHeight && column < imageWidth)
+                if (row + 1 < imageHeight && column + 1 < imageWidth)
                 {
                     int intensityI = 0;
                     int intensityJ = 0;
                     GetNeighboringPixel(comparator, row, column, ref intensityI, ref intensityJ);
 
-                    //  if (row == intensityI + 1 && column == intensityJ + 1)
-                    // {
-                    fillingImage.Pixels[row, column].StrokeWidth.WasProcessed = true;
-                    //  FillDiagonaWithStrokeWidth(fillingImage, rowfrom, row + 1, columnFrom, 1, row - rowfrom + 1);
-                    //  }
-                    // else
-                    FillDiagonaWithStrokeWidth(fillingImage, rowfrom + 1, row, columnFrom + 1, 1, row - rowfrom - 1);
+                    if (row == intensityI + 1 && column == intensityJ + 1)
+                    {
+                        fillingImage.Pixels[row, column].StrokeWidth.WasProcessed = true;
+                        fillingImage.Pixels[rowfrom, columnFrom].StrokeWidth.WasProcessed = true;
+                        FillDiagonaWithStrokeWidth(fillingImage, rowfrom + 1, row, columnFrom + 1, 1, row - rowfrom - 1);
+                    }
+                    else
+                    {
+                        fillingImage.Pixels[rowfrom, columnFrom].StrokeWidth.WasProcessed = true;
+                        FillDiagonaWithStrokeWidth(fillingImage, rowfrom + 1, row, columnFrom + 1, 1, row - rowfrom - 1);
+                    }
                 }
             }
             catch (Exception exception)

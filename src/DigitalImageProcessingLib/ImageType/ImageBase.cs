@@ -25,7 +25,8 @@ namespace DigitalImageProcessingLib.ImageType
         public int Height { get; protected set; }
         public int Width { get; protected set; }
         public PixelData<ColorType>[,] Pixels { get; protected set; }
-        public abstract ImageBase<ColorType> Copy();   
+        public abstract ImageBase<ColorType> Copy();
+        public abstract void Negative();
      
         /// <summary>
         /// Выделение памяти на матрицу пикселей
