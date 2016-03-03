@@ -19,5 +19,7 @@ namespace DigitalImageProcessingLib.RegionData
         public int Square { get; set; }
         public int MaxStrokeWidth { get; set; }
         public int MinStrokeWidth { get; set; }
+        public int Width { get; set; }
+        public int Height { get; set; }
     }
 }
