@@ -32,6 +32,15 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Emgu.CV">
+      <HintPath>..\..\..\..\Downloads\libemgucv-windows-x86-2.4.0.1717\bin\Emgu.CV.dll</HintPath>
+    </Reference>
+    <Reference Include="Emgu.CV.UI">
+      <HintPath>..\..\..\..\Downloads\libemgucv-windows-x86-2.4.0.1717\bin\Emgu.CV.UI.dll</HintPath>
+    </Reference>
+    <Reference Include="Emgu.Util">
+      <HintPath>..\..\..\..\Downloads\libemgucv-windows-x86-2.4.0.1717\bin\Emgu.Util.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -83,6 +92,10 @@
     <ProjectReference Include="..\DigitalImageProcessingLib\DigitalImageProcessingLib.csproj">
       <Project>{f498799a-9c7d-4d18-a780-f1993c682356}</Project>
       <Name>DigitalImageProcessingLib</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\DigitalVideoProcessingLib\DigitalVideoProcessingLib.csproj">
+      <Project>{61322e3c-a01b-438e-ac0e-227758b47cd8}</Project>
+      <Name>DigitalVideoProcessingLib</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup />

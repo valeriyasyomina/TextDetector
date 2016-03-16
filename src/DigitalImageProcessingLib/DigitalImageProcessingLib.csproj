@@ -81,6 +81,11 @@
     <Compile Include="PixelData\PixelData.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RegionData\Region.cs" />
+    <Compile Include="RegionData\RegionBase.cs" />
+    <Compile Include="RegionData\RegionChain.cs" />
+    <Compile Include="RegionData\RegionGroupBase.cs" />
+    <Compile Include="RegionData\RegionPair.cs" />
+    <Compile Include="RegionData\TextRegion.cs" />
     <Compile Include="SWTData\StrokeWidthData.cs" />
     <Compile Include="ThreadData\MatrixFilterData.cs" />
   </ItemGroup>

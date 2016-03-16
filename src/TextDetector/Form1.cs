@@ -11,7 +11,10 @@ using DigitalImageProcessingLib.Filters.FilterType.SmoothingFilterType;
 using DigitalImageProcessingLib.Filters.FilterType.SWT;
 using DigitalImageProcessingLib.ImageType;
 using DigitalImageProcessingLib.MorphologicalOperations.MorphologicalOperationsTypes;
+using DigitalImageProcessingLib.RegionData;
 using DigitalImageProcessingLib.SWTData;
+using Emgu.CV;
+using Emgu.CV.Structure;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -35,18 +38,45 @@ namespace TextDetector
         }
 
         private void button1_Click(object sender, EventArgs e)
-        {           
+        {
+         //   Image<Gray, Byte> img = new Image<Gray, byte>(800, 600, new Gray(155));
+         //   Byte x = img.Data[0, 0, 0];
+           // MessageBox.Show(x.ToString());
 
-            Bitmap bitmap = new Bitmap("20.jpg");
+        /*    Image<Gray, Byte> frame1 = new Image<Gray, byte>(@"C:\Users\valeriya\Desktop\V1\frames\52.jpg");
+            Image<Gray, Byte> frame2 = new Image<Gray, byte>(@"C:\Users\valeriya\Desktop\V1\frames\53.jpg");
+
+            Image<Gray, Byte> absFr = new Image<Gray, byte>(frame1.Width, frame1.Height);
+
+            for (int i = 0; i < frame1.Height; i++)
+                for (int j = 0; j < frame1.Width; j++)
+                {
+                    absFr.Data[i, j, 0] = (byte)Math.Abs(frame2.Data[i, j, 0] - frame1.Data[i, j, 0]);
+                }      */
+
+
+
+
+            Bitmap bitmap = new Bitmap(@"C:\Users\valeriya\Desktop\videoCut\frames_video_37_2_3\62.jpg");
 
             BitmapConvertor conv = new BitmapConvertor();
             GreyImage image1 = conv.ToGreyImage(bitmap);
+
+         /*   GreyImage image1 = new GreyImage(frame1.Width, frame1.Height);
+
+            for (int i = 0; i < frame1.Height; i++)
+                for (int j = 0; j < frame1.Width; j++)
+                {
+                    image1.Pixels[i, j].Color.Data =  absFr.Data[i, j, 0];
+                }*/
+
 
             
 
             MessageBox.Show("Converted");
 
             EdgeDetectionFilter sobel = new SobelFilter();
+           // sobel.Apply(image1);
 
           //  EdgeDetectionFilter prev = new PrewittFilter();
 
@@ -54,8 +84,8 @@ namespace TextDetector
 
             
 
-         //   OtsuBinarization otsu = new OtsuBinarization();
-          //  otsu.Countreshold(image1);
+            OtsuBinarization otsu = new OtsuBinarization();
+           // otsu.Countreshold(image1);
           //  otsu.Binarize(image1);
 
           //  NiblackBinarization nib = new NiblackBinarization(15);
@@ -71,7 +101,7 @@ namespace TextDetector
 
             CannyEdgeDetection canny = new CannyEdgeDetection(gauss, sobel, 20, 80);
 
-          //  EnhancingGradientFilter gF = new EnhancingGradientFilter();
+            EnhancingGradientFilter gF = new EnhancingGradientFilter();
 
           //  image1.Negative();
         //    gF.Apply(image1);
@@ -79,11 +109,13 @@ namespace TextDetector
           //  otsu.Binarize(image1);
 
             
-
+            List<TextRegion> textRegions = null;
             TwoPassCCAlgorithm conCon = new TwoPassCCAlgorithm(DigitalImageProcessingLib.Interface.UnifyingFeature.StrokeWidth, 
                                                             DigitalImageProcessingLib.Interface.ConnectivityType.EightConnectedRegion);
-            SWTTextDetection stext = new SWTTextDetection(canny, conCon, 20, 95, 30, 90, 85);
-            stext.DetectText(image1); 
+            SWTTextDetection stext = new SWTTextDetection(canny, 20, 80, 30, 90, 85);
+
+            
+            stext.DetectText(image1, out textRegions); 
 
 
 
@@ -92,11 +124,11 @@ namespace TextDetector
            
         
             //sobel.Apply(image1);
-         //   canny.Detect(image1);
+           // canny.Detect(image1);
 
-          /*  GradientEdgeBasedTextDetection textd = new GradientEdgeBasedTextDetection(canny, gF, otsu, new Dilation(7), 
+         /*   GradientEdgeBasedTextDetection textd = new GradientEdgeBasedTextDetection(canny, gF, otsu, new Dilation(7), 
                new Opening(new Dilation(7), new Erosion(9)));
-            textd.DetectText(image1);*/
+            textd.DetectText(image1, out textRegions);*/
 
 
            // time10kOperations.Stop();
@@ -104,8 +136,8 @@ namespace TextDetector
 
             MessageBox.Show("Edges detected");
 
-         //  SWTFilter swt = new SWTFilter(canny.GreySmoothedImage());
-           //swt.Apply(image1);
+         /*  SWTFilter swt = new SWTFilter(canny.GreySmoothedImage());
+           swt.Apply(image1);*/
 
             MessageBox.Show("SWT");
 
@@ -143,6 +175,14 @@ namespace TextDetector
             MessageBox.Show("CC");
 
             Bitmap convBitmap = conv.ToBitmap(image1);
+
+            Pen pen = new Pen(Color.Red, 2);
+            Graphics g = Graphics.FromImage(convBitmap);
+
+           for (int i = 0; i < textRegions.Count; i++)
+                g.DrawRectangle(pen, textRegions[i].MinBorderIndexJ, textRegions[i].MinBorderIndexI,
+                    textRegions[i].MaxBorderIndexJ - textRegions[i].MinBorderIndexJ, textRegions[i].MaxBorderIndexI - textRegions[i].MinBorderIndexI);
+
             pictureBox1.Image = convBitmap;
 
           //  convBitmap.Save("PR.png", ImageFormat.Png);

@@ -1,4 +1,5 @@
 ﻿using DigitalImageProcessingLib.ImageType;
+using DigitalImageProcessingLib.RegionData;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,7 +10,7 @@ namespace DigitalImageProcessingLib.Interface
 {
     public interface ITextDetection
     {
-        void DetectText(GreyImage image);
+        void DetectText(GreyImage image, out List<TextRegion> textRegions);
         void DetectText(RGBImage image);
     }
 }

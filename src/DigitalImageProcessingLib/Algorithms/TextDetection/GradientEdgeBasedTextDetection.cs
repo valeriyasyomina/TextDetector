@@ -3,6 +3,7 @@ using DigitalImageProcessingLib.Filters.FilterType;
 using DigitalImageProcessingLib.ImageType;
 using DigitalImageProcessingLib.Interface;
 using DigitalImageProcessingLib.MorphologicalOperations;
+using DigitalImageProcessingLib.RegionData;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -46,19 +47,22 @@ namespace DigitalImageProcessingLib.Algorithms.TextDetection
         /// Выделение текста на изображении гибрибным подходом
         /// </summary>
         /// <param name="image">Изображение</param>
-        public void DetectText(GreyImage image)
+        public void DetectText(GreyImage image, out List<TextRegion> textRegions)
         {
             try
             {
                 if (image == null)
                     throw new ArgumentNullException("Null image in DetectText");
 
+                textRegions = null;
 
                 Thread edgeThread = new Thread(new ParameterizedThreadStart(this.EdgeBasedProcessThread));
                 Thread gradientThread = new Thread(new ParameterizedThreadStart(this.GradientBasedProcessThread));
 
-                edgeThread.Start(image);
-                gradientThread.Start(image);
+                GreyImage copyImage = (GreyImage)image.Copy();
+
+                edgeThread.Start(copyImage);
+                gradientThread.Start(copyImage);
 
                 edgeThread.Join();
                 gradientThread.Join();  
@@ -71,16 +75,74 @@ namespace DigitalImageProcessingLib.Algorithms.TextDetection
                     {
                         if (this._gradientImage.Pixels[i, j].Color.Data == ColorBase.MAX_COLOR_VALUE &&
                             this._edgeImage.Pixels[i, j].Color.Data == ColorBase.MIN_COLOR_VALUE)
-                            image.Pixels[i, j].Color.Data = (byte)ColorBase.MIN_COLOR_VALUE;
+                            copyImage.Pixels[i, j].Color.Data = (byte)ColorBase.MIN_COLOR_VALUE;
                         else
-                            image.Pixels[i, j].Color.Data = (byte)ColorBase.MAX_COLOR_VALUE;
+                            copyImage.Pixels[i, j].Color.Data = (byte)ColorBase.MAX_COLOR_VALUE;
 
-                        image.Pixels[i, j].BorderType = this._edgeImage.Pixels[i, j].BorderType;
+                        copyImage.Pixels[i, j].BorderType = this._edgeImage.Pixels[i, j].BorderType;
                       //  image.Pixels[i, j].Color.Data = this._gradientImage.Pixels[i, j].Color.Data;
                     }
 
-             //   this._dilation.Apply(image);
-               // this._opening.Apply(image);
+                this._dilation.Apply(copyImage);
+
+                int[] heightHist = new int[copyImage.Height];
+                int[] widthHist = new int[copyImage.Width];
+
+                for (int i = 0; i < copyImage.Height; i++)
+                {
+                    int sum = 0;
+                    for (int j = 0; j < copyImage.Width; j++)
+                    {
+                        if (copyImage.Pixels[i, j].Color.Data == (byte)ColorBase.MIN_COLOR_VALUE)
+                            ++sum;
+                    }
+                    heightHist[i] = sum;
+                }
+
+                int maxH = heightHist.Max();
+
+                for (int i = 0; i < copyImage.Width; i++)
+                {
+                    int sum = 0;
+                    for (int j = 0; j < copyImage.Height; j++)
+                    {
+                        if (copyImage.Pixels[j, i].Color.Data == (byte)ColorBase.MIN_COLOR_VALUE)
+                            ++sum;
+                    }
+                    widthHist[i] = sum;
+                }
+                int maxw = widthHist.Max();
+
+                for (int i = 0; i < heightHist.Length; i++)
+                {
+                    if (maxH - heightHist[i] < 150)
+                        heightHist[i] = 1;
+                    else
+                        heightHist[i] = 0;
+                }
+
+                for (int i = 0; i < widthHist.Length; i++)
+                {
+                    if (maxw - widthHist[i] < 50)
+                        widthHist[i] = 1;
+                    else
+                        widthHist[i] = 0;
+                }
+
+                for (int i = 0; i < image.Height; i++)
+                {
+                    for (int j = 0; j < image.Width; j++)
+                    {
+                        if (heightHist[i] == 1 && widthHist[j] == 1)
+                            image.Pixels[i, j].Color.Data = (byte)ColorBase.MIN_COLOR_VALUE;
+                     //   else
+                           // image.Pixels[i, j].Color.Data = (byte)ColorBase.MAX_COLOR_VALUE;
+
+                    }
+                }
+
+
+              //  this._opening.Apply(image);
             }
             catch (Exception exception)
             {

@@ -15,7 +15,8 @@ namespace DigitalImageProcessingLib.Algorithms.ConnectedComponent
     public class TwoPassCCAlgorithm: IConnectedComponent
     {
         private static int MIN_PIXELS_NEIGHBOR_NUMBER = 3;
-        public Dictionary<int, List<int>> RegionsEquivalents { get; set; }
+//        public Dictionary<int, List<int>> RegionsEquivalents { get; set; }
+        public List<List<int>> RegionsEquivalents { get; set; }
         public Dictionary<int, Region> Regions { get; set; }
         public UnifyingFeature Feature { get; set; }
         public ConnectivityType ConnectivityType { get; set; }         
@@ -23,9 +24,10 @@ namespace DigitalImageProcessingLib.Algorithms.ConnectedComponent
         {
             this.Feature = feature;          
             this.ConnectivityType = connectivityType;
-            this.RegionsEquivalents = new Dictionary<int, List<int>>();
+            this.RegionsEquivalents = new List<List<int>>();// Dictionary<int, List<int>>();
             this.Regions = new Dictionary<int, Region>();
         }
+
 
         /// <summary>
         /// Выращивание регионов по заданному признаку
@@ -35,19 +37,25 @@ namespace DigitalImageProcessingLib.Algorithms.ConnectedComponent
         {
             try
             {
+
                 if (image == null)
                     throw new ArgumentNullException("Null image in FindComponents");
+
+                this.Regions.Clear();
+                this.RegionsEquivalents.Clear();
+
+                DeleteTrashLines(image);
+                
                 if (this.Feature == UnifyingFeature.StrokeWidth)
                 {
                     if (this.ConnectivityType == Interface.ConnectivityType.FourConnectedRegion)                    
                         FirstPassStrokeWidth4Connectivity(image);               
                     else                    
                         FirstPassStrokeWidth8Connectivity(image);                                 
-                }
+                }           
                 SecondPass(image);
-                DeleteTrashLines(image);
                 DefineRegions(image);
-                CountAverageStrokeWidthAndRegionSquare();
+                CountRegionsParameters();
             }
             catch (Exception exception)
             {
@@ -85,7 +93,8 @@ namespace DigitalImageProcessingLib.Algorithms.ConnectedComponent
                                 ++currentRegionLabel;
                                 image.Pixels[i, j].RegionNumber = currentRegionLabel;
                                 List<int> labelsList = new List<int>();
-                                this.RegionsEquivalents.Add(currentRegionLabel, labelsList);
+                                this.RegionsEquivalents.Add(labelsList);                               
+
                             }
                             else if (image.Pixels[i, j - 1].RegionNumber != PixelData<Grey>.UNDEFINED_REGION &&     // есть оба соседа
                             image.Pixels[i - 1, j].RegionNumber != PixelData<Grey>.UNDEFINED_REGION)
@@ -142,10 +151,12 @@ namespace DigitalImageProcessingLib.Algorithms.ConnectedComponent
                             if (firstPixelRegionNumber == PixelData<Grey>.UNDEFINED_REGION && secondPixelRegionNumber == PixelData<Grey>.UNDEFINED_REGION &&
                                 thirdPixelRegionNumber == PixelData<Grey>.UNDEFINED_REGION && fourthPixelRegionNumber == PixelData<Grey>.UNDEFINED_REGION)
                             {
+                                // Создание нового региона: создаём список с одним элементом (новый регион пока эквивалентен только себе)
                                 ++currentRegionLabel;
                                 image.Pixels[i, j].RegionNumber = currentRegionLabel;
                                 List<int> labelsList = new List<int>();
-                                this.RegionsEquivalents.Add(currentRegionLabel, labelsList);
+                                labelsList.Add(currentRegionLabel);
+                                this.RegionsEquivalents.Add(labelsList);
                             }
                             else
                             {
@@ -180,10 +191,22 @@ namespace DigitalImageProcessingLib.Algorithms.ConnectedComponent
                         int pixelLabel = image.Pixels[i, j].RegionNumber;
                         if (pixelLabel != PixelData<Grey>.UNDEFINED_REGION)
                         {
-                            List<int> labelsList = this.RegionsEquivalents[pixelLabel];
+                            // Ищем множество (список) эквивалентных регионов, в котором есть и текущий регион
 
-                            if (labelsList.Count != 0)                        
-                                image.Pixels[i, j].RegionNumber = pixelLabel < labelsList.Min() ? pixelLabel : labelsList.Min();                      
+                            bool labelFound = false;
+                            List<int> labelList = null;
+                            int RegionsCount = this.RegionsEquivalents.Count;
+
+                            for (int k = 0; k < RegionsCount && !labelFound; k++)
+                            {
+                                labelList = this.RegionsEquivalents[k];
+                                if (labelList.Contains(pixelLabel))
+                                    labelFound = true;
+                            }
+
+                            // Находим мин. элемент из этого списка
+                            if (labelList.Count != 0)
+                                image.Pixels[i, j].RegionNumber = labelList.Min();// pixelLabel < labelList.Min() ? pixelLabel : labelsList.Min();                      
                         }
                     }
             }
@@ -240,25 +263,27 @@ namespace DigitalImageProcessingLib.Algorithms.ConnectedComponent
                 for (int i = 1; i < imageHeight; i++)
                     for (int j = 1; j < imageWidth; j++)
                     {
-                        int pixelRegionNumber = image.Pixels[i, j].RegionNumber;
-                        if (pixelRegionNumber != PixelData<Grey>.UNDEFINED_REGION)
+
+                        // Т.к. мы убираем штрихи ДО связывания регионов, то ориентироваться на номер региона нельзя - только на ширину штриха
+
+                        if (image.Pixels[i, j].StrokeWidth.Width != StrokeWidthData.UNDEFINED_WIDTH)//pixelRegionNumber != PixelData<Grey>.UNDEFINED_REGION)
                         {
                             int counter = 0;
-                            if (image.Pixels[i - 1, j - 1].RegionNumber == pixelRegionNumber)
+                            if (image.Pixels[i - 1, j - 1].StrokeWidth.Width != StrokeWidthData.UNDEFINED_WIDTH)//...RegionNumber == pixelRegionNumber)
                                 ++counter;
-                            if (image.Pixels[i - 1, j].RegionNumber == pixelRegionNumber)
+                            if (image.Pixels[i - 1, j].StrokeWidth.Width != StrokeWidthData.UNDEFINED_WIDTH)//.RegionNumber == pixelRegionNumber)
                                 ++counter;
-                            if (image.Pixels[i - 1, j + 1].RegionNumber == pixelRegionNumber)
+                            if (image.Pixels[i - 1, j + 1].StrokeWidth.Width != StrokeWidthData.UNDEFINED_WIDTH)//.RegionNumber == pixelRegionNumber)
                                 ++counter;
-                            if (image.Pixels[i, j - 1].RegionNumber == pixelRegionNumber)
+                            if (image.Pixels[i, j - 1].StrokeWidth.Width != StrokeWidthData.UNDEFINED_WIDTH)//.RegionNumber == pixelRegionNumber)
                                 ++counter;
-                            if (image.Pixels[i, j + 1].RegionNumber == pixelRegionNumber)
+                            if (image.Pixels[i, j + 1].StrokeWidth.Width != StrokeWidthData.UNDEFINED_WIDTH)//.RegionNumber == pixelRegionNumber)
                                 ++counter;
-                            if (image.Pixels[i + 1, j - 1].RegionNumber == pixelRegionNumber)
+                            if (image.Pixels[i + 1, j - 1].StrokeWidth.Width != StrokeWidthData.UNDEFINED_WIDTH)//.RegionNumber == pixelRegionNumber)
                                 ++counter;
-                            if (image.Pixels[i + 1, j].RegionNumber == pixelRegionNumber)
+                            if (image.Pixels[i + 1, j].StrokeWidth.Width != StrokeWidthData.UNDEFINED_WIDTH)//.RegionNumber == pixelRegionNumber)
                                 ++counter;
-                            if (image.Pixels[i + 1, j + 1].RegionNumber == pixelRegionNumber)
+                            if (image.Pixels[i + 1, j + 1].StrokeWidth.Width != StrokeWidthData.UNDEFINED_WIDTH)//.RegionNumber == pixelRegionNumber)
                                 ++counter;
                             if (counter <= MIN_PIXELS_NEIGHBOR_NUMBER)
                             {
@@ -297,7 +322,9 @@ namespace DigitalImageProcessingLib.Algorithms.ConnectedComponent
                             if (!this.Regions.ContainsKey(pixelRegionNumber))
                                 this.Regions.Add(pixelRegionNumber, new Region() { PixelsNumber = 0, AverageStrokeWidth = 0,
                                 MaxBorderIndexI = i, MaxBorderIndexJ = j, MinBorderIndexI = i, MinBorderIndexJ = j, SummaryStrokeWidth = 0,
-                                TruePixelsNumber = 0, Square = 0, MaxStrokeWidth = pixelStrokeWidth, MinStrokeWidth = pixelStrokeWidth});
+                                TruePixelsNumber = 0, Square = 0, MaxStrokeWidth = pixelStrokeWidth, MinStrokeWidth = pixelStrokeWidth,
+                                Width = 0, Height = 0, CenterPointIndexI = 0, CenterPointIndexJ = 0, Number = pixelRegionNumber, Diameter = 0,
+                                BoundingBoxPixelsNumber = 0, AverageIntensity = 0, SummaryIntensity = 0 });
 
                             this.Regions[pixelRegionNumber].PixelsNumber++;
                             this.Regions[pixelRegionNumber].SummaryStrokeWidth += image.Pixels[i, j].StrokeWidth.Width;
@@ -315,6 +342,10 @@ namespace DigitalImageProcessingLib.Algorithms.ConnectedComponent
                                 this.Regions[pixelRegionNumber].MinStrokeWidth = pixelStrokeWidth;
                             if (pixelStrokeWidth > this.Regions[pixelRegionNumber].MaxStrokeWidth)
                                 this.Regions[pixelRegionNumber].MaxStrokeWidth = pixelStrokeWidth;
+
+                            this.Regions[pixelRegionNumber].SummaryIntensity += image.Pixels[i, j].Color.Data;
+
+                          //  this.Regions[pixelRegionNumber].Number = pixelRegionNumber;
                             //  if (!this.Regions.Contains(pixelRegionNumber))
                             //    this.Regions.Add(pixelRegionNumber);
                         }
@@ -329,9 +360,9 @@ namespace DigitalImageProcessingLib.Algorithms.ConnectedComponent
         }
 
         /// <summary>
-        /// Вычисляет среднюю ширину штриха в кадом регионе площадь региона
+        /// Вычисляет среднюю ширину штриха в кадом регионе, площадь региона, ширину, высоту региона, координаты центра региона
         /// </summary>
-        private void CountAverageStrokeWidthAndRegionSquare()
+        private void CountRegionsParameters()
         {
             try
             {
@@ -340,6 +371,16 @@ namespace DigitalImageProcessingLib.Algorithms.ConnectedComponent
                     pair.Value.AverageStrokeWidth = pair.Value.SummaryStrokeWidth / pair.Value.PixelsNumber;
                     pair.Value.Square = (pair.Value.MaxBorderIndexI - pair.Value.MinBorderIndexI) * 
                         (pair.Value.MaxBorderIndexJ - pair.Value.MinBorderIndexJ);
+                    pair.Value.Width = pair.Value.MaxBorderIndexJ - pair.Value.MinBorderIndexJ;
+                    pair.Value.Height = pair.Value.MaxBorderIndexI - pair.Value.MinBorderIndexI;
+
+                    pair.Value.CenterPointIndexI = pair.Value.MinBorderIndexI + pair.Value.Height / 2;
+                    pair.Value.CenterPointIndexJ = pair.Value.MinBorderIndexJ + pair.Value.Width / 2;
+
+                    pair.Value.Diameter = pair.Value.Height > pair.Value.Width ? pair.Value.Height / 2 : pair.Value.Width / 2;   ///???
+                    pair.Value.BoundingBoxPixelsNumber = pair.Value.Width * 2 + pair.Value.Height * 2;
+
+                    pair.Value.AverageIntensity = pair.Value.SummaryIntensity / pair.Value.PixelsNumber;
                 }
             }
             catch (Exception exception)
@@ -361,7 +402,8 @@ namespace DigitalImageProcessingLib.Algorithms.ConnectedComponent
                 if (leftPixelLabel != upPixelLabel)
                 {
                     AddLabelToList(upPixelLabel, leftPixelLabel);
-                    AddLabelToList(leftPixelLabel, upPixelLabel);
+                    // теперь можно не делать второе добавление
+                   // AddLabelToList(leftPixelLabel, upPixelLabel);
                 }
             }
             catch (Exception exception)
@@ -383,32 +425,38 @@ namespace DigitalImageProcessingLib.Algorithms.ConnectedComponent
                 if (firstLabel != secondLabel && firstLabel != PixelData<ColorBase>.UNDEFINED_REGION && secondLabel != PixelData<ColorBase>.UNDEFINED_REGION)
                 {
                     AddLabelToList(firstLabel, secondLabel);
-                    AddLabelToList(secondLabel, firstLabel);
+                    // теперь можно не делать второе добавление
+                   // AddLabelToList(secondLabel, firstLabel);
                 }
                 if (firstLabel != thirdLabel && firstLabel != PixelData<ColorBase>.UNDEFINED_REGION && thirdLabel != PixelData<ColorBase>.UNDEFINED_REGION)
                 {
                     AddLabelToList(firstLabel, thirdLabel);
-                    AddLabelToList(thirdLabel, firstLabel);
+                    // теперь можно не делать второе добавление
+                  //  AddLabelToList(thirdLabel, firstLabel);
                 }
                 if (firstLabel != fourthLabel && firstLabel != PixelData<ColorBase>.UNDEFINED_REGION && fourthLabel != PixelData<ColorBase>.UNDEFINED_REGION)
                 {
                     AddLabelToList(firstLabel, fourthLabel);
-                    AddLabelToList(fourthLabel, firstLabel);
+                    // теперь можно не делать второе добавление
+                   // AddLabelToList(fourthLabel, firstLabel);
                 }
                 if (secondLabel != thirdLabel && secondLabel != PixelData<ColorBase>.UNDEFINED_REGION && thirdLabel != PixelData<ColorBase>.UNDEFINED_REGION)
                 {
                     AddLabelToList(secondLabel, thirdLabel);
-                    AddLabelToList(thirdLabel, secondLabel);
+                    // теперь можно не делать второе добавление
+                  //  AddLabelToList(thirdLabel, secondLabel);
                 }
                 if (secondLabel != fourthLabel && secondLabel != PixelData<ColorBase>.UNDEFINED_REGION && fourthLabel != PixelData<ColorBase>.UNDEFINED_REGION)
                 {
                     AddLabelToList(secondLabel, fourthLabel);
-                    AddLabelToList(fourthLabel, secondLabel);
+                    // теперь можно не делать второе добавление
+                 //   AddLabelToList(fourthLabel, secondLabel);
                 }
                 if (thirdLabel != fourthLabel && thirdLabel != PixelData<ColorBase>.UNDEFINED_REGION && fourthLabel != PixelData<ColorBase>.UNDEFINED_REGION)
                 {
                     AddLabelToList(thirdLabel, fourthLabel);
-                    AddLabelToList(fourthLabel, thirdLabel);
+                    // теперь можно не делать второе добавление
+                 //   AddLabelToList(fourthLabel, thirdLabel);
                 }
             }
             catch (Exception exception)
@@ -432,16 +480,44 @@ namespace DigitalImageProcessingLib.Algorithms.ConnectedComponent
                     List<int> labelsList = pair.Value;                    
                     if ((labelsList.Contains(currentRegionLabel) || pair.Key == currentRegionLabel) && !labelsList.Contains(label))
                         labelsList.Add(label);
-                }  */     
+                }  */
 
+                // Находим множество (список), содержащий номер первого региона: currentRegionLabel
                 int RegionsCount = this.RegionsEquivalents.Count;
-                for (int i = 0; i < RegionsCount; i++)
+                bool currentRegionLabelFound = false;
+                List<int> currentRegionLabelList = null;
+                int currentRegionLabelIndex = 0;
+                for (int i = 0; i < RegionsCount && !currentRegionLabelFound; i++)
                 {
-                    int index = i + 1;
-                    List<int> labelsList = this.RegionsEquivalents[index];
-                    if ((labelsList.Contains(currentRegionLabel) || index == currentRegionLabel) && !labelsList.Contains(label))
-                            labelsList.Add(label);                  
+                    currentRegionLabelIndex = i;
+                    currentRegionLabelList = this.RegionsEquivalents[currentRegionLabelIndex];                    
+                    if (currentRegionLabelList.Contains(currentRegionLabel))
+                        currentRegionLabelFound = true;
                 }
+
+                // Находим множество (список), содержащий номер первого региона: label
+                bool labelFound = false;
+                List<int> labelList = null;
+                int labelIndex = 0;
+                for (int i = 0; i < RegionsCount && !labelFound; i++)
+                {
+                    labelIndex = i;
+                    labelList = this.RegionsEquivalents[labelIndex];
+                    if (labelList.Contains(label))
+                        labelFound = true;
+                }
+
+                // Если номера регионов не принадлежат одному множеству (списку), то объединяем эти множества/списки
+                if (labelIndex != currentRegionLabelIndex)
+                {
+                    int labelIndexCount = labelList.Count;
+                    for (int i = 0; i < labelIndexCount; i++)
+                        currentRegionLabelList.Add(labelList[i]);
+                    this.RegionsEquivalents.RemoveAt(labelIndex);
+                }             
+
+
+
             }
             catch (Exception exception)
             {
