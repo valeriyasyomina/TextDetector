@@ -11,5 +11,6 @@ namespace DigitalVideoProcessingLib.Interface
     public interface IVideoLoader
     {
         Task<List<Image<Bgr, Byte>>> LoadFramesAsync(object data);
+        Task<int> CountFramesNumber(object data);
     }
 }

@@ -13,6 +13,40 @@ namespace DigitalVideoProcessingLib.IO
     {
         public delegate void FrameLoaded(int frameNumber, bool isLastFrame);
         public static event FrameLoaded frameLoaded;
+
+        public Task<int> CountFramesNumber(object data)
+        {
+            try
+            {
+                if (data == null)
+                    throw new ArgumentNullException("Null data in LoadFrames");
+                IOData ioData = (IOData)data;
+                string videoFileName = ioData.FileName;
+                if (videoFileName == null)
+                    throw new ArgumentNullException("Null videoFileName in LoadFrames");               
+
+                return Task.Run(() =>
+                {
+                    List<Image<Bgr, Byte>> frames = new List<Image<Bgr, byte>>();
+
+                    Capture capture = new Capture(videoFileName);
+                    Image<Bgr, Byte> frame = null;
+                    int frameNumber = 0;
+                    do
+                    {
+                        frame = capture.QueryFrame();
+                        ++frameNumber;                      
+                    }
+                    while (frame != null);
+
+                    return frameNumber;
+                });               
+            }
+            catch (Exception exception)
+            {
+                throw exception;
+            }
+        }
         public Task<List<Image<Bgr, Byte>>> LoadFramesAsync(object data)
         {
             try
