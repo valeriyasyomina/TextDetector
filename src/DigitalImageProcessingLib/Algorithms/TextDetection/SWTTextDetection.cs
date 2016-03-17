@@ -162,6 +162,7 @@ namespace DigitalImageProcessingLib.Algorithms.TextDetection
                 this._lightRegions = new Dictionary<int, Region>(this._lightTextConnectedComponent.Regions);
                 CountTruePixels(this._lightRegions, this._lightTextDarkBg);
                 DeleteTreshRegions(this._lightRegions, image.Width, image.Height);
+            //    DeleteInnerRegions(this._lightRegions);
                 GetTextRegions(this._lightRegions, out this._lightTextRegions, image.Width, image.Height);
             }
             catch (Exception exception)
@@ -185,6 +186,7 @@ namespace DigitalImageProcessingLib.Algorithms.TextDetection
                 this._darkRegions = new Dictionary<int, Region>(this._darkTextConnectedComponent.Regions);
                 CountTruePixels(this._darkRegions, this._darkTextLightBg);
                 DeleteTreshRegions(this._darkRegions, image.Width, image.Height);
+            //    DeleteInnerRegions(this._darkRegions);
                 GetTextRegions(this._darkRegions, out this._darkTextRegions, image.Width, image.Height);                
             }
             catch (Exception exception)
@@ -225,27 +227,37 @@ namespace DigitalImageProcessingLib.Algorithms.TextDetection
         }
 
 
-     /*   private void DeleteInnerRegions(Dictionary<int, Region> regions)
+        private void DeleteInnerRegions(Dictionary<int, Region> regions)
         {
             try
             {
-                foreach (var firstPair in regions.ToList())
+                List<KeyValuePair<int, Region>> lisOfRegions = regions.ToList();
+
+                for (int i = 0; i < lisOfRegions.Count; i++)
                 {
-                    foreach (var secondPair in regions.ToList())
+                    bool regionIndexIDeleted = false;
+                    for (int j = 0; j < lisOfRegions.Count && !regionIndexIDeleted; j++)
                     {
-                        if (secondPair.Key != firstPair.Key)
+                        if (lisOfRegions[j].Value.CenterPointIndexI > lisOfRegions[i].Value.MinBorderIndexI &&
+                                lisOfRegions[j].Value.CenterPointIndexI < lisOfRegions[i].Value.MaxBorderIndexI &&
+                                lisOfRegions[j].Value.CenterPointIndexJ > lisOfRegions[i].Value.MinBorderIndexJ &&
+                                lisOfRegions[j].Value.MinBorderIndexJ < lisOfRegions[i].Value.MaxBorderIndexJ &&
+                                lisOfRegions[j].Value.Width < lisOfRegions[i].Value.Width &&
+                                lisOfRegions[j].Value.Height < lisOfRegions[i].Value.Height)
                         {
-                            if (secondPair.Value.MaxBorderIndexI > firstPair.Value.MaxBorderIndexI &&
-                                secondPair.Value.MaxBorderIndexJ > firstPair.Value.MaxBorderIndexJ &&
-                                secondPair.Value.MinBorderIndexI < firstPair.Value.MinBorderIndexI &&
-                                secondPair.Value.MinBorderIndexJ < firstPair.Value.MinBorderIndexJ)
-                                regions.Remove(firstPair.Key);
-                            else
-                                if (firstPair.Value.MaxBorderIndexI > secondPair.Value.MaxBorderIndexI &&
-                                firstPair.Value.MaxBorderIndexJ > secondPair.Value.MaxBorderIndexJ &&
-                                firstPair.Value.MinBorderIndexI < secondPair.Value.MinBorderIndexI &&
-                                firstPair.Value.MinBorderIndexJ < secondPair.Value.MinBorderIndexJ)
-                                    regions.Remove(secondPair.Key);
+                            regions.Remove(lisOfRegions[j].Key);
+                            j--;
+                        }
+                        else if (lisOfRegions[i].Value.CenterPointIndexI > lisOfRegions[j].Value.MinBorderIndexI &&
+                            lisOfRegions[i].Value.CenterPointIndexI < lisOfRegions[j].Value.MaxBorderIndexI &&
+                            lisOfRegions[i].Value.CenterPointIndexJ > lisOfRegions[j].Value.MinBorderIndexJ &&
+                            lisOfRegions[i].Value.MinBorderIndexJ < lisOfRegions[j].Value.MaxBorderIndexJ &&
+                            lisOfRegions[i].Value.Width < lisOfRegions[j].Value.Width &&
+                            lisOfRegions[i].Value.Height < lisOfRegions[j].Value.Height)
+                        {
+                            regions.Remove(lisOfRegions[i].Key);
+                            i--;
+                            regionIndexIDeleted = true;
                         }
                     }
                 }
@@ -254,7 +266,7 @@ namespace DigitalImageProcessingLib.Algorithms.TextDetection
             {
                 throw exception;
             }
-        }*/
+        }
 
         /// <summary>
         /// Удаляет области, в котрых процент пикселей попавших в диапазо среднего значения ширины штриха меньше заданного порога
@@ -317,7 +329,7 @@ namespace DigitalImageProcessingLib.Algorithms.TextDetection
             {
                 textRegions = new List<TextRegion>();
 
-                 /*  foreach (var pair in regions)
+               /*    foreach (var pair in regions)
                    {
                        TextRegion textRegion = new TextRegion()
                        {
