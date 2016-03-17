@@ -12,10 +12,13 @@ using System.Threading.Tasks;
 
 namespace DigitalVideoProcessingLib.Algorithms.KeyFrameExtraction
 {
-    public delegate void KeyFrameExtracted(int frameNumber);
+    public delegate void KeyFrameExtracted(int firstFrameNumber, int secondFrameNumber, bool isLastFrame);
+    public delegate void FramesDifference(int firstFrameNumber, int secondFrameNumber);
+
     public class EdgeBasedKeyFrameExtractor: IKeyFrameExtraction
     {
-        public static event KeyFrameExtracted keyFrameExtracted;
+        public static event KeyFrameExtracted keyFrameExtractedEvent;
+        public static event FramesDifference framesDifferenceEvent;
 
         /// <summary>
         /// Извлечение ключевых кадров из набора кадров видео
@@ -101,6 +104,10 @@ namespace DigitalVideoProcessingLib.Algorithms.KeyFrameExtraction
                         keyFrame.Frame = imageConvertor.ConvertColor(frames[i + 1]);
                         keyFrames.Add(keyFrame);
                     }
+                    if (i == framesDifferencesNumber - 1)
+                        keyFrameExtractedEvent(i, i + 1, true);
+                    else
+                        keyFrameExtractedEvent(i, i + 1, false);
                 }
                 return keyFrames;
             }
@@ -194,6 +201,7 @@ namespace DigitalVideoProcessingLib.Algorithms.KeyFrameExtraction
                     Image<Gray, Byte> nextCannyFrame = frames[i + 1].Canny(cannyThreshold, cannyThresholdLinking);
                     int framesDifference = CountFramesDifference(currentCannyFrame, nextCannyFrame);
                     framesDifferences.Add(framesDifference);
+                    framesDifferenceEvent(i, i + 1);
                 }
                 return framesDifferences;
             }
