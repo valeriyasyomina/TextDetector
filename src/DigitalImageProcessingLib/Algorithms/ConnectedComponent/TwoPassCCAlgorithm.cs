@@ -193,16 +193,17 @@ namespace DigitalImageProcessingLib.Algorithms.ConnectedComponent
                         {
                             // Ищем множество (список) эквивалентных регионов, в котором есть и текущий регион
 
-                            bool labelFound = false;
-                            List<int> labelList = null;
-                            int RegionsCount = this.RegionsEquivalents.Count;
+                          //  bool labelFound = false;
+                            int listIndex = 0;
+                            List<int> labelList = GetRegionsListByRegionNumber(pixelLabel, ref listIndex);
+                          //  int RegionsCount = this.RegionsEquivalents.Count;
 
-                            for (int k = 0; k < RegionsCount && !labelFound; k++)
+                          /*  for (int k = 0; k < RegionsCount && !labelFound; k++)
                             {
                                 labelList = this.RegionsEquivalents[k];
                                 if (labelList.Contains(pixelLabel))
                                     labelFound = true;
-                            }
+                            }*/
 
                             // Находим мин. элемент из этого списка
                             if (labelList.Count != 0)
@@ -465,6 +466,55 @@ namespace DigitalImageProcessingLib.Algorithms.ConnectedComponent
             }
         }
 
+        /// <summary>
+        /// Нахождение списка и его номера, содержащего номер текущего региона 
+        /// </summary>
+        /// <param name="currentRegionLabel">Номер текущего региона</param>
+        /// <param name="listNumberInEquivalents">Номер списка в списке эквивалетных областей</param>
+        /// <returns>Список, содержащий номер текущего регмона</returns>
+        private List<int> GetRegionsListByRegionNumber(int currentRegionLabel, ref int listNumberInEquivalents)
+        {
+            try
+            {
+                int regionsCount = this.RegionsEquivalents.Count;
+                bool currentRegionLabelFound = false;
+                List<int> currentRegionLabelList = null;
+                int currentRegionLabelIndex = 0;
+                for (int i = 0; i < regionsCount && !currentRegionLabelFound; i++)
+                {
+                    currentRegionLabelIndex = i;
+                    currentRegionLabelList = this.RegionsEquivalents[currentRegionLabelIndex];
+                    if (currentRegionLabelList.Contains(currentRegionLabel))
+                        currentRegionLabelFound = true;
+                }
+                listNumberInEquivalents = currentRegionLabelIndex;
+                return currentRegionLabelList;
+            }
+            catch (Exception exception)
+            {
+                throw exception;
+            }
+        }
+
+        /// <summary>
+        /// Сливание двух списков, результат записывается в первый список
+        /// </summary>
+        /// <param name="firstList">Первый список</param>
+        /// <param name="secondList">Второй список</param>
+        private void MergeLists(List<int> firstList, List<int> secondList)
+        {
+            try
+            {
+                int secondListCount = secondList.Count;
+                for (int i = 0; i < secondListCount; i++)
+                    firstList.Add(secondList[i]);                
+            }
+            catch (Exception exception)
+            {
+                throw exception;
+            }
+        }
+
 
         /// <summary>
         /// Добавляет номер региона в список эквивалентов
@@ -483,41 +533,41 @@ namespace DigitalImageProcessingLib.Algorithms.ConnectedComponent
                 }  */
 
                 // Находим множество (список), содержащий номер первого региона: currentRegionLabel
-                int RegionsCount = this.RegionsEquivalents.Count;
-                bool currentRegionLabelFound = false;
-                List<int> currentRegionLabelList = null;
+              //  int RegionsCount = this.RegionsEquivalents.Count;
+              //  bool currentRegionLabelFound = false;
                 int currentRegionLabelIndex = 0;
-                for (int i = 0; i < RegionsCount && !currentRegionLabelFound; i++)
+                List<int> currentRegionLabelList = GetRegionsListByRegionNumber(currentRegionLabel, ref currentRegionLabelIndex);
+                
+             /*   for (int i = 0; i < RegionsCount && !currentRegionLabelFound; i++)
                 {
                     currentRegionLabelIndex = i;
                     currentRegionLabelList = this.RegionsEquivalents[currentRegionLabelIndex];                    
                     if (currentRegionLabelList.Contains(currentRegionLabel))
                         currentRegionLabelFound = true;
-                }
+                }*/
 
                 // Находим множество (список), содержащий номер первого региона: label
-                bool labelFound = false;
-                List<int> labelList = null;
+              //  bool labelFound = false;
                 int labelIndex = 0;
-                for (int i = 0; i < RegionsCount && !labelFound; i++)
+                List<int> labelList = GetRegionsListByRegionNumber(label, ref labelIndex);
+                
+             /*   for (int i = 0; i < RegionsCount && !labelFound; i++)
                 {
                     labelIndex = i;
                     labelList = this.RegionsEquivalents[labelIndex];
                     if (labelList.Contains(label))
                         labelFound = true;
-                }
+                }*/
 
                 // Если номера регионов не принадлежат одному множеству (списку), то объединяем эти множества/списки
                 if (labelIndex != currentRegionLabelIndex)
                 {
-                    int labelIndexCount = labelList.Count;
+                   /* int labelIndexCount = labelList.Count;
                     for (int i = 0; i < labelIndexCount; i++)
-                        currentRegionLabelList.Add(labelList[i]);
+                        currentRegionLabelList.Add(labelList[i]);*/
+                    MergeLists(currentRegionLabelList, labelList);
                     this.RegionsEquivalents.RemoveAt(labelIndex);
-                }             
-
-
-
+                }            
             }
             catch (Exception exception)
             {
