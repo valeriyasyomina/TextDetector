@@ -14,7 +14,7 @@ namespace DigitalVideoProcessingLib.IO
         public delegate void FrameLoaded(int frameNumber, bool isLastFrame);
         public static event FrameLoaded frameLoaded;
 
-        public Task<int> CountFramesNumber(object data)
+        public Task<int> CountFramesNumberAsync(object data)
         {
             try
             {
@@ -22,7 +22,7 @@ namespace DigitalVideoProcessingLib.IO
                     throw new ArgumentNullException("Null data in LoadFrames");
                 IOData ioData = (IOData)data;
                 string videoFileName = ioData.FileName;
-                if (videoFileName == null)
+                if (videoFileName == null || videoFileName.Length == 0)
                     throw new ArgumentNullException("Null videoFileName in LoadFrames");               
 
                 return Task.Run(() =>
@@ -55,7 +55,7 @@ namespace DigitalVideoProcessingLib.IO
                     throw new ArgumentNullException("Null data in LoadFrames");
                 IOData ioData = (IOData)data;
                 string videoFileName = ioData.FileName;
-                if (videoFileName == null)
+                if (videoFileName == null || videoFileName.Length == 0)
                     throw new ArgumentNullException("Null videoFileName in LoadFrames");
                 int frameWidth = ioData.FrameWidth;
                 if (frameWidth <= 0)
