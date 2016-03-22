@@ -50,10 +50,12 @@
   <ItemGroup>
     <Compile Include="Algorithms\KeyFrameExtraction\EdgeBasedKeyFrameExtractor.cs" />
     <Compile Include="Algorithms\TextDetection\SWTVideoTextDetection.cs" />
+    <Compile Include="Interface\IFrameLoader.cs" />
     <Compile Include="Interface\IImageConvertor.cs" />
     <Compile Include="Interface\IKeyFrameExtraction.cs" />
     <Compile Include="Interface\ITextDetection.cs" />
     <Compile Include="Interface\IVideoLoader.cs" />
+    <Compile Include="IO\FrameLoader.cs" />
     <Compile Include="IO\ImageConvertor.cs" />
     <Compile Include="IO\IOData.cs" />
     <Compile Include="IO\VideoLoader.cs" />
