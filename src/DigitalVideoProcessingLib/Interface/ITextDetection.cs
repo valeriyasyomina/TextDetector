@@ -1,4 +1,5 @@
-﻿using DigitalVideoProcessingLib.VideoType;
+﻿using DigitalVideoProcessingLib.VideoFrameType;
+using DigitalVideoProcessingLib.VideoType;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,6 +10,7 @@ namespace DigitalVideoProcessingLib.Interface
 {
     public interface ITextDetection
     {
-        void DetectText(GreyVideo video);        
+        void DetectText(GreyVideo video);
+        void DetectText(GreyVideoFrame videoFrame);
     }
 }
