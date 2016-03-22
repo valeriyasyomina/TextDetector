@@ -47,14 +47,14 @@ namespace DigitalImageProcessingLib.Algorithms.TextDetection
         /// Выделение текста на изображении гибрибным подходом
         /// </summary>
         /// <param name="image">Изображение</param>
-        public void DetectText(GreyImage image, out List<TextRegion> textRegions)
+        public void DetectText(GreyImage image)
         {
             try
             {
                 if (image == null)
                     throw new ArgumentNullException("Null image in DetectText");
 
-                textRegions = null;
+               // textRegions = null;
 
                 Thread edgeThread = new Thread(new ParameterizedThreadStart(this.EdgeBasedProcessThread));
                 Thread gradientThread = new Thread(new ParameterizedThreadStart(this.GradientBasedProcessThread));

@@ -10,7 +10,7 @@ namespace DigitalImageProcessingLib.Interface
 {
     public interface ITextDetection
     {
-        void DetectText(GreyImage image, out List<TextRegion> textRegions);
+        void DetectText(GreyImage image);
         void DetectText(RGBImage image);
     }
 }

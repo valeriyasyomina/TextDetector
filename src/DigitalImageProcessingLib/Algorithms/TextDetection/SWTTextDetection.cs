@@ -79,14 +79,14 @@ namespace DigitalImageProcessingLib.Algorithms.TextDetection
             this._regionSquareTheshold = regionSquareThreshold;
             this._regionWidthTreshold = regionWidthTreshold;
         }
-        public void DetectText(GreyImage image, out List<TextRegion> textRegions)
+        public void DetectText(GreyImage image)
         {
             try
             {
                 if (image == null)
                     throw new ArgumentNullException("Null image in DetectText");
 
-                textRegions = null;
+             //   textRegions = null;
          
 
                 GreyImage copyImage = (GreyImage)image.Copy();
@@ -132,7 +132,7 @@ namespace DigitalImageProcessingLib.Algorithms.TextDetection
                 lightTextThread.Join();
 
                 this._lightTextRegions.AddRange(this._darkTextRegions);
-                textRegions = this._lightTextRegions;
+              //  textRegions = this._lightTextRegions;
              //   SetRegionColor(this._darkRegions, image, this._darkTextLightBg);            
                           
             }
