@@ -18,14 +18,14 @@ namespace DigitalImageProcessingLib.Algorithms.TextDetection
     public class SWTTextDetection: ITextDetection
     {
         private IEdgeDetection _edgeDetector = null;
-        private TwoPassCCAlgorithm _lightTextConnectedComponent = null;
-        private TwoPassCCAlgorithm _darkTextConnectedComponent = null;
+        private IConnectedComponent _lightTextConnectedComponent = null;
+        private IConnectedComponent _darkTextConnectedComponent = null;
         private SWTFilter _SWTFilter = null;
         private int _strokeWidthDelta = 0;
         private double _pixelsPercentTreshold = 0;
         private int _minPixelsNumberInRegion = 0;
-        private int _regionSquareTheshold = 0;
-        private int _regionWidthTreshold = 0;
+       // private int _regionSquareTheshold = 0;
+        //private int _regionWidthTreshold = 0;
 
         private static double STROKE_WIDTH_RATIO = 2.0;
         private static double HEIGHT_RATIO = 2.0;
@@ -55,8 +55,7 @@ namespace DigitalImageProcessingLib.Algorithms.TextDetection
 
         private static int ERROR_VALUE = -1;
 
-        public SWTTextDetection(IEdgeDetection edgeDetector, int swtDelta, double percentTreshold, 
-            int minPixelsNumber, int regionSquareThreshold, int regionWidthTreshold)
+        public SWTTextDetection(IEdgeDetection edgeDetector, int swtDelta, double percentTreshold, int minPixelsNumber)
         {
             if (edgeDetector == null)
                 throw new ArgumentNullException("Null edgeDetector");        
@@ -76,8 +75,8 @@ namespace DigitalImageProcessingLib.Algorithms.TextDetection
             this._strokeWidthDelta = swtDelta;
             this._pixelsPercentTreshold = percentTreshold;
             this._minPixelsNumberInRegion = minPixelsNumber;
-            this._regionSquareTheshold = regionSquareThreshold;
-            this._regionWidthTreshold = regionWidthTreshold;
+           // this._regionSquareTheshold = regionSquareThreshold;
+            //this._regionWidthTreshold = regionWidthTreshold;
         }
         public void DetectText(GreyImage image)
         {
@@ -132,6 +131,7 @@ namespace DigitalImageProcessingLib.Algorithms.TextDetection
                 lightTextThread.Join();
 
                 this._lightTextRegions.AddRange(this._darkTextRegions);
+                image.TextRegions = new List<TextRegion>(this._lightTextRegions);
               //  textRegions = this._lightTextRegions;
              //   SetRegionColor(this._darkRegions, image, this._darkTextLightBg);            
                           
