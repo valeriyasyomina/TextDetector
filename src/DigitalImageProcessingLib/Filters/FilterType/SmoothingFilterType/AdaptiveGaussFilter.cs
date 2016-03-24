@@ -10,6 +10,7 @@ namespace DigitalImageProcessingLib.Filters.FilterType.SmoothingFilterType
 {
     public class AdaptiveGaussFilter: SmoothingFilter
     {
+        private static int DEFAULT_ITERATIONS_NUMBER = 1;
         public double Sigma { get; set; }
         public int IterationsNumber { get; set; }
         public AdaptiveGaussFilter(double sigma, int iterationNumber = 1) 
@@ -34,7 +35,8 @@ namespace DigitalImageProcessingLib.Filters.FilterType.SmoothingFilterType
                 {
                     ProcessImage(image);
                     --this.IterationsNumber;
-                }                
+                }
+                this.IterationsNumber = DEFAULT_ITERATIONS_NUMBER;
             }
             catch (Exception exception)
             {
