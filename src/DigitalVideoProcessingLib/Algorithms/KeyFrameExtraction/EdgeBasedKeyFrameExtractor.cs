@@ -1,4 +1,6 @@
-﻿using DigitalVideoProcessingLib.Interface;
+﻿using DigitalImageProcessingLib.ImageType;
+using DigitalImageProcessingLib.IO;
+using DigitalVideoProcessingLib.Interface;
 using DigitalVideoProcessingLib.IO;
 using DigitalVideoProcessingLib.VideoFrameType;
 using DigitalVideoProcessingLib.VideoType;
@@ -6,6 +8,8 @@ using Emgu.CV;
 using Emgu.CV.Structure;
 using System;
 using System.Collections.Generic;
+using System.Drawing;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -13,7 +17,7 @@ using System.Threading.Tasks;
 namespace DigitalVideoProcessingLib.Algorithms.KeyFrameExtraction
 {
     public delegate void KeyFrameExtracted(int firstFrameNumber, int secondFrameNumber, bool isLastFrame);
-    public delegate void FramesDifference(int firstFrameNumber, int secondFrameNumber);
+    public delegate void FramesDifference(int firstFrameNumber, int secondFrameNumber, bool isLastFrame);
 
     public class EdgeBasedKeyFrameExtractor: IKeyFrameExtraction
     {
@@ -25,7 +29,7 @@ namespace DigitalVideoProcessingLib.Algorithms.KeyFrameExtraction
         /// </summary>
         /// <param name="data">Набор кадров</param>
         /// <returns></returns>
-        public Task<List<GreyVideoFrame>> ExtractKeyFrames(object data)
+        public Task<List<GreyVideoFrame>> ExtractKeyFramesAsync(object data)
         {
             try
             {
@@ -42,6 +46,43 @@ namespace DigitalVideoProcessingLib.Algorithms.KeyFrameExtraction
                     double treshold = CountTreshold(matExp, sigma, 2);
 
                     return GetKeyFrames(frames, coloredFrames, framesDifferences, treshold);
+                });
+            }
+            catch (Exception exception)
+            {
+                throw exception;
+            }
+        }
+
+        /// <summary>
+        /// Извлечение ключевых кадров из видео за два прохода
+        /// </summary>
+        /// <param name="data">Имя видеофайла, ширина и высота кадра</param>
+        /// <returns></returns>
+        public Task<List<GreyVideoFrame>> ExtractKeyFramesTwoPassAsync(object data)
+        {
+            try
+            {
+                if (data == null)
+                    throw new ArgumentNullException("Null data in ExtractKeyFramesTwoPass");
+                IOData ioData = (IOData)data;
+                string videoFileName = ioData.FileName;
+                if (videoFileName == null || videoFileName.Length == 0)
+                    throw new ArgumentNullException("Null videoFileName in LoadFrames");
+                int frameWidth = ioData.FrameWidth;
+                if (frameWidth <= 0)
+                    throw new ArgumentException("Error frameWidth in LoadFrames");
+                int frameHeight = ioData.FrameHeight;
+                if (frameHeight <= 0)
+                    throw new ArgumentException("Error frameHeight in LoadFrames");
+
+                return Task.Run(() =>
+                {
+                    List<int> framesDifferences = GetFramesDifferences(videoFileName, frameWidth, frameHeight, new Gray(149), new Gray(149));
+                    double matExp = CountMatExp(framesDifferences);
+                    double sigma = CountSigma(framesDifferences, matExp);
+                    double treshold = CountTreshold(matExp, sigma, 2);
+                    return GetKeyFrames(videoFileName, frameWidth, frameHeight, framesDifferences, treshold);
                 });
             }
             catch (Exception exception)
@@ -110,6 +151,84 @@ namespace DigitalVideoProcessingLib.Algorithms.KeyFrameExtraction
                         keyFrameExtractedEvent(i, i + 1, false);
                 }
                 return keyFrames;
+            }
+            catch (Exception exception)
+            {
+                throw exception;
+            }
+        }
+
+        /// <summary>
+        /// Поиск ключевых кадров (второй проход алгоритма)
+        /// </summary>
+        /// <param name="videoFileName">Имя видеофайла</param>
+        /// <param name="frameWidth">Ширина кадра</param>
+        /// <param name="frameHeight">Высотка кадра</param>
+        /// <param name="framesDifferences">Разница кадров</param>
+        /// <param name="treshold">Порог</param>
+        /// <returns></returns>
+        private List<GreyVideoFrame> GetKeyFrames(string videoFileName, int frameWidth, int frameHeight,
+            List<int> framesDifferences, double treshold)
+        {
+            try
+            {
+                List<GreyVideoFrame> keyFrames = new List<GreyVideoFrame>();
+                ImageConvertor imageConvertor = new ImageConvertor();
+
+                string videoPath = System.IO.Path.GetDirectoryName(videoFileName);
+                string framesDirName = Path.Combine(videoPath, "VideoFrames");
+                if (!Directory.Exists(framesDirName))
+                    Directory.CreateDirectory(framesDirName);
+
+                Capture capture = new Capture(videoFileName);
+                Image<Gray, Byte> frame = capture.QueryGrayFrame().Resize(frameWidth, frameHeight, Emgu.CV.CvEnum.INTER.CV_INTER_LINEAR);                
+                AddKeyFrameFunction(keyFrames, frame, Path.Combine(framesDirName, "0.jpg"), 0);       
+
+                int framesDifferencesNumber = framesDifferences.Count;
+                int previousFrameNumber = 0;
+                BitmapConvertor bitmapConvertor = new BitmapConvertor();
+                for (int i = 0; i < framesDifferencesNumber; i++)
+                {
+                    frame = capture.QueryGrayFrame();
+                    if (framesDifferences[i] > treshold && i + 1 != previousFrameNumber + 1)
+                    { 
+                        int frameNumber = i + 1;
+                        previousFrameNumber = i + 1; 
+                        frame = capture.QueryGrayFrame().Resize(frameWidth, frameHeight, Emgu.CV.CvEnum.INTER.CV_INTER_LINEAR);                       
+                        AddKeyFrameFunction(keyFrames, frame, Path.Combine(framesDirName, frameNumber.ToString() + ".jpg"), frameNumber);                   
+                    }
+                    if (i == framesDifferencesNumber - 1)
+                        keyFrameExtractedEvent(i, i + 1, true);
+                    else
+                        keyFrameExtractedEvent(i, i + 1, false);
+                }
+                return keyFrames;
+            }
+            catch (Exception exception)
+            {
+                throw exception;
+            }
+        }
+
+        /// <summary>
+        /// Добавление ключевого кадра в список ключевых кадров
+        /// </summary>
+        /// <param name="keyFrames">Список клбючевых кадров</param>
+        /// <param name="frame">Ключевой кадр</param>
+        /// <param name="frameFileName">Имя файла для сохранения ключевого кадра</param>
+        /// <param name="frameNumber">Номер ключевого кадра</param>
+        private void AddKeyFrameFunction(List<GreyVideoFrame> keyFrames, Image<Gray, Byte> frame, string frameFileName, int frameNumber)
+        {
+            try
+            {
+                frame.Save(frameFileName);
+                Bitmap bitmapFrame = new Bitmap(frameFileName);                         
+
+                GreyVideoFrame keyFrame = new GreyVideoFrame();
+                keyFrame.FrameNumber = frameNumber;
+                BitmapConvertor bitmapConvertor = new BitmapConvertor();   
+                keyFrame.Frame = bitmapConvertor.ToGreyImage(bitmapFrame);
+                keyFrames.Add(keyFrame);
             }
             catch (Exception exception)
             {
@@ -201,7 +320,7 @@ namespace DigitalVideoProcessingLib.Algorithms.KeyFrameExtraction
                     Image<Gray, Byte> nextCannyFrame = frames[i + 1].Canny(cannyThreshold, cannyThresholdLinking);
                     int framesDifference = CountFramesDifference(currentCannyFrame, nextCannyFrame);
                     framesDifferences.Add(framesDifference);
-                    framesDifferenceEvent(i, i + 1);
+                    framesDifferenceEvent(i, i + 1, false);
                 }
                 return framesDifferences;
             }
@@ -209,7 +328,53 @@ namespace DigitalVideoProcessingLib.Algorithms.KeyFrameExtraction
             {
                 throw exception;
             }
-        }       
+        }
+
+        /// <summary>
+        /// Вычисление разницы кадров (первый проход алгоритма)
+        /// </summary>
+        /// <param name="videoFileName">Имя видеофайла</param>        
+        /// <param name="cannyThreshold">Порог для Кенни</param>
+        /// <param name="cannyThresholdLinking">Порог слияния границ для Кении</param>
+        /// <returns></returns>
+        private List<int> GetFramesDifferences(string videoFileName, int frameWidth, int frameHeight, Gray cannyThreshold, Gray cannyThresholdLinking)
+        {
+            try
+            {
+                List<int> framesDifferences = new List<int>();
+
+                Capture capture = new Capture(videoFileName);
+                Image<Gray, Byte> currentFrame = capture.QueryGrayFrame().Resize(frameWidth, frameHeight, Emgu.CV.CvEnum.INTER.CV_INTER_LINEAR); 
+                Image<Gray, Byte> nextFrame = null;
+                int frameNumber = 0;
+                do
+                {
+                    nextFrame = capture.QueryGrayFrame();//.Resize(frameWidth, frameHeight, Emgu.CV.CvEnum.INTER.CV_INTER_LINEAR);                    
+                    ++frameNumber;
+                    if (nextFrame != null)
+                    {
+                        nextFrame = nextFrame.Resize(frameWidth, frameHeight, Emgu.CV.CvEnum.INTER.CV_INTER_LINEAR);
+                        Image<Gray, Byte> currentCannyFrame = currentFrame.Canny(cannyThreshold, cannyThresholdLinking);
+                        Image<Gray, Byte> nextCannyFrame = nextFrame.Canny(cannyThreshold, cannyThresholdLinking);
+                        int framesDifference = CountFramesDifference(currentCannyFrame, nextCannyFrame);
+                        framesDifferences.Add(framesDifference);
+                        currentFrame = nextFrame;
+                        framesDifferenceEvent(frameNumber - 1, frameNumber, false);
+                    }
+                    else
+                        framesDifferenceEvent(frameNumber - 1, frameNumber, true);
+                }
+                while (nextFrame != null);
+
+                return framesDifferences;
+            }
+            catch (Exception exception)
+            {
+                throw exception;
+            }
+        }
+           
+        
 
         /// <summary>
         /// Вычисления разницы в границах между двумя кадрами

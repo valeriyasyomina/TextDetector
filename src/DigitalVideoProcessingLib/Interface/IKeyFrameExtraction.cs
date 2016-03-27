@@ -9,6 +9,7 @@ namespace DigitalVideoProcessingLib.Interface
 {
     public interface IKeyFrameExtraction
     {
-        Task<List<GreyVideoFrame>> ExtractKeyFrames(object data);
+        Task<List<GreyVideoFrame>> ExtractKeyFramesAsync(object data);
+        Task<List<GreyVideoFrame>> ExtractKeyFramesTwoPassAsync(object data);
     }
 }
