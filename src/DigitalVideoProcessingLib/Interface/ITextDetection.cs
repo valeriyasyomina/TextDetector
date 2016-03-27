@@ -10,7 +10,7 @@ namespace DigitalVideoProcessingLib.Interface
 {
     public interface ITextDetection
     {
-        void DetectText(GreyVideo video);
-        void DetectText(GreyVideoFrame videoFrame);
+        Task<bool> DetectText(GreyVideo video);
+        Task<bool> DetectText(GreyVideoFrame videoFrame);
     }
 }
