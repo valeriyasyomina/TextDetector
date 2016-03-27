@@ -12,8 +12,8 @@ namespace DigitalVideoProcessingLib.IO
     public class VideoLoader: IVideoLoader
     {
         public delegate void FrameLoaded(int frameNumber, bool isLastFrame);
-        public static event FrameLoaded frameLoaded;
-
+        public static event FrameLoaded frameLoadedEvent;
+        
         public Task<int> CountFramesNumberAsync(object data)
         {
             try
@@ -35,7 +35,8 @@ namespace DigitalVideoProcessingLib.IO
                     do
                     {
                         frame = capture.QueryFrame();
-                        ++frameNumber;                      
+                        if (frame != null)
+                            ++frameNumber;                      
                     }
                     while (frame != null);
 
@@ -79,10 +80,10 @@ namespace DigitalVideoProcessingLib.IO
                         {
                             Image<Bgr, Byte> resizedFrame = frame.Resize(frameWidth, frameHeight, Emgu.CV.CvEnum.INTER.CV_INTER_LINEAR);
                             frames.Add(resizedFrame);
-                            frameLoaded(frameNumber, false);
+                            frameLoadedEvent(frameNumber, false);
                         }
                         else
-                            frameLoaded(frameNumber, true);
+                            frameLoadedEvent(frameNumber, true);
                     }
                     while (frame != null);
 
