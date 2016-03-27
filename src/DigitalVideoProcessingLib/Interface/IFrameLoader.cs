@@ -9,6 +9,6 @@ namespace DigitalVideoProcessingLib.Interface
 {
     public interface IFrameLoader
     {
-        Task<GreyVideoFrame> LoadFrame(object data);
+        Task<GreyVideoFrame> LoadFrameAsync(object data);
     }
 }
