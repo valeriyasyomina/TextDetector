@@ -10,7 +10,7 @@
             <Grid.RowDefinitions>
                 <RowDefinition></RowDefinition>
             </Grid.RowDefinitions>
-            <TextBlock Margin="10" HorizontalAlignment="Center">Olo</TextBlock>
+            <TextBlock Text="{Binding TextInformation}" Margin="10" HorizontalAlignment="Center"></TextBlock>
         </Grid>
         <Grid Grid.Row="0">
             <Grid.RowDefinitions>
@@ -43,23 +43,22 @@
                 <ColumnDefinition></ColumnDefinition>
             </Grid.ColumnDefinitions>
 
-            <Ellipse Name="Ellipse_1" Margin="-4,2,8,2" Fill="#8B4789" Grid.Column="3" Grid.Row="5" />
-            <Ellipse Name="Ellipse_2" Margin="-4,2,8,2" Fill="#8B4789" Grid.Column="3" Grid.Row="6" />
-            <Ellipse Name="Ellipse_3" Margin="4,4,0,0" Fill="#8B4789" Grid.Column="3" Grid.Row="7" />
-            <Ellipse Name="Ellipse_4" Margin="1,1,3,3" Fill="#8B4789" Grid.Column="4" Grid.Row="8" />
-            <Ellipse Name="Ellipse_5" Margin="2,10,2,-6" Fill="#8B4789" Grid.Column="5" Grid.Row="8" />
-            <Ellipse Name="Ellipse_6" Margin="2,10,2,-6" Fill="#8B4789" Grid.Column="6" Grid.Row="8" />
-            <Ellipse Name="Ellipse_7" Margin="3,1,1,3" Fill="#8B4789" Grid.Column="7" Grid.Row="8" />
-            <Ellipse Name="Ellipse_8" Margin="0,4,4,0" Fill="#8B4789" Grid.Column="8" Grid.Row="7" />
-            <Ellipse Name="Ellipse_9" Margin="8,2,-4,2" Fill="#8B4789" Grid.Column="8" Grid.Row="6" />
-            <Ellipse Name="Ellipse_10" Margin="8,2,-4,2" Fill="#8B4789" Grid.Column="8" Grid.Row="5" />
-            <Ellipse Name="Ellipse_11" Margin="0,0,4,4" Fill="#8B4789" Grid.Column="8" Grid.Row="4" />
-            <Ellipse Name="Ellipse_12" Margin="3,3,1,1" Fill="#8B4789" Grid.Column="7" Grid.Row="3" />
-            <Ellipse Name="Ellipse_13" Margin="2,-6,2,10" Fill="#8B4789" Grid.Column="6" Grid.Row="3" />
-            <Ellipse Name="Ellipse_14" Margin="2,-6,2,10" Fill="#8B4789" Grid.Column="5" Grid.Row="3" />
-            <Ellipse Name="Ellipse_15" Margin="1,3,3,1" Fill="#8B4789" Grid.Column="4" Grid.Row="3" />
-            <Ellipse Name="Ellipse_16" Margin="4,0,0,4" Fill="#8B4789" Grid.Column="3" Grid.Row="4" />
-            <Button Click="Button_Click">olo</Button>
+            <Ellipse Name="Ellipse_1" Margin="-4,2,8,2" Fill="{Binding Ellipse_1_Brush}" Grid.Column="3" Grid.Row="5" />
+            <Ellipse Name="Ellipse_2" Margin="-4,2,8,2" Fill="{Binding Ellipse_2_Brush}" Grid.Column="3" Grid.Row="6" />
+            <Ellipse Name="Ellipse_3" Margin="4,4,0,0" Fill="{Binding Ellipse_3_Brush}" Grid.Column="3" Grid.Row="7" />
+            <Ellipse Name="Ellipse_4" Margin="1,1,3,3" Fill="{Binding Ellipse_4_Brush}" Grid.Column="4" Grid.Row="8" />
+            <Ellipse Name="Ellipse_5" Margin="2,10,2,-6" Fill="{Binding Ellipse_5_Brush}" Grid.Column="5" Grid.Row="8" />
+            <Ellipse Name="Ellipse_6" Margin="2,10,2,-6" Fill="{Binding Ellipse_6_Brush}" Grid.Column="6" Grid.Row="8" />
+            <Ellipse Name="Ellipse_7" Margin="3,1,1,3" Fill="{Binding Ellipse_7_Brush}" Grid.Column="7" Grid.Row="8" />
+            <Ellipse Name="Ellipse_8" Margin="0,4,4,0" Fill="{Binding Ellipse_8_Brush}" Grid.Column="8" Grid.Row="7" />
+            <Ellipse Name="Ellipse_9" Margin="8,2,-4,2" Fill="{Binding Ellipse_9_Brush}" Grid.Column="8" Grid.Row="6" />
+            <Ellipse Name="Ellipse_10" Margin="8,2,-4,2" Fill="{Binding Ellipse_10_Brush}" Grid.Column="8" Grid.Row="5" />
+            <Ellipse Name="Ellipse_11" Margin="0,0,4,4" Fill="{Binding Ellipse_11_Brush}" Grid.Column="8" Grid.Row="4" />
+            <Ellipse Name="Ellipse_12" Margin="3,3,1,1" Fill="{Binding Ellipse_12_Brush}" Grid.Column="7" Grid.Row="3" />
+            <Ellipse Name="Ellipse_13" Margin="2,-6,2,10" Fill="{Binding Ellipse_13_Brush}" Grid.Column="6" Grid.Row="3" />
+            <Ellipse Name="Ellipse_14" Margin="2,-6,2,10" Fill="{Binding Ellipse_14_Brush}" Grid.Column="5" Grid.Row="3" />
+            <Ellipse Name="Ellipse_15" Margin="1,3,3,1" Fill="{Binding Ellipse_15_Brush}" Grid.Column="4" Grid.Row="3" />
+            <Ellipse Name="Ellipse_16" Margin="4,0,0,4" Fill="{Binding Ellipse_16_Brush}" Grid.Column="3" Grid.Row="4" />           
         </Grid>
     </Grid>
 </Window>
