@@ -3,6 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              StartupUri="Views/MainWindow.xaml">
     <Application.Resources>
+        
         <Style x:Key="MainMenuItemStyle" TargetType="MenuItem">
             <Style.Setters>
                 <Setter Property="Control.Background" Value="#8B4789"></Setter>
@@ -60,13 +61,13 @@
 
         <Style x:Key="TextBlockStyle">
             <Style.Setters>
-                <Setter Property="Control.FontSize" Value="13"></Setter>
-             
+                <Setter Property="Control.FontSize" Value="13"></Setter>             
                 <Setter Property="Control.FontFamily" Value="Times New Roman"></Setter>
             </Style.Setters>
-        </Style>
+        </Style>        
 
         <SolidColorBrush x:Key="Brush8B4789">#8B4789</SolidColorBrush>
+        <SolidColorBrush x:Key="Brushe5cde4">#e5cde4</SolidColorBrush>
 
         <Style x:Key="HeaderTextBlockStyle">
             <Style.Setters>
@@ -77,19 +78,27 @@
             </Style.Setters>
         </Style>
 
-        <Style x:Key="ButtonStyle">
-            <Style.Setters>
-                <Setter Property="Control.Foreground" Value="White"></Setter>
-                <Setter Property="Control.FontSize" Value="15"></Setter>
-                <Setter Property="Control.FontFamily" Value="Times New Roman"></Setter>
-                <Setter Property="Control.Background" Value="#8B4789"></Setter>
-                <Setter Property="Control.Height" Value="30"></Setter>
-            </Style.Setters>
-            <Style.Triggers>
-                <Trigger Property="Control.IsMouseOver" Value="True">
-                    <Setter Property="Control.Foreground" Value="#8B4789"></Setter>                
-                </Trigger>
-            </Style.Triggers>
+        <Style x:Key="ButtonStyle" TargetType="Button">
+            <Setter Property="Foreground" Value="White" />
+            <Setter Property="OverridesDefaultStyle" Value="True" />
+            <Setter Property="Control.FontSize" Value="15"></Setter>
+            <Setter Property="Control.FontFamily" Value="Times New Roman"></Setter>
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Template">                  
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Name="border" BorderThickness="0" BorderBrush="Black" Background="#8B4789">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Opacity" Value="0.8" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>                        
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
         </Style>
+      
     </Application.Resources>
 </Application>
