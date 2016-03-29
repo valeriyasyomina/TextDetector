@@ -14,7 +14,7 @@ using System.Windows.Navigation;
 using System.Windows.Shapes;
 using WPFVideoTextDetector.ViewModels;
 
-namespace WPFVideoTextDetector
+namespace WPFVideoTextDetector.Views
 {
     /// <summary>
     /// Логика взаимодействия для MainWindow.xaml
@@ -23,10 +23,23 @@ namespace WPFVideoTextDetector
     {
         public MainWindow()
         {
-            MainWindowViewModel mainViewModel = new MainWindowViewModel();
+            MainWindowViewModel mainViewModel = new MainWindowViewModel(this);
             this.DataContext = mainViewModel;       
 
             InitializeComponent();
+        }
+
+        private void FullScreenMenuItemClick(object sender, RoutedEventArgs e)
+        {
+             if (this.FullScreenMenuItem.IsChecked)
+                 this.WindowState = System.Windows.WindowState.Maximized;
+             else
+                 this.WindowState = System.Windows.WindowState.Normal;
+        }
+
+        private void ExitMenuItemClick(object sender, RoutedEventArgs e)
+        {
+            this.Close();
         }
     }
 }
