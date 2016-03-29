@@ -95,7 +95,7 @@
                     <GradientStop Color="DarkGray" Offset="1.0"></GradientStop>
                 </LinearGradientBrush>
             </TabControl.Background>
-            <TabItem Header="Видео" Style="{StaticResource TabItemStyle}">
+            <TabItem IsSelected="{Binding IsVideoTabSelected}" Header="Видео" Style="{StaticResource TabItemStyle}">
                 <TabUserControl:VideoUserControl />
                 
                 
@@ -158,7 +158,7 @@
                
             </TabItem>
 
-            <TabItem  Header="Обработанное видео" Style="{StaticResource TabItemStyle}">
+            <TabItem IsSelected="{Binding IsProcessedVideoFramesTabSelected}" Header="Обработанное видео" Style="{StaticResource TabItemStyle}">
                 <TabUserControl:ProcessedVideoUserControl />
                <!-- <Grid>
                     <Grid.RowDefinitions>
@@ -252,7 +252,7 @@
                 </Grid>         -->       
             </TabItem>
 
-            <TabItem  Header="Единичный кадр" Style="{StaticResource TabItemStyle}">
+            <TabItem IsSelected="{Binding IsVideoFrameTabSelected}" Header="Единичный кадр" Style="{StaticResource TabItemStyle}">
                 <TabUserControl:VideoFrameUserControl />
                <!-- <Grid>
                     <Grid.RowDefinitions>
@@ -277,7 +277,7 @@
                     </Grid>               
                 </Grid>  -->
             </TabItem>
-            <TabItem  Header="Обработанный кадр" Style="{StaticResource TabItemStyle}">
+            <TabItem IsSelected="{Binding IsProcessedVideoFrameTabSelected}" Header="Обработанный кадр" Style="{StaticResource TabItemStyle}">
                 <TabUserControl:ProcessedVideoFrameUserControl />
               <!--  <Grid>
                     <Grid.RowDefinitions>

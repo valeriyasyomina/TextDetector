@@ -58,6 +58,12 @@ namespace WPFVideoTextDetector.ViewModels
         private static string PROCESS_DATA_FOR_OUTPUT_STRING = "Подождите, идет обработка данных\nдля вывода на экран";
         #endregion
 
+        private bool isVideoTabSelected = true;
+        private bool isProcessedVideoFramesTabSelected = false;
+        private bool isVideoFrameTabSelected = false;
+        private bool isProcessedVideoFrameTabSelected = false;
+
+
         private GreyVideo video = null;
         private GreyVideoFrame videoFrame = null;
         private Uri videoFileName = null;
@@ -97,6 +103,58 @@ namespace WPFVideoTextDetector.ViewModels
 
 
         #region Properties
+
+        public bool IsVideoTabSelected
+        {
+            get
+            {
+                return this.isVideoTabSelected;
+            }
+            set
+            {
+                this.isVideoTabSelected = value;
+                NotifyPropertyChanged();
+            }
+        }
+
+        public bool IsProcessedVideoFramesTabSelected
+        {
+            get
+            {
+                return this.isProcessedVideoFramesTabSelected;
+            }
+            set
+            {
+                this.isProcessedVideoFramesTabSelected = value;
+                NotifyPropertyChanged();
+            }
+        }
+
+        public bool IsVideoFrameTabSelected
+        {
+            get
+            {
+                return this.isVideoFrameTabSelected;
+            }
+            set
+            {
+                this.isVideoFrameTabSelected = value;
+                NotifyPropertyChanged();
+            }
+        }
+
+        public bool IsProcessedVideoFrameTabSelected
+        {
+            get
+            {
+                return this.isProcessedVideoFrameTabSelected;
+            }
+            set
+            {
+                this.isProcessedVideoFrameTabSelected = value;
+                NotifyPropertyChanged();
+            }
+        }
 
         public ICommand AboutProgramCommand
         {
@@ -541,7 +599,12 @@ namespace WPFVideoTextDetector.ViewModels
                 VideoSaver.DrawTextBoundingBoxes(bitmapFrame, this.videoFrame.Frame.TextRegions, new System.Drawing.Pen(System.Drawing.Color.Red, 2));
 
                 BitmapImageConvertor bitmapImageConvertor = new Convertors.BitmapImageConvertor();
-                this.ProcessedFrameSource = bitmapImageConvertor.BitmapToBitmapImage(bitmapFrame);              
+                this.ProcessedFrameSource = bitmapImageConvertor.BitmapToBitmapImage(bitmapFrame);
+
+                this.IsVideoFrameTabSelected = false;
+                this.IsProcessedVideoFramesTabSelected = false;
+                this.IsProcessedVideoFrameTabSelected = true;
+                this.IsVideoTabSelected = false;
             }
             catch (Exception exception)
             {
@@ -574,6 +637,11 @@ namespace WPFVideoTextDetector.ViewModels
                 this.CreateBitmapsFromProcessedVideoFrames();
                 this.InitializeProcessedVideoFramesGallery();
                 this.StopLoader();
+
+                this.IsVideoFrameTabSelected = false;
+                this.IsProcessedVideoFramesTabSelected = true;
+                this.IsProcessedVideoFrameTabSelected = false;
+                this.IsVideoTabSelected = false;
             }
             catch (Exception exception)
             {
@@ -612,6 +680,11 @@ namespace WPFVideoTextDetector.ViewModels
                 BitmapImageConvertor bitmapImageConvertor = new Convertors.BitmapImageConvertor();
                 this.FrameSource = bitmapImageConvertor.BitmapToBitmapImage(bitmapFrame);
                 this.ProcessedFrameSource = null;
+
+                this.IsVideoFrameTabSelected = true;
+                this.IsProcessedVideoFramesTabSelected = false;
+                this.IsProcessedVideoFrameTabSelected = false;
+                this.IsVideoTabSelected = false;
             }
             catch (Exception exception)
             {
@@ -660,6 +733,11 @@ namespace WPFVideoTextDetector.ViewModels
                 this.VideoFileName = new Uri(dialog.FileName);
                 this.MediaPlayerNavigationVisibility = Visibility.Visible;
                 this.VideoWasNotLoaded = Visibility.Hidden;
+
+                this.IsVideoFrameTabSelected = false;
+                this.IsProcessedVideoFramesTabSelected = false;
+                this.IsProcessedVideoFrameTabSelected = false;
+                this.IsVideoTabSelected = true;
             }
             catch (Exception exception)
             {
