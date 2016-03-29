@@ -35,6 +35,7 @@
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Drawing" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -69,11 +70,13 @@
     <Compile Include="ImageType\ImageBase.cs" />
     <Compile Include="ImageType\RGBImage.cs" />
     <Compile Include="Interface\IBinarization.cs" />
+    <Compile Include="Interface\IBitmapConvertor.cs" />
     <Compile Include="Interface\IConnectedComponent.cs" />
     <Compile Include="Interface\IEdgeDetection.cs" />
     <Compile Include="Interface\IGlobalTresholdBinarization.cs" />
     <Compile Include="Interface\ILocalTresholdBinarization.cs" />
     <Compile Include="Interface\ITextDetection.cs" />
+    <Compile Include="IO\BitmapConvertor.cs" />
     <Compile Include="MorphologicalOperations\MorphologicalOperation.cs" />
     <Compile Include="MorphologicalOperations\MorphologicalOperationsTypes\Dilation.cs" />
     <Compile Include="MorphologicalOperations\MorphologicalOperationsTypes\Erosion.cs" />
