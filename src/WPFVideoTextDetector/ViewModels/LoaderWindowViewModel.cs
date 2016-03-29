@@ -15,8 +15,11 @@ namespace WPFVideoTextDetector.ViewModels
         private LoaderWindow window = null;        
         private int timerInterval = 0;
         private int currentEllipseNumber = 0;
+        private string textInformation = null;
+
         private static int MAX_ELLIPSE_NUMBER = 16;
         private static int MIN_ELLIPSE_NUMBER = 1;
+
         #region Brushes
         private System.Windows.Media.Brush ellipse_1_brush = null;
         private System.Windows.Media.Brush ellipse_2_brush = null;
@@ -39,6 +42,19 @@ namespace WPFVideoTextDetector.ViewModels
         #region Properties
 
         public System.Windows.Forms.Timer Timer { get; set; }
+
+        public string TextInformation
+        {
+            get
+            {
+                return this.textInformation;
+            }
+            set
+            {
+                this.textInformation = value;
+                NotifyPropertyChanged();
+            }
+        }
         public System.Windows.Media.Brush Ellipse_1_Brush
         {
             get
