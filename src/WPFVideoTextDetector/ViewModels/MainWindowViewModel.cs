@@ -55,6 +55,7 @@ namespace WPFVideoTextDetector.ViewModels
         private static string LOAD_VIDEO_STRING = "Загрузка видео";
         private static string VIDEO_INITIALIZATION_STRING = "Инициализация видео файла";
         private static string LOAD_VIDEO_SUCCESS_STRING = "Видео было успешно загружено";
+        private static string PROCESS_DATA_FOR_OUTPUT_STRING = "Подождите, идет обработка данных\nдля вывода на экран";
         #endregion
 
         private GreyVideo video = null;
@@ -560,15 +561,19 @@ namespace WPFVideoTextDetector.ViewModels
                 CannyEdgeDetection canny = new CannyEdgeDetection(gauss, sobel, 20, 80);
 
                 SWTVideoTextDetection SWTVideoTextDetection = new SWTVideoTextDetection(canny, 20, 80, 30);
+                this.StartLoader(DETECT_TEXT_VIDEO_STRING);
                 await SWTVideoTextDetection.DetectText(this.video);
+                this.StopLoader();
 
                 OkButtonWindow okButtonWindow = OkButtonWindow.InitializeOkButtonWindow();
                 okButtonWindow.capitalText.Text = VIDEO_PROCESS_STRING;
                 okButtonWindow.textInformation.Text = VIDEO_PROCESS_SUCCESS_STRING;
                 okButtonWindow.ShowDialog();
 
+                this.StartLoader(PROCESS_DATA_FOR_OUTPUT_STRING);
                 this.CreateBitmapsFromProcessedVideoFrames();
                 this.InitializeProcessedVideoFramesGallery();
+                this.StopLoader();
             }
             catch (Exception exception)
             {
@@ -821,7 +826,7 @@ namespace WPFVideoTextDetector.ViewModels
                 {
                     LoaderWindowViewModel loaderWindowViewModel = (LoaderWindowViewModel)loaderWindow.DataContext;
                     loaderWindowViewModel.StopAnimation();
-                    loaderWindow.Hide();
+                    loaderWindow.Close();
                 }));
             }
             catch (Exception exception)
