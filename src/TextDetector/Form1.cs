@@ -10,9 +10,11 @@ using DigitalImageProcessingLib.Filters.FilterType.GradientFilterType;
 using DigitalImageProcessingLib.Filters.FilterType.SmoothingFilterType;
 using DigitalImageProcessingLib.Filters.FilterType.SWT;
 using DigitalImageProcessingLib.ImageType;
+using DigitalImageProcessingLib.IO;
 using DigitalImageProcessingLib.MorphologicalOperations.MorphologicalOperationsTypes;
 using DigitalImageProcessingLib.RegionData;
 using DigitalImageProcessingLib.SWTData;
+using DigitalVideoProcessingLib.IO;
 using Emgu.CV;
 using Emgu.CV.Structure;
 using System;
@@ -26,7 +28,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using TextDetector.Convertor;
+
 
 namespace TextDetector
 {
@@ -55,12 +57,23 @@ namespace TextDetector
                 }      */
 
 
+            Capture capture = new Capture(@"C:\Users\valeriya\Desktop\videoCut\Video_37_2_3(1) (online-video-cutter.com).mp4");
+            Image<Gray, Byte> currentFrame = capture.QueryGrayFrame().Resize(640, 480, Emgu.CV.CvEnum.INTER.CV_INTER_LINEAR);
 
+           // for (int i = 1; i <= 62; i++ )
+             //   currentFrame = capture.QueryGrayFrame().Resize(640, 480, Emgu.CV.CvEnum.INTER.CV_INTER_LINEAR);
 
-            Bitmap bitmap = new Bitmap(@"C:\Users\valeriya\Desktop\videoCut\frames_video_37_2_3\62.jpg");
+            currentFrame.Save("100500.jpg");
+
+            Bitmap bitmap = new Bitmap(@"100500.jpg");
 
             BitmapConvertor conv = new BitmapConvertor();
             GreyImage image1 = conv.ToGreyImage(bitmap);
+
+            ImageConvertor ImageConvertor = new DigitalVideoProcessingLib.IO.ImageConvertor();
+          //  GreyImage image1 = ImageConvertor.ConvertColor(currentFrame);
+
+         //   GreyImage imageCopy = conv.ToGreyImage(bitmap);
 
          /*   GreyImage image1 = new GreyImage(frame1.Width, frame1.Height);
 
@@ -76,6 +89,8 @@ namespace TextDetector
             MessageBox.Show("Converted");
 
             EdgeDetectionFilter sobel = new SobelFilter();
+
+            EdgeDetectionFilter sobel1 = new SobelFilter();
            // sobel.Apply(image1);
 
           //  EdgeDetectionFilter prev = new PrewittFilter();
@@ -94,12 +109,16 @@ namespace TextDetector
             
             
            // SmoothingFilter gauss = new GaussFilter(5, 1.4);
-             SmoothingFilter gauss = new AdaptiveGaussFilter(1.4);
+             SmoothingFilter gauss = new AdaptiveGaussFilter(1.4);   // (1.4)
+
+             //SmoothingFilter gauss1 = new AdaptiveGaussFilter(1.4);
            // gauss.Apply(image1);
             //prev.Apply(image1);
 
 
             CannyEdgeDetection canny = new CannyEdgeDetection(gauss, sobel, 20, 80);
+
+            CannyEdgeDetection canny1 = new CannyEdgeDetection(gauss, sobel, 20, 80);
 
             EnhancingGradientFilter gF = new EnhancingGradientFilter();
 
@@ -109,13 +128,17 @@ namespace TextDetector
           //  otsu.Binarize(image1);
 
             
-            List<TextRegion> textRegions = null;
+          //  List<TextRegion> textRegions = null;
             TwoPassCCAlgorithm conCon = new TwoPassCCAlgorithm(DigitalImageProcessingLib.Interface.UnifyingFeature.StrokeWidth, 
                                                             DigitalImageProcessingLib.Interface.ConnectivityType.EightConnectedRegion);
-            SWTTextDetection stext = new SWTTextDetection(canny, 20, 80, 30, 90, 85);
+            SWTTextDetection stext = new SWTTextDetection(canny, 20, 80, 30);
+
+            SWTTextDetection stext1 = new SWTTextDetection(canny, 20, 80, 30);
 
             
-            stext.DetectText(image1, out textRegions); 
+             stext1.DetectText(image1);
+
+            //stext.DetectText(imageCopy);
 
 
 
@@ -179,7 +202,9 @@ namespace TextDetector
             Pen pen = new Pen(Color.Red, 2);
             Graphics g = Graphics.FromImage(convBitmap);
 
-           for (int i = 0; i < textRegions.Count; i++)
+            List<TextRegion> textRegions = image1.TextRegions;
+
+            for (int i = 0; i < textRegions.Count; i++)
                 g.DrawRectangle(pen, textRegions[i].MinBorderIndexJ, textRegions[i].MinBorderIndexI,
                     textRegions[i].MaxBorderIndexJ - textRegions[i].MinBorderIndexJ, textRegions[i].MaxBorderIndexI - textRegions[i].MinBorderIndexI);
 
