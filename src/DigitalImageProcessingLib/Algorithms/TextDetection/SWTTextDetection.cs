@@ -77,6 +77,11 @@ namespace DigitalImageProcessingLib.Algorithms.TextDetection
             this._minPixelsNumberInRegion = minPixelsNumber;
            // this._regionSquareTheshold = regionSquareThreshold;
             //this._regionWidthTreshold = regionWidthTreshold;
+
+            this._lightRegions = new Dictionary<int, Region>();
+            this._darkRegions = new Dictionary<int, Region>();
+            this._lightTextRegions = new List<TextRegion>();
+            this._darkTextRegions = new List<TextRegion>();
         }
         public void DetectText(GreyImage image)
         {
@@ -84,6 +89,7 @@ namespace DigitalImageProcessingLib.Algorithms.TextDetection
             {
                 if (image == null)
                     throw new ArgumentNullException("Null image in DetectText");
+                FreeResources();
 
              //   textRegions = null;
          
@@ -145,6 +151,23 @@ namespace DigitalImageProcessingLib.Algorithms.TextDetection
         public void DetectText(RGBImage image)
         {
             throw new NotImplementedException();
+        }
+
+        private void FreeResources()
+        {
+            try
+            {
+                this._lightRegions.Clear();
+                this._darkRegions.Clear();
+                this._lightTextRegions.Clear();
+                this._darkTextRegions.Clear();
+                this._lightTextDarkBg = null;
+                this._darkTextLightBg = null;
+            }
+            catch (Exception exception)
+            {
+                throw exception;
+            }
         }
 
         /// <summary>
