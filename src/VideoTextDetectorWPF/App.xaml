@@ -13,7 +13,7 @@
             </Style.Setters>
             <Style.Triggers>
                 <Trigger Property="IsMouseOver" Value="True">
-                    <Setter Property="Control.Foreground" Value="#8B4789"></Setter>                
+                    <Setter Property="Control.Foreground" Value="White"></Setter>                
                 </Trigger>
                 <Trigger Property="IsSubmenuOpen" Value="True">
                     <Setter Property="Control.Foreground" Value="#8B4789"></Setter>
@@ -46,5 +46,47 @@
                 </Trigger>
             </Style.Triggers>
         </Style>
+
+        <Style x:Key="ProgressBarStyle" TargetType="ProgressBar">
+            <Style.Setters>
+                <Setter Property="Control.Foreground" Value="#EC12DA"></Setter>
+            </Style.Setters>
+        </Style>
+
+        <Style x:Key="TextBlockStyle">
+            <Style.Setters>  
+                <Setter Property="Control.FontSize" Value="13"></Setter>
+                <Setter Property="Control.FontWeight" Value="Bold"></Setter>
+                <Setter Property="Control.FontFamily" Value="Times New Roman"></Setter>
+            </Style.Setters>
+        </Style>
+
+        <SolidColorBrush x:Key="Brush8B4789">#8B4789</SolidColorBrush>
+
+        <Style x:Key="HeaderTextBlockStyle">
+            <Style.Setters>
+                <Setter Property="Control.Foreground" Value="White"></Setter>
+                <Setter Property="Control.FontSize" Value="20"></Setter>
+                <Setter Property="Control.FontWeight" Value="Bold"></Setter>      
+                <Setter Property="Control.FontFamily" Value="Times New Roman"></Setter>
+            </Style.Setters>
+        </Style>
+
+        <Style x:Key="ButtonStyle">
+            <Style.Setters>
+                <Setter Property="Control.Foreground" Value="White"></Setter>
+                <Setter Property="Control.FontSize" Value="15"></Setter>    
+                <Setter Property="Control.FontFamily" Value="Times New Roman"></Setter>
+                <Setter Property="Control.Background" Value="#8B4789"></Setter>
+                <Setter Property="Control.Height" Value="30"></Setter>
+            </Style.Setters>
+            <Style.Triggers>
+                <Trigger Property="Control.IsMouseOver" Value="True">
+                    <Setter Property="Control.Foreground" Value="White"></Setter>                 
+                    <Setter Property="Control.Background" Value="#8B4789"></Setter>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+        
     </Application.Resources>
 </Application>
