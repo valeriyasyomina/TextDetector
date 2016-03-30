@@ -15,12 +15,17 @@ namespace DigitalImageProcessingLib.Filters.FilterType.SWT
         private GreyImage _maxIntensityDirectionImage = null;
         private GreyImage _gaussSmoothedImage = null;
 
+        private List<Ray> _rayMinIntensityDirection = null;
+        private List<Ray> _rayMaxIntensityDirection = null;
+
         public delegate bool CompareIntensity(int firstIntensity, int secondIntensity);
         public SWTFilter(GreyImage gaussSmoothedImage) 
         {
             if (gaussSmoothedImage == null)
                 throw new ArgumentNullException("Null gaussSmoothedImage in ctor");
             this._gaussSmoothedImage = gaussSmoothedImage;
+            this._rayMaxIntensityDirection = new List<Ray>();
+            this._rayMinIntensityDirection = new List<Ray>();
         }
 
         public GreyImage MinIntensityDirectionImage() { return this._minIntensityDirectionImage; }
@@ -69,7 +74,8 @@ namespace DigitalImageProcessingLib.Filters.FilterType.SWT
             {
                 if (image == null)
                     throw new ArgumentNullException("Null image in FillMaxIntensityDirectionImage");
-                FillStrokeImage(image, this._maxIntensityDirectionImage, this.MinIntensity);               
+                FillStrokeImage(image, this._maxIntensityDirectionImage, this._rayMaxIntensityDirection, this.MinIntensity);
+                TwoPassAlongRays(this._maxIntensityDirectionImage, this._rayMaxIntensityDirection);
             }
             catch (Exception exception)
             {
@@ -87,7 +93,8 @@ namespace DigitalImageProcessingLib.Filters.FilterType.SWT
             {
                 if (image == null)
                     throw new ArgumentNullException("Null image in FillMinIntensityImage");
-                FillStrokeImage(image, this._minIntensityDirectionImage, this.MaxIntensity);
+                FillStrokeImage(image, this._minIntensityDirectionImage, this._rayMinIntensityDirection, this.MaxIntensity);
+                TwoPassAlongRays(this._minIntensityDirectionImage, this._rayMinIntensityDirection);
             }
             catch (Exception exception)
             {
@@ -101,7 +108,7 @@ namespace DigitalImageProcessingLib.Filters.FilterType.SWT
         /// <param name="image">Изображение, представляющее границы изображения</param>
         /// <param name="fillingImage">Изображения для заполнения SWT карты</param>
         /// <param name="comparator">Функция сравнения интенсивностей пикселей</param>
-        private void FillStrokeImage(GreyImage image, GreyImage fillingImage, CompareIntensity comparator)
+        private void FillStrokeImage(GreyImage image, GreyImage fillingImage, List<Ray> rays, CompareIntensity comparator)
         {
             try
             {
@@ -118,21 +125,21 @@ namespace DigitalImageProcessingLib.Filters.FilterType.SWT
                             GetNeighboringPixel(comparator, i, j, ref intensityI, ref intensityJ);
 
                             if (intensityI == i && intensityJ == j + 1)
-                                TrackRayRight(image, fillingImage, comparator, i, j);
+                                TrackRayRight(image, fillingImage, rays, comparator, i, j);
                             else if (intensityI == i && intensityJ == j - 1)
-                                TrackRayLeft(image, fillingImage, comparator, i, j);
+                                TrackRayLeft(image, fillingImage, rays, comparator, i, j);
                             else if (intensityJ == j && intensityI == i + 1)
-                                TrackRayDown(image, fillingImage, comparator, i, j);
+                                TrackRayDown(image, fillingImage, rays, comparator, i, j);
                             else if (intensityJ == j && intensityI == i - 1)
-                                TrackRayUp(image, fillingImage, comparator, i, j);
+                                TrackRayUp(image, fillingImage, rays, comparator, i, j);
                             else if (intensityI == i - 1 && intensityJ == j + 1)
-                                TrackRayRightUp(image, fillingImage, comparator, i, j);
+                                TrackRayRightUp(image, fillingImage, rays, comparator, i, j);
                             else if (intensityI == i + 1 && intensityJ == j + 1)
-                                TrackRayRightDown(image, fillingImage, comparator, i, j);
+                                TrackRayRightDown(image, fillingImage, rays, comparator, i, j);
                             else if (intensityI == i - 1 && intensityJ == j - 1)
-                                TrackRayLeftUp(image, fillingImage, comparator, i, j);
+                                TrackRayLeftUp(image, fillingImage, rays, comparator, i, j);
                             else if (intensityI == i + 1 && intensityJ == j - 1)
-                                TrackRayLeftDown(image, fillingImage, comparator, i, j); ;                            
+                                TrackRayLeftDown(image, fillingImage, rays, comparator, i, j); ;                            
                         }
                     }
             }
@@ -141,7 +148,78 @@ namespace DigitalImageProcessingLib.Filters.FilterType.SWT
                 throw exception;
             }
 
-        }      
+        }
+
+        /// <summary>
+        /// Второй проход по амссиву лучей и усреднение значение ширины штриха пикселей
+        /// </summary>
+        /// <param name="swtImage">SWT - карта</param>
+        /// <param name="rays">Лучи</param>
+        private void TwoPassAlongRays(GreyImage swtImage, List<Ray> rays)
+        {
+            try
+            {
+                int raysNumber = rays.Count;
+                for (int i = 0; i < raysNumber; i++)                                   
+                    switch (rays[i].Direction)
+                    {
+                        case RayDirection.LEFT:
+                        {
+                            double mean = this.CountSWTMeanRowRay(swtImage, rays[i]);
+                            this.AveragingRowRayPixels(swtImage, rays[i], mean);
+                            break;
+                        }
+                        case RayDirection.RIGHT:
+                        {
+                            double mean = this.CountSWTMeanRowRay(swtImage, rays[i]);
+                            this.AveragingRowRayPixels(swtImage, rays[i], mean);
+                            break;
+                        }
+                        case RayDirection.UP:
+                        {
+                            double mean = this.CountSWTMeanColumnRay(swtImage, rays[i]);
+                            this.AveragingColumnRayPixels(swtImage, rays[i], mean);
+                            break;
+                        }
+                        case RayDirection.DOWN:
+                        {
+                            double mean = this.CountSWTMeanColumnRay(swtImage, rays[i]);
+                            this.AveragingColumnRayPixels(swtImage, rays[i], mean);
+                            break;
+                        }
+                        case RayDirection.LEFT_UP:
+                        {
+                            double mean = this.CountSWTMeanDiagonalRay(swtImage, rays[i]);
+                            this.AveragingDiagonalRayPixels(swtImage, rays[i], mean);
+                            break;
+                        }
+                        case RayDirection.LEFT_DOWN:
+                        {
+                            double mean = this.CountSWTMeanDiagonalRay(swtImage, rays[i]);
+                            this.AveragingDiagonalRayPixels(swtImage, rays[i], mean);
+                            break;
+                        }
+                        case RayDirection.RIGHT_UP:
+                        {
+                            double mean = this.CountSWTMeanDiagonalRay(swtImage, rays[i]);
+                            this.AveragingDiagonalRayPixels(swtImage, rays[i], mean);
+                            break;
+                        }
+                        case RayDirection.RIGHT_DOWN:
+                        {
+                            double mean = this.CountSWTMeanDiagonalRay(swtImage, rays[i]);
+                            this.AveragingDiagonalRayPixels(swtImage, rays[i], mean);
+                            break;
+                        }
+                        default:
+                            break;
+                    }                
+            }
+            catch (Exception exception)
+            {
+                throw exception;
+            }
+        }
 
         /// <summary>
         /// Сравнивает 2 значения интенсивности
@@ -231,7 +309,7 @@ namespace DigitalImageProcessingLib.Filters.FilterType.SWT
         /// <param name="comparator">Функция сравнение интенсивностей пикселей</param>
         /// <param name="row">Номер строки пикселя, от которого строится луч</param>
         /// <param name="column">Номер столбца пикселя, от которого строится луч</param>
-        private void TrackRayLeft(GreyImage image, GreyImage fillingImage, CompareIntensity comparator, int row, int column)
+        private void TrackRayLeft(GreyImage image, GreyImage fillingImage, List<Ray> rays, CompareIntensity comparator, int row, int column)
         {
             try
             {
@@ -250,7 +328,7 @@ namespace DigitalImageProcessingLib.Filters.FilterType.SWT
                     {
                         fillingImage.Pixels[row, column].StrokeWidth.WasProcessed = true;
                         fillingImage.Pixels[row, columnFrom].StrokeWidth.WasProcessed = true;
-                        FillRowWithStrokeWidth(fillingImage, column + 1, columnFrom, row, columnFrom - column - 1);
+                        FillRowWithStrokeWidth(fillingImage, column + 1, columnFrom, row, columnFrom - column - 1);                        
                     }
                     else
                     {
@@ -258,6 +336,13 @@ namespace DigitalImageProcessingLib.Filters.FilterType.SWT
                         FillRowWithStrokeWidth(fillingImage, column + 1, columnFrom, row, columnFrom - column - 1);
                     }
 
+                    Ray ray = new Ray();
+                    ray.ColumnBeginIndex = column + 1;
+                    ray.ColumnEndIndex = columnFrom;
+                    ray.RowBeginIndex = row;
+                    ray.Direction = RayDirection.LEFT;
+
+                    rays.Add(ray);
                 }
             }
             catch (Exception exception)
@@ -274,7 +359,7 @@ namespace DigitalImageProcessingLib.Filters.FilterType.SWT
         /// <param name="comparator">Функция сравнение интенсивностей пикселей</param>
         /// <param name="row">Номер строки пикселя, от которого строится луч</param>
         /// <param name="column">Номер столбца пикселя, от которого строится луч</param>
-        private void TrackRayRight(GreyImage image, GreyImage fillingImage, CompareIntensity comparator, int row, int column)
+        private void TrackRayRight(GreyImage image, GreyImage fillingImage, List<Ray> rays, CompareIntensity comparator, int row, int column)
         {
             try
             {
@@ -301,7 +386,13 @@ namespace DigitalImageProcessingLib.Filters.FilterType.SWT
                         fillingImage.Pixels[row, columnFrom].StrokeWidth.WasProcessed = true;
                         FillRowWithStrokeWidth(fillingImage, columnFrom + 1, column, row, column - columnFrom - 1);
                     }
+                    Ray ray = new Ray();
+                    ray.ColumnBeginIndex = columnFrom + 1;
+                    ray.ColumnEndIndex = column;
+                    ray.RowBeginIndex = row;
+                    ray.Direction = RayDirection.RIGHT;
 
+                    rays.Add(ray);
                 }
             }
             catch (Exception exception)
@@ -319,7 +410,7 @@ namespace DigitalImageProcessingLib.Filters.FilterType.SWT
         /// <param name="comparator">Функция сравнение интенсивностей пикселей</param>
         /// <param name="row">Номер строки пикселя, от которого строится луч</param>
         /// <param name="column">Номер столбца пикселя, от которого строится луч</param>
-        private void TrackRayUp(GreyImage image, GreyImage fillingImage, CompareIntensity comparator, int row, int column)
+        private void TrackRayUp(GreyImage image, GreyImage fillingImage, List<Ray> rays, CompareIntensity comparator, int row, int column)
         {
             try
             {
@@ -362,6 +453,13 @@ namespace DigitalImageProcessingLib.Filters.FilterType.SWT
                         fillingImage.Pixels[rowFrom, column].StrokeWidth.WasProcessed = true;
                         FillColumnWithStrokeWidth(fillingImage, row + 1, rowFrom, column, rowFrom - row - 1);
                     }
+                    Ray ray = new Ray();
+                    ray.RowBeginIndex = row + 1;
+                    ray.RowEndIndex = rowFrom;
+                    ray.ColumnBeginIndex = column;
+                    ray.Direction = RayDirection.UP;
+
+                    rays.Add(ray);
                 }
             }
             catch (Exception exception)
@@ -378,7 +476,7 @@ namespace DigitalImageProcessingLib.Filters.FilterType.SWT
         /// <param name="comparator">Функция сравнение интенсивностей пикселей</param>
         /// <param name="row">Номер строки пикселя, от которого строится луч</param>
         /// <param name="column">Номер столбца пикселя, от которого строится луч</param>
-        private void TrackRayDown(GreyImage image, GreyImage fillingImage, CompareIntensity comparator, int row, int column)
+        private void TrackRayDown(GreyImage image, GreyImage fillingImage, List<Ray> rays, CompareIntensity comparator, int row, int column)
         {
             try
             {
@@ -406,6 +504,13 @@ namespace DigitalImageProcessingLib.Filters.FilterType.SWT
                         fillingImage.Pixels[rowFrom, column].StrokeWidth.WasProcessed = true;
                         FillColumnWithStrokeWidth(fillingImage, rowFrom + 1, row, column, row - rowFrom - 1);
                     }
+                    Ray ray = new Ray();
+                    ray.RowBeginIndex = rowFrom + 1;
+                    ray.RowEndIndex = row;
+                    ray.ColumnBeginIndex = column;
+                    ray.Direction = RayDirection.DOWN;
+
+                    rays.Add(ray);
                 }
 
             }
@@ -423,7 +528,7 @@ namespace DigitalImageProcessingLib.Filters.FilterType.SWT
         /// <param name="comparator">Функция сравнение интенсивностей пикселей</param>
         /// <param name="row">Номер строки пикселя, от которого строится луч</param>
         /// <param name="column">Номер столбца пикселя, от которого строится луч</param>
-        private void TrackRayLeftUp(GreyImage image, GreyImage fillingImage, CompareIntensity comparator, int row, int column)
+        private void TrackRayLeftUp(GreyImage image, GreyImage fillingImage, List<Ray> rays, CompareIntensity comparator, int row, int column)
         {
             try
             {
@@ -468,6 +573,14 @@ namespace DigitalImageProcessingLib.Filters.FilterType.SWT
                         fillingImage.Pixels[rowfrom, columnFrom].StrokeWidth.WasProcessed = true;
                         FillDiagonaWithStrokeWidth(fillingImage, row + 1, rowfrom, column + 1, 1, rowfrom - row - 1);
                     }
+                    Ray ray = new Ray();
+                    ray.RowBeginIndex = row + 1;
+                    ray.RowEndIndex = rowfrom;
+                    ray.ColumnBeginIndex = column + 1;
+                    ray.Direction = RayDirection.LEFT_UP;
+                    ray.ColumnStep = 1;
+
+                    rays.Add(ray);
                 }
             }
             catch (Exception exception)
@@ -484,7 +597,7 @@ namespace DigitalImageProcessingLib.Filters.FilterType.SWT
         /// <param name="comparator">Функция сравнение интенсивностей пикселей</param>
         /// <param name="row">Номер строки пикселя, от которого строится луч</param>
         /// <param name="column">Номер столбца пикселя, от которого строится луч</param>
-        private void TrackRayLeftDown(GreyImage image, GreyImage fillingImage, CompareIntensity comparator, int row, int column)
+        private void TrackRayLeftDown(GreyImage image, GreyImage fillingImage, List<Ray> rays, CompareIntensity comparator, int row, int column)
         {
             try
             {
@@ -529,6 +642,14 @@ namespace DigitalImageProcessingLib.Filters.FilterType.SWT
                         fillingImage.Pixels[rowfrom, columnFrom].StrokeWidth.WasProcessed = true;
                         FillDiagonaWithStrokeWidth(fillingImage, rowfrom + 1, row, columnFrom - 1, -1, row - rowfrom - 1);
                     }
+                    Ray ray = new Ray();
+                    ray.RowBeginIndex = rowfrom + 1;
+                    ray.RowEndIndex = row;
+                    ray.ColumnBeginIndex = columnFrom - 1;
+                    ray.Direction = RayDirection.LEFT_DOWN;
+                    ray.ColumnStep = -1;
+
+                    rays.Add(ray);
                 }
 
             }
@@ -546,7 +667,7 @@ namespace DigitalImageProcessingLib.Filters.FilterType.SWT
         /// <param name="comparator">Функция сравнение интенсивностей пикселей</param>
         /// <param name="row">Номер строки пикселя, от которого строится луч</param>
         /// <param name="column">Номер столбца пикселя, от которого строится луч</param>
-        private void TrackRayRightUp(GreyImage image, GreyImage fillingImage, CompareIntensity comparator, int row, int column)
+        private void TrackRayRightUp(GreyImage image, GreyImage fillingImage, List<Ray> rays, CompareIntensity comparator, int row, int column)
         {
             try
             {
@@ -592,6 +713,14 @@ namespace DigitalImageProcessingLib.Filters.FilterType.SWT
                         fillingImage.Pixels[rowfrom, columnFrom].StrokeWidth.WasProcessed = true;
                         FillDiagonaWithStrokeWidth(fillingImage, row + 1, rowfrom, column - 1, -1, rowfrom - row - 1);
                     }
+                    Ray ray = new Ray();
+                    ray.RowBeginIndex = row + 1;
+                    ray.RowEndIndex = rowfrom;
+                    ray.ColumnBeginIndex = column - 1;
+                    ray.Direction = RayDirection.RIGHT_UP;
+                    ray.ColumnStep = -1;
+
+                    rays.Add(ray);
                 }
             }
             catch (Exception exception)
@@ -608,7 +737,7 @@ namespace DigitalImageProcessingLib.Filters.FilterType.SWT
         /// <param name="comparator">Функция сравнение интенсивностей пикселей</param>
         /// <param name="row">Номер строки пикселя, от которого строится луч</param>
         /// <param name="column">Номер столбца пикселя, от которого строится луч</param>
-        private void TrackRayRightDown(GreyImage image, GreyImage fillingImage, CompareIntensity comparator, int row, int column)
+        private void TrackRayRightDown(GreyImage image, GreyImage fillingImage, List<Ray> rays, CompareIntensity comparator, int row, int column)
         {
             try
             {
@@ -652,7 +781,167 @@ namespace DigitalImageProcessingLib.Filters.FilterType.SWT
                         fillingImage.Pixels[rowfrom, columnFrom].StrokeWidth.WasProcessed = true;
                         FillDiagonaWithStrokeWidth(fillingImage, rowfrom + 1, row, columnFrom + 1, 1, row - rowfrom - 1);
                     }
+                    Ray ray = new Ray();
+                    ray.RowBeginIndex = rowfrom + 1;
+                    ray.RowEndIndex = row;
+                    ray.ColumnBeginIndex = columnFrom + 1;
+                    ray.Direction = RayDirection.RIGHT_DOWN;
+                    ray.ColumnStep = 1;
+
+                    rays.Add(ray);
                 }
+            }
+            catch (Exception exception)
+            {
+                throw exception;
+            }
+        }
+
+        /// <summary>
+        /// Усреднение значений ширины штриха для пикселей горизонтального луча
+        /// </summary>
+        /// <param name="swtImage">SWT - карта</param>
+        /// <param name="ray">Лучи</param>
+        /// <param name="mean">Среднее значение ширины штриха</param>
+        private void AveragingRowRayPixels(GreyImage swtImage, Ray ray, double mean)
+        {
+            try
+            {
+                int row = ray.RowBeginIndex;
+
+                for (int i = ray.ColumnBeginIndex; i < ray.ColumnEndIndex; i++)
+                {
+                    if (swtImage.Pixels[row, i].StrokeWidth.Width > mean)
+                        swtImage.Pixels[row, i].StrokeWidth.Width = (int) mean;
+                }
+            }
+            catch (Exception exception)
+            {
+                throw exception;
+            }
+        }
+
+        /// <summary>
+        /// Усреднение значений ширины штриха для пикселей вертикального луча
+        /// </summary>
+        /// <param name="swtImage">SWT - карта</param>
+        /// <param name="ray">Лучи</param>
+        /// <param name="mean">Среднее значение ширины штриха</param>
+        private void AveragingColumnRayPixels(GreyImage swtImage, Ray ray, double mean)
+        {
+            try
+            {
+                int column = ray.ColumnBeginIndex;
+
+                for (int i = ray.RowBeginIndex; i < ray.RowEndIndex; i++)
+                {
+                    if (swtImage.Pixels[i, column].StrokeWidth.Width > mean)
+                        swtImage.Pixels[i, column].StrokeWidth.Width = (int) mean;
+                }
+            }
+            catch (Exception exception)
+            {
+                throw exception;
+            }
+        }
+
+        /// <summary>
+        /// Усреднение значений ширины штриха для пикселей диагонального луча
+        /// </summary>
+        /// <param name="swtImage">SWT - карта</param>
+        /// <param name="ray">Лучи</param>
+        /// <param name="mean">Среднее значение ширины штриха</param>
+        private void AveragingDiagonalRayPixels(GreyImage swtImage, Ray ray, double mean)
+        {
+            try
+            {
+                for (int i = ray.RowBeginIndex, j = ray.ColumnBeginIndex; i < ray.RowEndIndex; i++, j += ray.ColumnStep)
+                {
+                    if (swtImage.Pixels[i, j].StrokeWidth.Width > mean)
+                        swtImage.Pixels[i, j].StrokeWidth.Width = (int) mean;
+                }
+            }
+            catch (Exception exception)
+            {
+                throw exception;
+            }
+        }
+
+        /// <summary>
+        /// Вычисление среднего значения ширины штриха для горизонтального луча
+        /// </summary>
+        /// <param name="swtImage">SWT - Карта</param>
+        /// <param name="ray">лучи</param>
+        /// <returns>среднее</returns>
+        private double CountSWTMeanRowRay(GreyImage swtImage, Ray ray)
+        {
+            try
+            {
+                double summ = 0.0;
+                int pixelsNumberInRay = 0;
+                int row = ray.RowBeginIndex;
+
+                for (int i = ray.ColumnBeginIndex; i < ray.ColumnEndIndex; i++)
+                {
+                    summ += swtImage.Pixels[row, i].StrokeWidth.Width;
+                    ++pixelsNumberInRay;
+                }
+                return (double) summ / (double) pixelsNumberInRay;
+            }
+            catch (Exception exception)
+            {
+                throw exception;
+            }
+        }
+
+        /// <summary>
+        /// Вычисление среднего значения ширины штриха для вертикального луча
+        /// </summary>
+        /// <param name="swtImage">SWT - Карта</param>
+        /// <param name="ray">лучи</param>
+        /// <returns>среднее</returns>
+        private double CountSWTMeanColumnRay(GreyImage swtImage, Ray ray)
+        {
+            try
+            {
+                double summ = 0.0;
+                int pixelsNumberInRay = 0;
+                int column = ray.ColumnBeginIndex;
+
+                for (int i = ray.RowBeginIndex; i < ray.RowEndIndex; i++)
+                {
+                    summ += swtImage.Pixels[i, column].StrokeWidth.Width;
+                    ++pixelsNumberInRay;
+                }
+
+                return (double)summ / (double)pixelsNumberInRay;
+            }
+            catch (Exception exception)
+            {
+                throw exception;
+            }
+        }
+
+        /// <summary>
+        /// Вычисление среднего значения ширины штриха для диагонального луча
+        /// </summary>
+        /// <param name="swtImage">SWT - Карта</param>
+        /// <param name="ray">лучи</param>
+        /// <returns>среднее</returns>
+        private double CountSWTMeanDiagonalRay(GreyImage swtImage, Ray ray)
+        {
+            try
+            {
+                double summ = 0.0;
+                int pixelsNumberInRay = 0;
+
+                for (int i = ray.RowBeginIndex, j = ray.ColumnBeginIndex; i < ray.RowEndIndex; i++, j += ray.ColumnStep)
+                {
+                    summ += swtImage.Pixels[i, j].StrokeWidth.Width;
+                    ++pixelsNumberInRay;
+                }
+
+                return (double)summ / (double)pixelsNumberInRay;
             }
             catch (Exception exception)
             {
