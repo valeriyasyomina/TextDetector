@@ -92,6 +92,7 @@ namespace DigitalImageProcessingLib.Algorithms.TextDetection
                 FreeResources();
 
              //   textRegions = null;
+
          
 
                 GreyImage copyImage = (GreyImage)image.Copy();
@@ -329,12 +330,11 @@ namespace DigitalImageProcessingLib.Algorithms.TextDetection
                          (diameterStrokeWidthRatio != ERROR_VALUE && diameterStrokeWidthRatio > DIAMETER_SW_RATIO) ||
                         (bbPixelsNumberRation != ERROR_VALUE && (bbPixelsNumberRation < BB_PIXELS_NUMBER_MIN_RATIO ||
                          bbPixelsNumberRation > BB_PIXELS_NUMBER_MAX_RATIO)) ||
-                         (imageRegionHeightRatio != ERROR_VALUE && imageRegionHeightRatio > IMAGE_REGION_HEIGHT_RATIO_MAX) ||
-                         (imageRegionWidthRatio != ERROR_VALUE && imageRegionWidthRatio > IMAGE_REGION_WIDTH_RATIO_MAX))
+                         (imageRegionHeightRatio != ERROR_VALUE && imageRegionHeightRatio > IMAGE_REGION_HEIGHT_RATIO_MAX || imageRegionHeightRatio < IMAGE_REGION_HEIGHT_RATIO_MIN) ||
+                         (imageRegionWidthRatio != ERROR_VALUE && imageRegionWidthRatio > IMAGE_REGION_WIDTH_RATIO_MAX || imageRegionWidthRatio < IMAGE_REGION_WIDTH_RATIO_MIN))
                    
                         regions.Remove(pair.Key);
-                }
-           
+                }             
             }
             catch (Exception exception)
             {
@@ -352,7 +352,7 @@ namespace DigitalImageProcessingLib.Algorithms.TextDetection
             {
                 textRegions = new List<TextRegion>();
 
-               /*    foreach (var pair in regions)
+                 /*  foreach (var pair in regions)
                    {
                        TextRegion textRegion = new TextRegion()
                        {
