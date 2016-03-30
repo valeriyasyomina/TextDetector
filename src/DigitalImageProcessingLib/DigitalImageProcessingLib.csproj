@@ -64,6 +64,7 @@
     <Compile Include="Filters\FilterType\SmoothingFilter.cs" />
     <Compile Include="Filters\FilterType\SmoothingFilterType\AdaptiveGaussFilter.cs" />
     <Compile Include="Filters\FilterType\SmoothingFilterType\GaussFilter.cs" />
+    <Compile Include="Filters\FilterType\SWT\Ray.cs" />
     <Compile Include="Filters\FilterType\SWT\SWTFilter.cs" />
     <Compile Include="GradientData\Gradient.cs" />
     <Compile Include="ImageType\GreyImage.cs" />
