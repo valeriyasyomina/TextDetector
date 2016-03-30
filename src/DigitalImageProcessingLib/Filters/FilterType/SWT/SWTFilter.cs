@@ -566,12 +566,12 @@ namespace DigitalImageProcessingLib.Filters.FilterType.SWT
                     {
                         fillingImage.Pixels[row, column].StrokeWidth.WasProcessed = true;
                         fillingImage.Pixels[rowfrom, columnFrom].StrokeWidth.WasProcessed = true;
-                        FillDiagonaWithStrokeWidth(fillingImage, row + 1, rowfrom, column + 1, 1, rowfrom - row - 1);
+                        FillDiagonaWithStrokeWidth(fillingImage, row + 1, rowfrom, column + 1, 1, (int) ((rowfrom - row - 1) * Math.Sqrt(2.0)));
                     }
                     else
                     {
                         fillingImage.Pixels[rowfrom, columnFrom].StrokeWidth.WasProcessed = true;
-                        FillDiagonaWithStrokeWidth(fillingImage, row + 1, rowfrom, column + 1, 1, rowfrom - row - 1);
+                        FillDiagonaWithStrokeWidth(fillingImage, row + 1, rowfrom, column + 1, 1, (int) ((rowfrom - row - 1) * Math.Sqrt(2.0)));
                     }
                     Ray ray = new Ray();
                     ray.RowBeginIndex = row + 1;
@@ -635,12 +635,12 @@ namespace DigitalImageProcessingLib.Filters.FilterType.SWT
                     {
                         fillingImage.Pixels[row, column].StrokeWidth.WasProcessed = true;
                         fillingImage.Pixels[rowfrom, columnFrom].StrokeWidth.WasProcessed = true;
-                        FillDiagonaWithStrokeWidth(fillingImage, rowfrom + 1, row, columnFrom - 1, -1, row - rowfrom - 1);
+                        FillDiagonaWithStrokeWidth(fillingImage, rowfrom + 1, row, columnFrom - 1, -1, (int) ((row - rowfrom - 1) * Math.Sqrt(2.0)));
                     }
                     else
                     {
                         fillingImage.Pixels[rowfrom, columnFrom].StrokeWidth.WasProcessed = true;
-                        FillDiagonaWithStrokeWidth(fillingImage, rowfrom + 1, row, columnFrom - 1, -1, row - rowfrom - 1);
+                        FillDiagonaWithStrokeWidth(fillingImage, rowfrom + 1, row, columnFrom - 1, -1, (int) ((row - rowfrom - 1) * Math.Sqrt(2.0)));
                     }
                     Ray ray = new Ray();
                     ray.RowBeginIndex = rowfrom + 1;
@@ -706,12 +706,12 @@ namespace DigitalImageProcessingLib.Filters.FilterType.SWT
                     {
                         fillingImage.Pixels[row, column].StrokeWidth.WasProcessed = true;
                         fillingImage.Pixels[rowfrom, columnFrom].StrokeWidth.WasProcessed = true;
-                        FillDiagonaWithStrokeWidth(fillingImage, row + 1, rowfrom, column - 1, -1, rowfrom - row - 1);
+                        FillDiagonaWithStrokeWidth(fillingImage, row + 1, rowfrom, column - 1, -1, (int) ((rowfrom - row - 1) * Math.Sqrt(2.0)));
                     }
                     else
                     {
                         fillingImage.Pixels[rowfrom, columnFrom].StrokeWidth.WasProcessed = true;
-                        FillDiagonaWithStrokeWidth(fillingImage, row + 1, rowfrom, column - 1, -1, rowfrom - row - 1);
+                        FillDiagonaWithStrokeWidth(fillingImage, row + 1, rowfrom, column - 1, -1, (int) ((rowfrom - row - 1) * Math.Sqrt(2.0)));
                     }
                     Ray ray = new Ray();
                     ray.RowBeginIndex = row + 1;
@@ -774,12 +774,12 @@ namespace DigitalImageProcessingLib.Filters.FilterType.SWT
                     {
                         fillingImage.Pixels[row, column].StrokeWidth.WasProcessed = true;
                         fillingImage.Pixels[rowfrom, columnFrom].StrokeWidth.WasProcessed = true;
-                        FillDiagonaWithStrokeWidth(fillingImage, rowfrom + 1, row, columnFrom + 1, 1, row - rowfrom - 1);
+                        FillDiagonaWithStrokeWidth(fillingImage, rowfrom + 1, row, columnFrom + 1, 1, (int) ((row - rowfrom - 1) * Math.Sqrt(2.0)));
                     }
                     else
                     {
                         fillingImage.Pixels[rowfrom, columnFrom].StrokeWidth.WasProcessed = true;
-                        FillDiagonaWithStrokeWidth(fillingImage, rowfrom + 1, row, columnFrom + 1, 1, row - rowfrom - 1);
+                        FillDiagonaWithStrokeWidth(fillingImage, rowfrom + 1, row, columnFrom + 1, 1, (int) ((row - rowfrom - 1) * Math.Sqrt(2.0)));
                     }
                     Ray ray = new Ray();
                     ray.RowBeginIndex = rowfrom + 1;
