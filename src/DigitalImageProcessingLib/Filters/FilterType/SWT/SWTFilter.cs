@@ -1,5 +1,6 @@
 ﻿using DigitalImageProcessingLib.ColorType;
 using DigitalImageProcessingLib.ImageType;
+using DigitalImageProcessingLib.SWTData;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -672,7 +673,11 @@ namespace DigitalImageProcessingLib.Filters.FilterType.SWT
             try
             {
                 for (int i = columnFrom; i < columnTo; i++)
-                    image.Pixels[row, i].StrokeWidth.Width = strokeWidth;
+                {
+                    int pixelStrokeWidth = image.Pixels[row, i].StrokeWidth.Width;
+                    if (pixelStrokeWidth == StrokeWidthData.UNDEFINED_WIDTH || pixelStrokeWidth > strokeWidth)
+                        image.Pixels[row, i].StrokeWidth.Width = strokeWidth;
+                }
             }
             catch (Exception exception)
             {
@@ -693,7 +698,11 @@ namespace DigitalImageProcessingLib.Filters.FilterType.SWT
             try
             {
                 for (int i = rowFrom; i < rowTo; i++)
-                    image.Pixels[i, coloumn].StrokeWidth.Width = strokeWidth;
+                {
+                    int pixelStrokeWidth = image.Pixels[i, coloumn].StrokeWidth.Width;
+                    if (pixelStrokeWidth == StrokeWidthData.UNDEFINED_WIDTH || pixelStrokeWidth > strokeWidth)
+                        image.Pixels[i, coloumn].StrokeWidth.Width = strokeWidth;
+                }
             }
             catch (Exception exception)
             {
@@ -715,7 +724,11 @@ namespace DigitalImageProcessingLib.Filters.FilterType.SWT
             try
             {
                 for (int i = rowFrom, j = columnFrom; i < rowTo; i++, j += deltaColumn)
-                    image.Pixels[i, j].StrokeWidth.Width = strokeWidth;
+                {
+                    int pixelStrokeWidth = image.Pixels[i, j].StrokeWidth.Width;
+                    if (pixelStrokeWidth == StrokeWidthData.UNDEFINED_WIDTH || pixelStrokeWidth > strokeWidth)
+                        image.Pixels[i, j].StrokeWidth.Width = strokeWidth;
+                }
             }
             catch (Exception exception)
             {
