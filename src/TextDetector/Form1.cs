@@ -57,21 +57,23 @@ namespace TextDetector
                 }      */
 
 
-            Capture capture = new Capture(@"C:\Users\valeriya\Desktop\videoCut\Video_37_2_3(1) (online-video-cutter.com).mp4");
-            Image<Gray, Byte> currentFrame = capture.QueryGrayFrame().Resize(640, 480, Emgu.CV.CvEnum.INTER.CV_INTER_LINEAR);
+          //  Capture capture = new Capture(@"C:\Users\valeriya\Desktop\videoCut\VID_20160323_135441.3gp");
+          //  Image<Gray, Byte> currentFrame = capture.QueryGrayFrame().Resize(640, 480, Emgu.CV.CvEnum.INTER.CV_INTER_LINEAR);
 
            // for (int i = 1; i <= 62; i++ )
              //   currentFrame = capture.QueryGrayFrame().Resize(640, 480, Emgu.CV.CvEnum.INTER.CV_INTER_LINEAR);
 
-            currentFrame.Save("100500.jpg");
+           // currentFrame.Save("100500.jpg");
 
-            Bitmap bitmap = new Bitmap(@"100500.jpg");
+            Bitmap bitmap = new Bitmap(@"C:\Users\valeriya\Desktop\videoCut\frames_video_37_2_3\0.jpg");
 
             BitmapConvertor conv = new BitmapConvertor();
             GreyImage image1 = conv.ToGreyImage(bitmap);
 
-            ImageConvertor ImageConvertor = new DigitalVideoProcessingLib.IO.ImageConvertor();
-          //  GreyImage image1 = ImageConvertor.ConvertColor(currentFrame);
+            
+
+          //  ImageConvertor ImageConvertor = new DigitalVideoProcessingLib.IO.ImageConvertor();
+         //   GreyImage image1 = ImageConvertor.ConvertColor(currentFrame);
 
          //   GreyImage imageCopy = conv.ToGreyImage(bitmap);
 
