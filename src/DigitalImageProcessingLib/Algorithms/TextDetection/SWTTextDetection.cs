@@ -237,7 +237,7 @@ namespace DigitalImageProcessingLib.Algorithms.TextDetection
                     int[] regionHistogram = CreateHistogram(pair.Value);
                     int notZeroHistogramElementsNumber = CalculateNotZeroArrayElementsNumber(regionHistogram);
                     double histogramV = CalculateHistogramV(regionHistogram, notZeroHistogramElementsNumber);
-                    if (histogramV == HISTOGRAM_ERROR || (histogramV < (double)notZeroHistogramElementsNumber  && histogramV > (double)pair.Value.MaxStrokeWidth))
+                    if (histogramV == HISTOGRAM_ERROR || (histogramV < (double)notZeroHistogramElementsNumber && histogramV > (double)regionHistogram.Length/*pair.Value.MaxStrokeWidth*/))
                         regions.Remove(pair.Key);
                 }
             }
