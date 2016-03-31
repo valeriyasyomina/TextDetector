@@ -59,10 +59,10 @@ namespace DigitalImageProcessingLib.Algorithms.TextDetection
                 Thread edgeThread = new Thread(new ParameterizedThreadStart(this.EdgeBasedProcessThread));
                 Thread gradientThread = new Thread(new ParameterizedThreadStart(this.GradientBasedProcessThread));
 
-                GreyImage copyImage = (GreyImage)image.Copy();
+             //   GreyImage copyImage = (GreyImage)image.Copy();
 
-                edgeThread.Start(copyImage);
-                gradientThread.Start(copyImage);
+                edgeThread.Start(image);
+                gradientThread.Start(image);
 
                 edgeThread.Join();
                 gradientThread.Join();  
@@ -75,17 +75,17 @@ namespace DigitalImageProcessingLib.Algorithms.TextDetection
                     {
                         if (this._gradientImage.Pixels[i, j].Color.Data == ColorBase.MAX_COLOR_VALUE &&
                             this._edgeImage.Pixels[i, j].Color.Data == ColorBase.MIN_COLOR_VALUE)
-                            copyImage.Pixels[i, j].Color.Data = (byte)ColorBase.MIN_COLOR_VALUE;
+                            image.Pixels[i, j].Color.Data = (byte)ColorBase.MIN_COLOR_VALUE;
                         else
-                            copyImage.Pixels[i, j].Color.Data = (byte)ColorBase.MAX_COLOR_VALUE;
+                            image.Pixels[i, j].Color.Data = (byte)ColorBase.MAX_COLOR_VALUE;
 
-                        copyImage.Pixels[i, j].BorderType = this._edgeImage.Pixels[i, j].BorderType;
+                        image.Pixels[i, j].BorderType = this._edgeImage.Pixels[i, j].BorderType;
                       //  image.Pixels[i, j].Color.Data = this._gradientImage.Pixels[i, j].Color.Data;
                     }
 
-                this._dilation.Apply(copyImage);
+                this._dilation.Apply(image);
 
-                int[] heightHist = new int[copyImage.Height];
+         /*       int[] heightHist = new int[copyImage.Height];
                 int[] widthHist = new int[copyImage.Width];
 
                 for (int i = 0; i < copyImage.Height; i++)
@@ -139,7 +139,7 @@ namespace DigitalImageProcessingLib.Algorithms.TextDetection
                            // image.Pixels[i, j].Color.Data = (byte)ColorBase.MAX_COLOR_VALUE;
 
                     }
-                }
+                }*/
 
 
               //  this._opening.Apply(image);
