@@ -8,6 +8,10 @@ namespace DigitalImageProcessingLib.RegionData
 {
     public class Region: RegionBase
     {
+        public Region()
+        {
+            this.PixelsStrokeWidthList = new List<int>();
+        }
         public int PixelsNumber { get; set; }
         public int AverageStrokeWidth { get; set; }
         public int SummaryStrokeWidth { get; set; }        
@@ -22,5 +26,6 @@ namespace DigitalImageProcessingLib.RegionData
         public int BoundingBoxPixelsNumber { get; set; }
         public int SummaryIntensity { get; set; }
         public int AverageIntensity { get; set; }
+        public List<int> PixelsStrokeWidthList { get; set; }
     }
 }
