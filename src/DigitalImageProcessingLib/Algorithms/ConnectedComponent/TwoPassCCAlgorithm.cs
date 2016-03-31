@@ -346,6 +346,8 @@ namespace DigitalImageProcessingLib.Algorithms.ConnectedComponent
 
                             this.Regions[pixelRegionNumber].SummaryIntensity += image.Pixels[i, j].Color.Data;
 
+                            this.Regions[pixelRegionNumber].PixelsStrokeWidthList.Add(pixelStrokeWidth);
+
                           //  this.Regions[pixelRegionNumber].Number = pixelRegionNumber;
                             //  if (!this.Regions.Contains(pixelRegionNumber))
                             //    this.Regions.Add(pixelRegionNumber);
