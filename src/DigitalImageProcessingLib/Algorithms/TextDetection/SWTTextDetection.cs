@@ -43,6 +43,9 @@ namespace DigitalImageProcessingLib.Algorithms.TextDetection
 
         private static int MIN_LETTERS_IN_TEXT_REGION = 2;
 
+        private static int HISTOGRAM_ERROR = -1;
+        private static int HISTORGAM_REGION_PARAMETER = 5;
+
 
         private GreyImage _darkTextLightBg = null;
         private GreyImage _lightTextDarkBg = null;
@@ -185,6 +188,7 @@ namespace DigitalImageProcessingLib.Algorithms.TextDetection
                 this._lightTextConnectedComponent.FindComponents(_lightTextDarkBg);
                 this._lightRegions = new Dictionary<int, Region>(this._lightTextConnectedComponent.Regions);
                 CountTruePixels(this._lightRegions, this._lightTextDarkBg);
+                SWTHistogramVerification(this._lightRegions);
                 DeleteTreshRegions(this._lightRegions, image.Width, image.Height);
             //    DeleteInnerRegions(this._lightRegions);
                 GetTextRegions(this._lightRegions, out this._lightTextRegions, image.Width, image.Height);
@@ -209,9 +213,125 @@ namespace DigitalImageProcessingLib.Algorithms.TextDetection
                 this._darkTextConnectedComponent.FindComponents(this._darkTextLightBg);
                 this._darkRegions = new Dictionary<int, Region>(this._darkTextConnectedComponent.Regions);
                 CountTruePixels(this._darkRegions, this._darkTextLightBg);
+                SWTHistogramVerification(this._darkRegions);
                 DeleteTreshRegions(this._darkRegions, image.Width, image.Height);
             //    DeleteInnerRegions(this._darkRegions);
                 GetTextRegions(this._darkRegions, out this._darkTextRegions, image.Width, image.Height);                
+            }
+            catch (Exception exception)
+            {
+                throw exception;
+            }
+        }
+
+        /// <summary>
+        /// Удаление регионов по результату анализа SWT - гистограммы
+        /// </summary>
+        /// <param name="regions">Регионы</param>
+        private void SWTHistogramVerification(Dictionary<int, Region> regions)
+        {
+            try
+            {
+                foreach (var pair in regions.ToList())
+                {
+                    int[] regionHistogram = CreateHistogram(pair.Value);
+                    int notZeroHistogramElementsNumber = CalculateNotZeroArrayElementsNumber(regionHistogram);
+                    double histogramV = CalculateHistogramV(regionHistogram, notZeroHistogramElementsNumber);
+                    if (histogramV == HISTOGRAM_ERROR || (histogramV < (double)notZeroHistogramElementsNumber  && histogramV > (double)pair.Value.MaxStrokeWidth))
+                        regions.Remove(pair.Key);
+                }
+            }
+            catch (Exception exception)
+            {
+                throw exception;
+            }
+        }
+
+        /// <summary>
+        /// Составление гистограммы SWT для региона
+        /// </summary>
+        /// <param name="region"></param>
+        /// <returns>Гистограмма SWT для региона</returns>
+        private int[] CreateHistogram(Region region)
+        {
+            try
+            {
+                int histogramSize = region.MaxStrokeWidth / HISTORGAM_REGION_PARAMETER;
+                if (histogramSize == 0)
+                    return null;
+
+                int[] histogram = new int[histogramSize];
+                int pixelsNumberInRegion = region.PixelsStrokeWidthList.Count;
+
+                int maxSWTHistogramSizeRatio = region.MaxStrokeWidth / histogramSize;
+
+                for (int i = 0; i < pixelsNumberInRegion; i++)
+                {
+                    bool pixelNotAdded = true;
+                    for (int j = 0; j < histogramSize && pixelNotAdded; j++)
+                        if (region.PixelsStrokeWidthList[i] < (j + 1) * maxSWTHistogramSizeRatio)
+                        {
+                            ++histogram[j];
+                            pixelNotAdded = false;
+                        }
+                }
+                return histogram;
+            }
+            catch (Exception exception)
+            {
+                throw exception;
+            }
+        }
+
+        /// <summary>
+        /// Подсчет количества ненулевых элементов гистограммы SWT
+        /// </summary>
+        /// <param name="histogram">Гистограмма SWT</param>
+        /// <returns>Число ненулевых элементов</returns>
+        private int CalculateNotZeroArrayElementsNumber(int[] histogram)
+        {
+            try
+            {
+                if (histogram == null)
+                    return HISTOGRAM_ERROR;
+
+                int histogramSize = histogram.Length;
+                if (histogramSize == 0)
+                    return HISTOGRAM_ERROR;
+                int notZeroElementsNumber = 0;
+                for (int i = 0; i < histogramSize; i++)
+                    if (histogram[i] != 0)
+                        ++notZeroElementsNumber;
+                return notZeroElementsNumber;
+            }
+            catch (Exception exception)
+            {
+                throw exception;
+            }
+        }
+
+        /// <summary>
+        /// Подсчет параметра V гистограммы SWT
+        /// </summary>
+        /// <param name="histogram">Гистограмма SWT</param>
+        /// <param name="notZeroElementsNumber">Число ненулевых элементов гистограммы</param>
+        /// <returns>параметр V</returns>
+        private double CalculateHistogramV(int[] histogram, int notZeroElementsNumber)
+        {
+            try
+            {
+                if (histogram == null)
+                    return HISTOGRAM_ERROR;
+
+                int histogramSize = histogram.Length;
+                if (histogramSize == 0 || notZeroElementsNumber == 0)
+                    return HISTOGRAM_ERROR;
+
+                double V = 0;
+                for (int i = 1; i < histogramSize; i++)
+                    V += Math.Pow((histogram[i] - histogram[i - 1]), 2); // в квадрат возводим
+                V = Math.Sqrt(V) / (double)notZeroElementsNumber;
+                return V;
             }
             catch (Exception exception)
             {
@@ -325,7 +445,7 @@ namespace DigitalImageProcessingLib.Algorithms.TextDetection
                     }
 
                 //    double squareRatio = (double)pair.Value.PixelsNumber / pair.Value.Square;
-                    if (percent * 100.0 < this._pixelsPercentTreshold  || pair.Value.PixelsNumber < this._minPixelsNumberInRegion ||
+                    if (/*percent * 100.0 < this._pixelsPercentTreshold  ||*/ pair.Value.PixelsNumber < this._minPixelsNumberInRegion ||
                          isZeroHeightOrWidth || (aspectRatio != ERROR_VALUE && aspectRatio > ASPECT_RATIO) ||
                          (diameterStrokeWidthRatio != ERROR_VALUE && diameterStrokeWidthRatio > DIAMETER_SW_RATIO) ||
                         (bbPixelsNumberRation != ERROR_VALUE && (bbPixelsNumberRation < BB_PIXELS_NUMBER_MIN_RATIO ||
@@ -352,7 +472,7 @@ namespace DigitalImageProcessingLib.Algorithms.TextDetection
             {
                 textRegions = new List<TextRegion>();
 
-                 /*  foreach (var pair in regions)
+                /*   foreach (var pair in regions)
                    {
                        TextRegion textRegion = new TextRegion()
                        {
@@ -363,9 +483,9 @@ namespace DigitalImageProcessingLib.Algorithms.TextDetection
                        };
 
                        textRegions.Add(textRegion);
-                   }*/
+                   }
 
-            /*    List<RegionPair> letterPairs = null;
+                List<RegionPair> letterPairs = null;
                 GetLetterPairs(regions, out letterPairs);
                 DeleteBigLetterPairs(letterPairs, imageWidth, imageHeight);
 
