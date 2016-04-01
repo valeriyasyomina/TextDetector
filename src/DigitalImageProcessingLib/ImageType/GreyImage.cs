@@ -54,7 +54,7 @@ namespace DigitalImageProcessingLib.ImageType
                     {
                         for (int j = 0; j < imageWidth; j++)
                         {
-                            int strokeWidth = this.Pixels[i, j].StrokeWidth.Width;
+                            double strokeWidth = this.Pixels[i, j].StrokeWidth.Width;
                             if (strokeWidth == SWTData.StrokeWidthData.UNDEFINED_WIDTH)
                                 streamWriter.Write("UN   ");
                             else

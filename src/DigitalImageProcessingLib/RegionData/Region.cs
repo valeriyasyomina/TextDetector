@@ -9,12 +9,12 @@ namespace DigitalImageProcessingLib.RegionData
     public class Region: RegionBase
     {
         public int PixelsNumber { get; set; }
-        public int AverageStrokeWidth { get; set; }
-        public int SummaryStrokeWidth { get; set; }        
+        public double AverageStrokeWidth { get; set; }
+        public double SummaryStrokeWidth { get; set; }        
         public int TruePixelsNumber { get; set; }
         public int Square { get; set; }
-        public int MaxStrokeWidth { get; set; }
-        public int MinStrokeWidth { get; set; }        
+        public double MaxStrokeWidth { get; set; }
+        public double MinStrokeWidth { get; set; }        
         public int CenterPointIndexI { get; set; }
         public int CenterPointIndexJ { get; set; }
         public int Number { get; set; }

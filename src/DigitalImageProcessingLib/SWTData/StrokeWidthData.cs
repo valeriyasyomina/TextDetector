@@ -8,13 +8,13 @@ namespace DigitalImageProcessingLib.SWTData
 {
     public class StrokeWidthData
     {
-        public static int UNDEFINED_WIDTH = -1;
+        public static double UNDEFINED_WIDTH = -1;
         public StrokeWidthData()
         {
             this.Width = UNDEFINED_WIDTH;
             this.WasProcessed = false;
         }
-        public int Width { get; set; }
+        public double Width { get; set; }
         public bool WasProcessed { get; set; }
     }
 }

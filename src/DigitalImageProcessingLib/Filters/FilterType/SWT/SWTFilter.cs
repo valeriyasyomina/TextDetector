@@ -963,7 +963,7 @@ namespace DigitalImageProcessingLib.Filters.FilterType.SWT
             {
                 for (int i = columnFrom; i < columnTo; i++)
                 {
-                    int pixelStrokeWidth = image.Pixels[row, i].StrokeWidth.Width;
+                    double pixelStrokeWidth = image.Pixels[row, i].StrokeWidth.Width;
                     if (pixelStrokeWidth == StrokeWidthData.UNDEFINED_WIDTH || pixelStrokeWidth > strokeWidth)
                         image.Pixels[row, i].StrokeWidth.Width = strokeWidth;
                 }
@@ -988,7 +988,7 @@ namespace DigitalImageProcessingLib.Filters.FilterType.SWT
             {
                 for (int i = rowFrom; i < rowTo; i++)
                 {
-                    int pixelStrokeWidth = image.Pixels[i, coloumn].StrokeWidth.Width;
+                    double pixelStrokeWidth = image.Pixels[i, coloumn].StrokeWidth.Width;
                     if (pixelStrokeWidth == StrokeWidthData.UNDEFINED_WIDTH || pixelStrokeWidth > strokeWidth)
                         image.Pixels[i, coloumn].StrokeWidth.Width = strokeWidth;
                 }
@@ -1014,7 +1014,7 @@ namespace DigitalImageProcessingLib.Filters.FilterType.SWT
             {
                 for (int i = rowFrom, j = columnFrom; i < rowTo; i++, j += deltaColumn)
                 {
-                    int pixelStrokeWidth = image.Pixels[i, j].StrokeWidth.Width;
+                    double pixelStrokeWidth = image.Pixels[i, j].StrokeWidth.Width;
                     if (pixelStrokeWidth == StrokeWidthData.UNDEFINED_WIDTH || pixelStrokeWidth > strokeWidth)
                         image.Pixels[i, j].StrokeWidth.Width = strokeWidth;
                 }

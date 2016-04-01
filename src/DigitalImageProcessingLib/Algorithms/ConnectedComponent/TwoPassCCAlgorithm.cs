@@ -318,7 +318,7 @@ namespace DigitalImageProcessingLib.Algorithms.ConnectedComponent
                         int pixelRegionNumber = image.Pixels[i, j].RegionNumber;
                         if (pixelRegionNumber != PixelData<Grey>.UNDEFINED_REGION)
                         {
-                            int pixelStrokeWidth = image.Pixels[i, j].StrokeWidth.Width;
+                            double pixelStrokeWidth = image.Pixels[i, j].StrokeWidth.Width;
                             image.Pixels[i, j].Color.Data = (byte)ColorBase.MIN_COLOR_VALUE;
                             if (!this.Regions.ContainsKey(pixelRegionNumber))
                                 this.Regions.Add(pixelRegionNumber, new Region() { PixelsNumber = 0, AverageStrokeWidth = 0,
@@ -369,7 +369,7 @@ namespace DigitalImageProcessingLib.Algorithms.ConnectedComponent
             {
                 foreach (var pair in this.Regions)
                 {
-                    pair.Value.AverageStrokeWidth = pair.Value.SummaryStrokeWidth / pair.Value.PixelsNumber;
+                    pair.Value.AverageStrokeWidth = (double)pair.Value.SummaryStrokeWidth / (double)pair.Value.PixelsNumber;
                     pair.Value.Square = (pair.Value.MaxBorderIndexI - pair.Value.MinBorderIndexI) * 
                         (pair.Value.MaxBorderIndexJ - pair.Value.MinBorderIndexJ);
                     pair.Value.Width = pair.Value.MaxBorderIndexJ - pair.Value.MinBorderIndexJ;

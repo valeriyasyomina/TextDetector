@@ -237,8 +237,8 @@ namespace DigitalImageProcessingLib.Algorithms.TextDetection
                         int pixelRegionNumber = image.Pixels[i, j].RegionNumber;
                         if (pixelRegionNumber != PixelData<Grey>.UNDEFINED_REGION)
                         {
-                            int averageStrokeWidth = regions[pixelRegionNumber].AverageStrokeWidth;
-                            int pixelStrokeWidth = image.Pixels[i, j].StrokeWidth.Width;
+                            double averageStrokeWidth = regions[pixelRegionNumber].AverageStrokeWidth;
+                            double pixelStrokeWidth = image.Pixels[i, j].StrokeWidth.Width;
                             if (Math.Abs(averageStrokeWidth - pixelStrokeWidth) <= this._strokeWidthDelta)
                                 regions[pixelRegionNumber].TruePixelsNumber++;
                         }
@@ -726,8 +726,8 @@ namespace DigitalImageProcessingLib.Algorithms.TextDetection
                 for (int i = 0; i < regionsNumber; i++)
                     for (int j = i + 1; j < regionsNumber; j++)
                     {
-                        int firstRegionAverageSW = listOfRegions[i].Value.AverageStrokeWidth;
-                        int secondRegionAverageSW = listOfRegions[j].Value.AverageStrokeWidth;
+                        double firstRegionAverageSW = listOfRegions[i].Value.AverageStrokeWidth;
+                        double secondRegionAverageSW = listOfRegions[j].Value.AverageStrokeWidth;
 
                         int firstRegionHeight = listOfRegions[i].Value.Height;
                         int secondRegionHeight = listOfRegions[j].Value.Height;
