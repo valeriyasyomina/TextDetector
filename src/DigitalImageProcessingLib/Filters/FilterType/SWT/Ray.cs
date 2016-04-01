@@ -12,6 +12,7 @@ namespace DigitalImageProcessingLib.Filters.FilterType.SWT
         public Ray()
         {
             this.Direction = RayDirection.UNDEFINED;
+            this.Pixels = new List<RayPixel>();
         }
         public int RowBeginIndex { get; set; }
         public int RowEndIndex { get; set; }
@@ -19,6 +20,6 @@ namespace DigitalImageProcessingLib.Filters.FilterType.SWT
         public int ColumnEndIndex { get; set; }
         public int ColumnStep { get; set; }
         public RayDirection Direction { get; set; }
-
+        public List<RayPixel> Pixels { get; set; }
     }
 }
