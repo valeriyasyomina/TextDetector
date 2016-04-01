@@ -8,18 +8,7 @@ using System.Threading.Tasks;
 namespace DigitalImageProcessingLib.Filters.FilterType.GradientFilterType
 {
     public class SimpleGradintFilter : GradientFilter
-    {
-        private GreyImage _gradientXMap = null;
-        private GreyImage _gradientYMap = null;
-
-        public GreyImage GradientXMap()
-        {
-            return this._gradientXMap;
-        }
-        public GreyImage GradientYMap()
-        {
-            return this._gradientYMap;
-        }
+    {        
         public override void Apply(GreyImage image)
         {
             try
