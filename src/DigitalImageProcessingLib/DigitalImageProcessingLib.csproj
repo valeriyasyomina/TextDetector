@@ -60,12 +60,15 @@
     <Compile Include="Filters\FilterType\EdgeDetectionFilterType\SobelFilter.cs" />
     <Compile Include="Filters\FilterType\GradientFilter.cs" />
     <Compile Include="Filters\FilterType\GradientFilterType\EnhancingGradientFilter.cs" />
+    <Compile Include="Filters\FilterType\GradientFilterType\SimpleGradintFilter.cs" />
     <Compile Include="Filters\FilterType\MatrixFilter.cs" />
     <Compile Include="Filters\FilterType\SmoothingFilter.cs" />
     <Compile Include="Filters\FilterType\SmoothingFilterType\AdaptiveGaussFilter.cs" />
     <Compile Include="Filters\FilterType\SmoothingFilterType\GaussFilter.cs" />
     <Compile Include="Filters\FilterType\SWT\Ray.cs" />
+    <Compile Include="Filters\FilterType\SWT\RayPixel.cs" />
     <Compile Include="Filters\FilterType\SWT\SWTFilter.cs" />
+    <Compile Include="Filters\FilterType\SWT\SWTFilterSmart.cs" />
     <Compile Include="GradientData\Gradient.cs" />
     <Compile Include="ImageType\GreyImage.cs" />
     <Compile Include="ImageType\ImageBase.cs" />
