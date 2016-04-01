@@ -8,8 +8,13 @@ namespace DigitalImageProcessingLib.Filters.FilterType.SWT
 {
     public class RayPixel
     {
-        public int RowIndex { get; set; }
-        public int ColumnIndex { get; set; }
+        public static double UNDEFINED_VALUE = -1.0;
+        public RayPixel()
+        {
+            this.StrokeWidth = UNDEFINED_VALUE;
+        }
+        public int X { get; set; }
+        public int Y { get; set; }
         public double StrokeWidth { get; set; }
     }
 }
