@@ -60,7 +60,7 @@
     <Compile Include="Filters\FilterType\EdgeDetectionFilterType\SobelFilter.cs" />
     <Compile Include="Filters\FilterType\GradientFilter.cs" />
     <Compile Include="Filters\FilterType\GradientFilterType\EnhancingGradientFilter.cs" />
-    <Compile Include="Filters\FilterType\GradientFilterType\SimpleGradintFilter.cs" />
+    <Compile Include="Filters\FilterType\GradientFilterType\SimpleGradientFilter.cs" />
     <Compile Include="Filters\FilterType\MatrixFilter.cs" />
     <Compile Include="Filters\FilterType\SmoothingFilter.cs" />
     <Compile Include="Filters\FilterType\SmoothingFilterType\AdaptiveGaussFilter.cs" />
