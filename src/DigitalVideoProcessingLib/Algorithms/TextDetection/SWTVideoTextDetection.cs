@@ -42,13 +42,13 @@ namespace DigitalVideoProcessingLib.Algorithms.TextDetection
                 if (video.Frames == null)
                     throw new ArgumentNullException("Null video frames in DetectText");
 
-                SWTTextDetection SWTTextDetection = new SWTTextDetection(this.EdgeDetector, this.SWTPixelsDelta, this.PixelsStrokeWidthTreshold,
+              /*  SWTTextDetection SWTTextDetection = new SWTTextDetection(this.EdgeDetector, this.SWTPixelsDelta, this.PixelsStrokeWidthTreshold,
                                                                     this.MinimumPixelsNumberInRegion);
-
+                */
                 return Task.Run(() =>
                 {
-                    for (int i = 0; i < video.Frames.Count; i++)
-                        SWTTextDetection.DetectText(video.Frames[i].Frame);
+                   // for (int i = 0; i < video.Frames.Count; i++)
+                     //   SWTTextDetection.DetectText(video.Frames[i].Frame);
                    return true;
                 });
             }
@@ -70,11 +70,11 @@ namespace DigitalVideoProcessingLib.Algorithms.TextDetection
                 if (videoFrame == null || videoFrame.Frame == null)
                     throw new ArgumentNullException("Null frame in DetectText");
 
-                SWTTextDetection SWTTextDetection = new SWTTextDetection(this.EdgeDetector, this.SWTPixelsDelta, this.PixelsStrokeWidthTreshold,
+              /*  SWTTextDetection SWTTextDetection = new SWTTextDetection(this.EdgeDetector, this.SWTPixelsDelta, this.PixelsStrokeWidthTreshold,
                                                                     this.MinimumPixelsNumberInRegion);
-                return Task.Run(() =>
+               */ return Task.Run(() =>
                 {
-                        SWTTextDetection.DetectText(videoFrame.Frame);
+                       // SWTTextDetection.DetectText(videoFrame.Frame);
                         return true;
                 });
             }
