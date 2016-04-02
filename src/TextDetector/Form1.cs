@@ -57,23 +57,24 @@ namespace TextDetector
                 }      */
 
 
-          //  Capture capture = new Capture(@"C:\Users\valeriya\Desktop\videoCut\VID_20160323_135441.3gp");
-          //  Image<Gray, Byte> currentFrame = capture.QueryGrayFrame().Resize(640, 480, Emgu.CV.CvEnum.INTER.CV_INTER_LINEAR);
+            //Capture capture = new Capture(@"C:\Users\valeriya\Desktop\videoCut\Video_37_2_3.mp4");
+           // Image<Gray, Byte> currentFrame = capture.QueryGrayFrame().Resize(640, 480, Emgu.CV.CvEnum.INTER.CV_INTER_LINEAR);
 
-           // for (int i = 1; i <= 62; i++ )
-             //   currentFrame = capture.QueryGrayFrame().Resize(640, 480, Emgu.CV.CvEnum.INTER.CV_INTER_LINEAR);
+          //  for (int i = 1; i <= 62; i++ )
+            //    currentFrame = capture.QueryGrayFrame().Resize(640, 480, Emgu.CV.CvEnum.INTER.CV_INTER_LINEAR);
 
            // currentFrame.Save("100500.jpg");
 
-            Bitmap bitmap = new Bitmap(@"C:\Users\valeriya\Desktop\videoCut\frames_video_37_2_3\0.jpg");
+            Bitmap bitmap = new Bitmap(@"C:\Users\valeriya\Desktop\videoCut\frames_soom\61.jpg");
 
             BitmapConvertor conv = new BitmapConvertor();
             GreyImage image1 = conv.ToGreyImage(bitmap);
 
+           // GreyImage copyImage = (GreyImage)image1.Copy();
             
 
-          //  ImageConvertor ImageConvertor = new DigitalVideoProcessingLib.IO.ImageConvertor();
-         //   GreyImage image1 = ImageConvertor.ConvertColor(currentFrame);
+         //   ImageConvertor ImageConvertor = new DigitalVideoProcessingLib.IO.ImageConvertor();
+           // GreyImage image1 = ImageConvertor.ConvertColor(currentFrame);
 
          //   GreyImage imageCopy = conv.ToGreyImage(bitmap);
 
@@ -110,19 +111,32 @@ namespace TextDetector
           
             
             
-           // SmoothingFilter gauss = new GaussFilter(5, 1.4);
-             SmoothingFilter gauss = new AdaptiveGaussFilter(1.4);   // (1.4)
+            SmoothingFilter gauss = new GaussFilter(5, 1.4);
+           //  SmoothingFilter gauss = new AdaptiveGaussFilter(1.4);   // (1.4)
 
-             //SmoothingFilter gauss1 = new AdaptiveGaussFilter(1.4);
+             SmoothingFilter gauss1 = new AdaptiveGaussFilter(1.4);
            // gauss.Apply(image1);
             //prev.Apply(image1);
 
 
-            CannyEdgeDetection canny = new CannyEdgeDetection(gauss, sobel, 20, 80);
+            CannyEdgeDetection canny = new CannyEdgeDetection(gauss1, sobel, 20, 80);
 
-            CannyEdgeDetection canny1 = new CannyEdgeDetection(gauss, sobel, 20, 80);
+          //  CannyEdgeDetection canny1 = new CannyEdgeDetection(gauss, sobel, 20, 80);
 
-            EnhancingGradientFilter gF = new EnhancingGradientFilter();
+          //  EnhancingGradientFilter gF = new EnhancingGradientFilter();
+
+         /*   canny.Detect(image1);
+            gauss.Apply(copyImage);
+
+            SimpleGradintFilter SimpleGradintFilter = new DigitalImageProcessingLib.Filters.FilterType.GradientFilterType.SimpleGradintFilter();
+            SimpleGradintFilter.Apply(copyImage);
+
+            SWTFilterSmart SWTFilterSmart = new DigitalImageProcessingLib.Filters.FilterType.SWT.SWTFilterSmart(SimpleGradintFilter.GradientXMap(), SimpleGradintFilter.GradientYMap());
+            SWTFilterSmart.Apply(image1);
+
+            GreyImage min = SWTFilterSmart.MinIntensityDirectionImage();
+            GreyImage max = SWTFilterSmart.MaxIntensityDirectionImage(); */
+
 
           //  image1.Negative();
         //    gF.Apply(image1);
@@ -133,9 +147,12 @@ namespace TextDetector
           //  List<TextRegion> textRegions = null;
             TwoPassCCAlgorithm conCon = new TwoPassCCAlgorithm(DigitalImageProcessingLib.Interface.UnifyingFeature.StrokeWidth, 
                                                             DigitalImageProcessingLib.Interface.ConnectivityType.EightConnectedRegion);
-            SWTTextDetection stext = new SWTTextDetection(canny, 20, 80, 30);
+           // SWTTextDetection stext = new SWTTextDetection(canny, 20, 80, 30);
 
-            SWTTextDetection stext1 = new SWTTextDetection(canny, 20, 80, 30);
+
+            SimpleGradientFilter simpleGradintFilter = new DigitalImageProcessingLib.Filters.FilterType.GradientFilterType.SimpleGradientFilter();
+
+            SWTTextDetection stext1 = new SWTTextDetection(canny, gauss, simpleGradintFilter, 20, 90, 30);
 
             
              stext1.DetectText(image1);
@@ -161,15 +178,15 @@ namespace TextDetector
 
             MessageBox.Show("Edges detected");
 
-         /*  SWTFilter swt = new SWTFilter(canny.GreySmoothedImage());
-           swt.Apply(image1);*/
+          // SWTFilter swt = new SWTFilter(canny.GreySmoothedImage());
+          // swt.Apply(image1);
 
             MessageBox.Show("SWT");
 
             
 
-         //   GreyImage min = swt.MinIntensityDirectionImage();
-           // GreyImage max = swt.MaxIntensityDirectionImage();
+           // GreyImage min = swt.MinIntensityDirectionImage();
+            //GreyImage max = swt.MaxIntensityDirectionImage();
             
 
            // Bitmap convBitmap = conv.ToBitmap(min);
@@ -177,17 +194,17 @@ namespace TextDetector
 
 
 
-         /*  GreyImage imageSWT = new GreyImage(min.Width, min.Height);
+         /*   GreyImage imageSWT = new GreyImage(max.Width, max.Height);
 
-            for (int i = 0; i < min.Height; i++)
-                for (int j = 0; j < min.Width; j++)
+            for (int i = 0; i < max.Height; i++)
+                for (int j = 0; j < max.Width; j++)
                 {
                     if (min.Pixels[i, j].StrokeWidth.Width != StrokeWidthData.UNDEFINED_WIDTH)
                         imageSWT.Pixels[i, j].Color.Data = (byte)ColorBase.MIN_COLOR_VALUE;
                     else
                         imageSWT.Pixels[i, j].Color.Data = (byte)ColorBase.MAX_COLOR_VALUE;
                 }*/
-
+            
 
 
            // min.ToTxt("swt.txt");
