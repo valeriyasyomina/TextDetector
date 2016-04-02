@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace DigitalImageProcessingLib.Filters.FilterType.GradientFilterType
 {
-    public class SimpleGradintFilter : GradientFilter
+    public class SimpleGradientFilter : GradientFilter
     {        
         public override void Apply(GreyImage image)
         {
