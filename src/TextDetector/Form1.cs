@@ -65,7 +65,7 @@ namespace TextDetector
 
            // currentFrame.Save("100500.jpg");
 
-            Bitmap bitmap = new Bitmap(@"C:\Users\valeriya\Desktop\videoCut\frames_soom\61.jpg");
+            Bitmap bitmap = new Bitmap(@"C:\Users\valeriya\Desktop\ICDAR\frames_10_1_1\310.jpg");
 
             BitmapConvertor conv = new BitmapConvertor();
             GreyImage image1 = conv.ToGreyImage(bitmap);
@@ -152,7 +152,7 @@ namespace TextDetector
 
             SimpleGradientFilter simpleGradintFilter = new DigitalImageProcessingLib.Filters.FilterType.GradientFilterType.SimpleGradientFilter();
 
-            SWTTextDetection stext1 = new SWTTextDetection(canny, gauss, simpleGradintFilter, 20, 90, 30);
+            SWTTextDetection stext1 = new SWTTextDetection(canny, gauss, simpleGradintFilter, 15, 90, 30);
 
             
              stext1.DetectText(image1);
