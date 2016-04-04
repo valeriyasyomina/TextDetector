@@ -8,8 +8,16 @@ namespace DigitalImageProcessingLib.RegionData
 {
     public class Region: RegionBase
     {
+        public static double UNDEFINED_VALUE = -1.0;
+        public Region()
+        {
+            this.StrokeWidthVarience = UNDEFINED_VALUE;
+        }
         public int PixelsNumber { get; set; }
         public double AverageStrokeWidth { get; set; }
+        public double AverageStrokeWidthHalf { get; set; }
+        public double VarianceSumm { get; set; }
+        public double StrokeWidthVarience { get; set; }
         public double SummaryStrokeWidth { get; set; }        
         public int TruePixelsNumber { get; set; }
         public int Square { get; set; }
