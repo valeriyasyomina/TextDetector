@@ -36,7 +36,7 @@ namespace DigitalImageProcessingLib.Algorithms.TextDetection
         private static double ASPECT_RATIO = 5.0;
         private static double DIAMETER_SW_RATIO = 5.0;
         private static double BB_PIXELS_NUMBER_MIN_RATIO = 1.5;
-        private static double BB_PIXELS_NUMBER_MAX_RATIO = 20.0;  //20
+        private static double BB_PIXELS_NUMBER_MAX_RATIO = 25.0;  //20
         private static double IMAGE_REGION_HEIGHT_RATIO_MAX = 50.0;
         private static double IMAGE_REGION_WIDTH_RATIO_MAX = 50.0;
         private static double IMAGE_REGION_HEIGHT_RATIO_MIN = 1.5;
@@ -239,6 +239,25 @@ namespace DigitalImageProcessingLib.Algorithms.TextDetection
             }
         }
 
+        private void DeleteRegionsThatContanMoreThanTwoOther(Dictionary<int, Region> regions)
+        {
+            try
+            {
+                foreach (var firstPair in regions.ToList())
+                {
+                    int regionsNumber = 0;
+                    foreach (var secondPair in regions)
+                    {
+                       // if (secondPair.Value.CenterPointIndexI > )
+                    }
+                }
+            }
+            catch (Exception exception)
+            {
+                throw exception;
+            }
+        }
+
         /// <summary>
         /// Вычисляет количество пикселей в каждом регионе, значение ширины штриха которых +-= this._strokeWidthDelta
         /// </summary>
@@ -263,6 +282,60 @@ namespace DigitalImageProcessingLib.Algorithms.TextDetection
                                 regions[pixelRegionNumber].TruePixelsNumber++;
                         }
                     }
+            }
+            catch (Exception exception)
+            {
+                throw exception;
+            }
+        }
+
+        private void CalculateVarianceSumm(Dictionary<int, Region> regions, GreyImage image)
+        {
+            try
+            {
+                int imageHeight = image.Height;
+                int imageWidth = image.Width;
+
+                for (int i = 0; i < imageHeight; i++)
+                    for (int j = 0; j < imageWidth; j++)
+                    {
+                        int pixelRegionNumber = image.Pixels[i, j].RegionNumber;
+                        if (pixelRegionNumber != PixelData<Grey>.UNDEFINED_REGION)
+                        {
+                            double averageStrokeWidth = regions[pixelRegionNumber].AverageStrokeWidth;
+                            double pixelStrokeWidth = image.Pixels[i, j].StrokeWidth.Width;
+                            regions[pixelRegionNumber].VarianceSumm += Math.Pow(pixelStrokeWidth - averageStrokeWidth, 2);
+                        }
+                    }
+            }
+            catch (Exception exception)
+            {
+                throw exception;
+            }
+        }
+
+        private void CalculateStrokeWidthVariance(Dictionary<int, Region> regions)
+        {
+            try
+            {
+                foreach (var pair in regions)
+                {
+                    if (pair.Value.PixelsNumber != 0)
+                        pair.Value.StrokeWidthVarience = Math.Sqrt(pair.Value.VarianceSumm / (double)pair.Value.PixelsNumber);                     
+                }
+            }
+            catch (Exception exception)
+            {
+                throw exception;
+            }
+        }
+
+        private void CalculateStrokeWidthVariance(Dictionary<int, Region> regions, GreyImage image)
+        {
+            try
+            {
+                CalculateVarianceSumm(regions, image);
+                CalculateStrokeWidthVariance(regions);                
             }
             catch (Exception exception)
             {
@@ -346,7 +419,7 @@ namespace DigitalImageProcessingLib.Algorithms.TextDetection
 
                 //    double squareRatio = (double)pair.Value.PixelsNumber / pair.Value.Square;
                     if (percent * 100.0 < this._pixelsPercentTreshold ||/* || pair.Value.PixelsNumber < this._minPixelsNumberInRegion ||*/
-                         isZeroHeightOrWidth  ||  (aspectRatio != ERROR_VALUE && aspectRatio > ASPECT_RATIO) ||
+                         isZeroHeightOrWidth  ||   (aspectRatio != ERROR_VALUE && aspectRatio > ASPECT_RATIO) ||
                          (diameterStrokeWidthRatio != ERROR_VALUE && diameterStrokeWidthRatio > DIAMETER_SW_RATIO) ||
                         (bbPixelsNumberRation != ERROR_VALUE && (bbPixelsNumberRation < BB_PIXELS_NUMBER_MIN_RATIO ||
                          bbPixelsNumberRation > BB_PIXELS_NUMBER_MAX_RATIO)) ||
@@ -372,7 +445,7 @@ namespace DigitalImageProcessingLib.Algorithms.TextDetection
             {
                 textRegions = new List<TextRegion>();
 
-              /*     foreach (var pair in regions)
+             /*      foreach (var pair in regions)
                    {
                        TextRegion textRegion = new TextRegion()
                        {
