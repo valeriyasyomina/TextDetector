@@ -14,6 +14,7 @@ namespace DigitalImageProcessingLib.Algorithms.ConnectedComponent
 {    
     public class TwoPassCCAlgorithm: IConnectedComponent
     {
+        private static double STROKE_WIDTH_RATIO_THRESOLD = 3.0;
         private static int MIN_PIXELS_NEIGHBOR_NUMBER = 3;
 //        public Dictionary<int, List<int>> RegionsEquivalents { get; set; }
         public List<List<int>> RegionsEquivalents { get; set; }
@@ -145,7 +146,13 @@ namespace DigitalImageProcessingLib.Algorithms.ConnectedComponent
                             int firstPixelRegionNumber = image.Pixels[i, j - 1].RegionNumber;
                             int secondPixelRegionNumber = image.Pixels[i - 1, j].RegionNumber;
                             int thirdPixelRegionNumber = image.Pixels[i - 1, j - 1].RegionNumber;
-                            int fourthPixelRegionNumber = image.Pixels[i - 1, j + 1].RegionNumber;                     
+                            int fourthPixelRegionNumber = image.Pixels[i - 1, j + 1].RegionNumber;
+
+                            double currentPixelSW = image.Pixels[i, j].StrokeWidth.Width;
+                            double firstPixelSW = image.Pixels[i, j - 1].StrokeWidth.Width;
+                            double secondPixelSW = image.Pixels[i - 1, j].StrokeWidth.Width;
+                            double thirdPixelSW = image.Pixels[i - 1, j - 1].StrokeWidth.Width;
+                            double fourthPixelSW = image.Pixels[i - 1, j + 1].StrokeWidth.Width;
 
                             // Если нет соседей у пикселя
                             if (firstPixelRegionNumber == PixelData<Grey>.UNDEFINED_REGION && secondPixelRegionNumber == PixelData<Grey>.UNDEFINED_REGION &&
@@ -160,9 +167,11 @@ namespace DigitalImageProcessingLib.Algorithms.ConnectedComponent
                             }
                             else
                             {
-                                int minLabel = GetMinFromFourLabels(firstPixelRegionNumber, secondPixelRegionNumber, thirdPixelRegionNumber, fourthPixelRegionNumber);                                
+                                int minLabel = GetMinFromFourLabels(firstPixelRegionNumber, secondPixelRegionNumber, thirdPixelRegionNumber, fourthPixelRegionNumber,
+                                    currentPixelSW, firstPixelSW, secondPixelSW, thirdPixelSW, fourthPixelSW);                                
                                 image.Pixels[i, j].RegionNumber = minLabel;
-                                AddRegionLabels8Connectivity(firstPixelRegionNumber, secondPixelRegionNumber, thirdPixelRegionNumber, fourthPixelRegionNumber);
+                                AddRegionLabels8Connectivity(firstPixelRegionNumber, secondPixelRegionNumber, thirdPixelRegionNumber, fourthPixelRegionNumber,
+                                    firstPixelSW, secondPixelSW, thirdPixelSW, fourthPixelSW);
                             }                           
                         }
                     }
@@ -217,6 +226,26 @@ namespace DigitalImageProcessingLib.Algorithms.ConnectedComponent
             }
         }
 
+        private bool AreSimilarByStrokeWidth(double firstStrokeWidth, double secondStrokeWidth)
+        {
+            try
+            {
+                bool result = false;
+                if (firstStrokeWidth != StrokeWidthData.UNDEFINED_WIDTH && secondStrokeWidth != StrokeWidthData.UNDEFINED_WIDTH)
+                {
+                    double ratio = firstStrokeWidth < secondStrokeWidth ? firstStrokeWidth / secondStrokeWidth :
+                                                                          secondStrokeWidth / firstStrokeWidth;
+                    if (ratio <= STROKE_WIDTH_RATIO_THRESOLD)
+                        result = true;
+                }
+                return result;
+            }
+            catch (Exception exception)
+            {
+                throw exception;
+            }
+        }
+
         /// <summary>
         /// Поиск минимальной среди 4-х мномеров 
         /// </summary>
@@ -225,21 +254,22 @@ namespace DigitalImageProcessingLib.Algorithms.ConnectedComponent
         /// <param name="thirdLabel">Третий номер</param>
         /// <param name="fourthLabel">Четвертый номер</param>
         /// <returns></returns>
-        private int GetMinFromFourLabels(int firstLabel, int secondLabel, int thirdLabel, int fourthLabel)
+        private int GetMinFromFourLabels(int firstLabel, int secondLabel, int thirdLabel, int fourthLabel, double currentPixelSW,
+            double firstPixelSW, double secondPixelSW, double thirdPixelSW, double fourthPixelSW)
         {
             try
             {
                 int minLabel = int.MaxValue;
-                if (firstLabel != PixelData<ColorBase>.UNDEFINED_REGION)
+                if (firstLabel != PixelData<ColorBase>.UNDEFINED_REGION && AreSimilarByStrokeWidth(firstPixelSW, currentPixelSW))
                     minLabel = minLabel > firstLabel ? firstLabel : minLabel;
 
-                if (secondLabel != PixelData<ColorBase>.UNDEFINED_REGION)
+                if (secondLabel != PixelData<ColorBase>.UNDEFINED_REGION && AreSimilarByStrokeWidth(secondPixelSW, currentPixelSW))
                     minLabel = minLabel > secondLabel ? secondLabel : minLabel;
 
-                if (thirdLabel != PixelData<ColorBase>.UNDEFINED_REGION)
+                if (thirdLabel != PixelData<ColorBase>.UNDEFINED_REGION && AreSimilarByStrokeWidth(thirdPixelSW, currentPixelSW))
                     minLabel = minLabel > thirdLabel ? thirdLabel : minLabel;
 
-                if (fourthLabel != PixelData<ColorBase>.UNDEFINED_REGION)
+                if (fourthLabel != PixelData<ColorBase>.UNDEFINED_REGION && AreSimilarByStrokeWidth(fourthPixelSW, currentPixelSW))
                     minLabel = minLabel > fourthLabel ? fourthLabel : minLabel;
 
                 return minLabel;
@@ -370,6 +400,7 @@ namespace DigitalImageProcessingLib.Algorithms.ConnectedComponent
                 foreach (var pair in this.Regions)
                 {
                     pair.Value.AverageStrokeWidth = (double)pair.Value.SummaryStrokeWidth / (double)pair.Value.PixelsNumber;
+                    pair.Value.AverageStrokeWidthHalf = (double)pair.Value.AverageStrokeWidth / 2.0;
                     pair.Value.Square = (pair.Value.MaxBorderIndexI - pair.Value.MinBorderIndexI) * 
                         (pair.Value.MaxBorderIndexJ - pair.Value.MinBorderIndexJ);
                     pair.Value.Width = pair.Value.MaxBorderIndexJ - pair.Value.MinBorderIndexJ;
@@ -419,43 +450,50 @@ namespace DigitalImageProcessingLib.Algorithms.ConnectedComponent
         /// <param name="currentRegionLabel">Номер текущео региона</param>
         /// <param name="leftPixelLabel">Номер региона левого пикселя</param>
         /// <param name="upPixelLabel">Номер региона верхнего пикселя</param>
-        private void AddRegionLabels8Connectivity(int firstLabel, int secondLabel, int thirdLabel, int fourthLabel)
+        private void AddRegionLabels8Connectivity(int firstLabel, int secondLabel, int thirdLabel, int fourthLabel,
+            double firstPixelSW, double secondPixelSW, double thirdPixelSW, double fourthPixelSW)
         {
             try
             {
                 if (firstLabel != secondLabel && firstLabel != PixelData<ColorBase>.UNDEFINED_REGION && secondLabel != PixelData<ColorBase>.UNDEFINED_REGION)
                 {
-                    AddLabelToList(firstLabel, secondLabel);
+                    if (AreSimilarByStrokeWidth(firstPixelSW, secondPixelSW))
+                        AddLabelToList(firstLabel, secondLabel);
                     // теперь можно не делать второе добавление
                    // AddLabelToList(secondLabel, firstLabel);
                 }
                 if (firstLabel != thirdLabel && firstLabel != PixelData<ColorBase>.UNDEFINED_REGION && thirdLabel != PixelData<ColorBase>.UNDEFINED_REGION)
                 {
-                    AddLabelToList(firstLabel, thirdLabel);
+                    if (AreSimilarByStrokeWidth(firstPixelSW, thirdPixelSW))
+                        AddLabelToList(firstLabel, thirdLabel);
                     // теперь можно не делать второе добавление
                   //  AddLabelToList(thirdLabel, firstLabel);
                 }
                 if (firstLabel != fourthLabel && firstLabel != PixelData<ColorBase>.UNDEFINED_REGION && fourthLabel != PixelData<ColorBase>.UNDEFINED_REGION)
                 {
-                    AddLabelToList(firstLabel, fourthLabel);
+                    if (AreSimilarByStrokeWidth(firstPixelSW, fourthPixelSW))
+                        AddLabelToList(firstLabel, fourthLabel);
                     // теперь можно не делать второе добавление
                    // AddLabelToList(fourthLabel, firstLabel);
                 }
                 if (secondLabel != thirdLabel && secondLabel != PixelData<ColorBase>.UNDEFINED_REGION && thirdLabel != PixelData<ColorBase>.UNDEFINED_REGION)
                 {
-                    AddLabelToList(secondLabel, thirdLabel);
+                    if (AreSimilarByStrokeWidth(secondPixelSW, thirdPixelSW))
+                        AddLabelToList(secondLabel, thirdLabel);
                     // теперь можно не делать второе добавление
                   //  AddLabelToList(thirdLabel, secondLabel);
                 }
                 if (secondLabel != fourthLabel && secondLabel != PixelData<ColorBase>.UNDEFINED_REGION && fourthLabel != PixelData<ColorBase>.UNDEFINED_REGION)
                 {
-                    AddLabelToList(secondLabel, fourthLabel);
+                    if (AreSimilarByStrokeWidth(secondPixelSW, fourthPixelSW))
+                        AddLabelToList(secondLabel, fourthLabel);
                     // теперь можно не делать второе добавление
                  //   AddLabelToList(fourthLabel, secondLabel);
                 }
                 if (thirdLabel != fourthLabel && thirdLabel != PixelData<ColorBase>.UNDEFINED_REGION && fourthLabel != PixelData<ColorBase>.UNDEFINED_REGION)
                 {
-                    AddLabelToList(thirdLabel, fourthLabel);
+                    if (AreSimilarByStrokeWidth(thirdPixelSW, fourthPixelSW))
+                        AddLabelToList(thirdLabel, fourthLabel);
                     // теперь можно не делать второе добавление
                  //   AddLabelToList(fourthLabel, thirdLabel);
                 }
