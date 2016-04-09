@@ -13,6 +13,7 @@ namespace DigitalImageProcessingLib.RegionData
         {
             this.StrokeWidthVarience = UNDEFINED_VALUE;
         }
+        public int OtherRegionsNumberInIt { get; set; }
         public int PixelsNumber { get; set; }
         public double AverageStrokeWidth { get; set; }
         public double AverageStrokeWidthHalf { get; set; }

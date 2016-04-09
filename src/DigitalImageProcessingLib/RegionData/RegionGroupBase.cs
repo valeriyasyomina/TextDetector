@@ -8,6 +8,9 @@ namespace DigitalImageProcessingLib.RegionData
 {
     public class RegionGroupBase: RegionBase
     {
-        public double AngleDirection { get; set; }
+        public List<int> RegionsNumber { get; set; }
+        public double DirectionX { get; set; }
+        public double DirectionY { get; set; }
+        public double DistanceSqr { get; set; }
     }
 }
