@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace DigitalImageProcessingLib.Filters.FilterType.SWT
@@ -46,17 +47,26 @@ namespace DigitalImageProcessingLib.Filters.FilterType.SWT
             if (this._minIntensityDirectionImage == null)
                 throw new NullReferenceException("Null _minIntensityDirectionImage in Apply");
 
-            FillMaxIntensityImage(image);
-            FillMinIntensityImage(image);
+            Thread lightTextThread = new Thread(new ParameterizedThreadStart(this.FillMaxIntensityImage));
+            Thread darkTextThread = new Thread(new ParameterizedThreadStart(this.FillMinIntensityImage));
+
+            darkTextThread.Start(image);
+            lightTextThread.Start(image);
+
+            darkTextThread.Join();
+            lightTextThread.Join();
+
+           // FillMaxIntensityImage(image);
+           // FillMinIntensityImage(image);
         }
 
-        private void FillMaxIntensityImage(GreyImage image)
+        private void FillMaxIntensityImage(object image)
         {
             try
             {
                 if (image == null)
                     throw new ArgumentNullException("Null image in FillMaxIntensityDirectionImage");
-                FillStrokeImage(image, this._maxIntensityDirectionImage, this._rayMaxIntensityDirection, 1.0);
+                FillStrokeImage((GreyImage)image, this._maxIntensityDirectionImage, this._rayMaxIntensityDirection, -1.0);
                 TwoPassAlongRays(this._maxIntensityDirectionImage, this._rayMaxIntensityDirection);
             }
             catch (Exception exception)
@@ -64,13 +74,13 @@ namespace DigitalImageProcessingLib.Filters.FilterType.SWT
                 throw exception;
             }
         }
-        private void FillMinIntensityImage(GreyImage image)
+        private void FillMinIntensityImage(object image)
         {
             try
             {
                 if (image == null)
                     throw new ArgumentNullException("Null image in FillMaxIntensityDirectionImage");
-                FillStrokeImage(image, this._minIntensityDirectionImage, this._rayMinIntensityDirection, -1.0);
+                FillStrokeImage((GreyImage)image, this._minIntensityDirectionImage, this._rayMinIntensityDirection, 1.0);
                 TwoPassAlongRays(this._minIntensityDirectionImage, this._rayMinIntensityDirection);
             }
             catch (Exception exception)
@@ -86,7 +96,7 @@ namespace DigitalImageProcessingLib.Filters.FilterType.SWT
                 int imageHeight = image.Height - 1;
                 int imageWidth = image.Width - 1;
 
-                double prec = 0.05;
+                double prec = 0.05;   //0.05
 
                 for (int i = 1; i < imageHeight; i++)
                     for (int j = 1; j < imageWidth; j++)
