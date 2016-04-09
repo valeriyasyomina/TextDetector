@@ -64,23 +64,6 @@ namespace DigitalImageProcessingLib.Filters.FilterType.EdgeDetectionFilterType
                           copyImage.Pixels[i, j + 1].Color.Data * Gx[1, 2] + copyImage.Pixels[i + 1, j - 1].Color.Data * Gx[2, 0] +
                           pixelI1J1 * Gx[2, 2];
 
-
-                        image.Pixels[i, j].Gradient.GradientX = (double)gradientStrengthX;
-                        image.Pixels[i, j].Gradient.GradientY = (double)gradientStrengthY;
-                        double magnitude = Math.Sqrt(Math.Pow(image.Pixels[i, j].Gradient.GradientX, 2.0) + Math.Pow(image.Pixels[i, j].Gradient.GradientY, 2.0));
-                        image.Pixels[i, j].Gradient.Magnitude = magnitude;
-
-                        if (magnitude != 0.0)
-                        {
-                            image.Pixels[i, j].Gradient.StepX = (double) image.Pixels[i, j].Gradient.GradientX / magnitude;
-                            image.Pixels[i, j].Gradient.StepY = (double) image.Pixels[i, j].Gradient.GradientY / magnitude;
-                        }
-                        else
-                        {
-                            image.Pixels[i, j].Gradient.StepX = GradientData.Gradient.UNDEFINED_VALUE;
-                            image.Pixels[i, j].Gradient.StepY = GradientData.Gradient.UNDEFINED_VALUE;
-                        }
-                        
                         int gradientStrengthSqr = gradientStrengthX * gradientStrengthX + gradientStrengthY * gradientStrengthY;
                         image.Pixels[i, j].Gradient.Strength = (int)Math.Sqrt((double)gradientStrengthSqr);
 
