@@ -57,6 +57,7 @@
     <Compile Include="Filters\Filter.cs" />
     <Compile Include="Filters\FilterType\EdgeDetectionFilterType\LaplasFilter.cs" />
     <Compile Include="Filters\FilterType\EdgeDetectionFilterType\PrewittFilter.cs" />
+    <Compile Include="Filters\FilterType\EdgeDetectionFilterType\ScharrFilter.cs" />
     <Compile Include="Filters\FilterType\EdgeDetectionFilterType\SobelFilter.cs" />
     <Compile Include="Filters\FilterType\GradientFilter.cs" />
     <Compile Include="Filters\FilterType\GradientFilterType\EnhancingGradientFilter.cs" />

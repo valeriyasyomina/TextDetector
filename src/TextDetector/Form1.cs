@@ -65,12 +65,13 @@ namespace TextDetector
 
            // currentFrame.Save("100500.jpg");
 
-            Bitmap bitmap = new Bitmap(@"C:\Users\valeriya\Desktop\ICDAR\frames_10_1_1\310.jpg");
+            Bitmap bitmap = new Bitmap(@"C:\Users\valeriya\Desktop\ICDAR\frames_51\146.jpg");
 
             BitmapConvertor conv = new BitmapConvertor();
             GreyImage image1 = conv.ToGreyImage(bitmap);
 
-           // GreyImage copyImage = (GreyImage)image1.Copy();
+            GreyImage copyImageCanny = (GreyImage)image1.Copy();
+          //  GreyImage copyImageGauss = (GreyImage)image1.Copy();
             
 
          //   ImageConvertor ImageConvertor = new DigitalVideoProcessingLib.IO.ImageConvertor();
@@ -119,16 +120,19 @@ namespace TextDetector
             //prev.Apply(image1);
 
 
-            CannyEdgeDetection canny = new CannyEdgeDetection(gauss1, sobel, 20, 80);
+            CannyEdgeDetection canny = new CannyEdgeDetection(gauss, sobel, 20, 80);
+
+            canny.Detect(copyImageCanny);
+          //  gauss.Apply(copyImageGauss);
 
           //  CannyEdgeDetection canny1 = new CannyEdgeDetection(gauss, sobel, 20, 80);
 
           //  EnhancingGradientFilter gF = new EnhancingGradientFilter();
 
-         /*   canny.Detect(image1);
+        /*    canny.Detect(image1);
             gauss.Apply(copyImage);
 
-            SimpleGradintFilter SimpleGradintFilter = new DigitalImageProcessingLib.Filters.FilterType.GradientFilterType.SimpleGradintFilter();
+            SimpleGradientFilter SimpleGradintFilter = new DigitalImageProcessingLib.Filters.FilterType.GradientFilterType.SimpleGradientFilter();
             SimpleGradintFilter.Apply(copyImage);
 
             SWTFilterSmart SWTFilterSmart = new DigitalImageProcessingLib.Filters.FilterType.SWT.SWTFilterSmart(SimpleGradintFilter.GradientXMap(), SimpleGradintFilter.GradientYMap());
@@ -152,7 +156,7 @@ namespace TextDetector
 
             SimpleGradientFilter simpleGradintFilter = new DigitalImageProcessingLib.Filters.FilterType.GradientFilterType.SimpleGradientFilter();
 
-            SWTTextDetection stext1 = new SWTTextDetection(canny, gauss, simpleGradintFilter, 15, 90, 30);
+            SWTTextDetection stext1 = new SWTTextDetection(canny, gauss, simpleGradintFilter, 15, 90, 30, canny.GreySmoothedImage(), copyImageCanny);
 
             
              stext1.DetectText(image1);
@@ -194,12 +198,12 @@ namespace TextDetector
 
 
 
-         /*   GreyImage imageSWT = new GreyImage(max.Width, max.Height);
+          /*  GreyImage imageSWT = new GreyImage(max.Width, max.Height);
 
             for (int i = 0; i < max.Height; i++)
                 for (int j = 0; j < max.Width; j++)
                 {
-                    if (min.Pixels[i, j].StrokeWidth.Width != StrokeWidthData.UNDEFINED_WIDTH)
+                    if (max.Pixels[i, j].StrokeWidth.Width != StrokeWidthData.UNDEFINED_WIDTH)
                         imageSWT.Pixels[i, j].Color.Data = (byte)ColorBase.MIN_COLOR_VALUE;
                     else
                         imageSWT.Pixels[i, j].Color.Data = (byte)ColorBase.MAX_COLOR_VALUE;
