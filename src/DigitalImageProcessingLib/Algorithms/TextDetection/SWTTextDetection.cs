@@ -34,7 +34,7 @@ namespace DigitalImageProcessingLib.Algorithms.TextDetection
         private static double INTENSITY_DIFFERENCE = 1.0;
         private static double WIDTH_DISTANCE_RATIO = 3.0;
         private static double ASPECT_RATIO = 5.0;
-        private static double DIAMETER_SW_RATIO = 5.0;
+        private static double DIAMETER_SW_RATIO = 10.0;
         private static double BB_PIXELS_NUMBER_MIN_RATIO = 1.5;
         private static double BB_PIXELS_NUMBER_MAX_RATIO = 25.0;  //20
         private static double IMAGE_REGION_HEIGHT_RATIO_MAX = 50.0;
@@ -43,6 +43,8 @@ namespace DigitalImageProcessingLib.Algorithms.TextDetection
         private static double IMAGE_REGION_WIDTH_RATIO_MIN = 1.5;
 
         private static int MIN_LETTERS_IN_TEXT_REGION = 2;
+
+        private static double STRICTNESS = Math.PI / 6.0;
 
         private GradientFilter _gradientFilter = null;
         private SmoothingFilter _smoothingFilter = null;
@@ -56,10 +58,14 @@ namespace DigitalImageProcessingLib.Algorithms.TextDetection
         private Dictionary<int, Region> _darkRegions = null;
         private Dictionary<int, Region> _lightRegions = null;
 
+
+        private GreyImage _smoothedImage = null;
+        private GreyImage _cannyImage = null;
+
         private static int ERROR_VALUE = -1;
 
         public SWTTextDetection(IEdgeDetection edgeDetector, SmoothingFilter smoothingFilter, GradientFilter gradientFiler,
-            int swtDelta, double percentTreshold, int minPixelsNumber)
+            int swtDelta, double percentTreshold, int minPixelsNumber, GreyImage smoothedImage, GreyImage cannyImage)
         {
             if (edgeDetector == null)
                 throw new ArgumentNullException("Null edgeDetector in ctor");
@@ -76,6 +82,11 @@ namespace DigitalImageProcessingLib.Algorithms.TextDetection
             this._edgeDetector = edgeDetector;
             this._smoothingFilter = smoothingFilter;
             this._gradientFilter = gradientFiler;
+
+
+            this._cannyImage = cannyImage;
+            this._smoothedImage = smoothedImage;
+
           //  this._lightTextConnectedComponent = new TwoPassCCAlgorithm(connectedComponent);
 
             this._lightTextConnectedComponent = new TwoPassCCAlgorithm(DigitalImageProcessingLib.Interface.UnifyingFeature.StrokeWidth,
@@ -105,12 +116,13 @@ namespace DigitalImageProcessingLib.Algorithms.TextDetection
 
          
 
-                GreyImage copyImage = (GreyImage)image.Copy();
-                GreyImage copyImageForGradientMap = (GreyImage)image.Copy();
+              //  GreyImage copyImage = (GreyImage)image.Copy();
+              //  GreyImage copyImageForGradientMap = (GreyImage)image.Copy();
 
-                this._edgeDetector.Detect(copyImage);
-                this._smoothingFilter.Apply(copyImageForGradientMap);
-                this._gradientFilter.Apply(copyImageForGradientMap);
+            //    this._edgeDetector.Detect(copyImage);
+              //  this._smoothingFilter.Apply(copyImageForGradientMap);
+
+                this._gradientFilter.Apply(this._smoothedImage);  //copyImageForGradientMap
 
                 GreyImage gradienMapX = this._gradientFilter.GradientXMap();
                 GreyImage gradienMapY = this._gradientFilter.GradientYMap();
@@ -119,7 +131,7 @@ namespace DigitalImageProcessingLib.Algorithms.TextDetection
 
               //  this._SWTFilter = new SWTFilter(this._edgeDetector.GreySmoothedImage());
                 this._SWTFilter = new SWTFilterSmart(gradienMapX, gradienMapY);
-                this._SWTFilter.Apply(copyImage);
+                this._SWTFilter.Apply(this._cannyImage);  //copyImage
 
                // darkTextLightBg = this._SWTFilter.MaxIntensityDirectionImage();
                // GreyImage lightTextDarkBg = this._SWTFilter.MaxIntensityDirectionImage();
@@ -132,12 +144,13 @@ namespace DigitalImageProcessingLib.Algorithms.TextDetection
                 GetTextRegions(darkRegions, out textRegions);*/
                 //DeleteInnerRegions(darkRegions);
 
-           /*     this.lightTextDarkBg = this._SWTFilter.MaxIntensityDirectionImage();  
-                this._lightTextConnectedComponent.FindComponents(lightTextDarkBg);
-                this.lightRegions = new Dictionary<int,Region>(this._lightTextConnectedComponent.Regions);
-                CountTruePixels(this.lightRegions, this.lightTextDarkBg);
-                DeleteTreshRegions(this.lightRegions, image.Width, image.Height);
-                GetTextRegions(this.lightRegions, out this.lightTextRegions, image.Width, image.Height);*/
+            /*    this._lightTextDarkBg = this._SWTFilter.MinIntensityDirectionImage();  
+                this._lightTextConnectedComponent.FindComponents(_lightTextDarkBg);
+                this._lightRegions = new Dictionary<int,Region>(this._lightTextConnectedComponent.Regions);
+                CountTruePixels(this._lightRegions, this._lightTextDarkBg);
+                CalculateStrokeWidthVariance(this._lightRegions, this._lightTextDarkBg);
+                DeleteTreshRegions(this._lightRegions, image.Width, image.Height);
+                GetTextRegions(this._lightRegions, out this._lightTextRegions, image.Width, image.Height);*/
             
 
 
@@ -160,7 +173,7 @@ namespace DigitalImageProcessingLib.Algorithms.TextDetection
                 this._lightTextRegions.AddRange(this._darkTextRegions);
                 image.TextRegions = new List<TextRegion>(this._lightTextRegions);
               //  textRegions = this._lightTextRegions;
-                SetRegionColor(this._darkRegions, image, this._darkTextLightBg);            
+               // SetRegionColor(this._darkRegions, image, this._darkTextLightBg);            
                           
             }
             catch (Exception exception)
@@ -204,7 +217,9 @@ namespace DigitalImageProcessingLib.Algorithms.TextDetection
                 this._lightTextDarkBg = this._SWTFilter.MaxIntensityDirectionImage();
                 this._lightTextConnectedComponent.FindComponents(_lightTextDarkBg);
                 this._lightRegions = new Dictionary<int, Region>(this._lightTextConnectedComponent.Regions);
-                CountTruePixels(this._lightRegions, this._lightTextDarkBg);
+              //  CountTruePixels(this._lightRegions, this._lightTextDarkBg);
+                CalculateStrokeWidthVariance(this._lightRegions, this._lightTextDarkBg);
+                //CalculateRegionsThatContanMoreThanTwoOther(this._lightRegions);
                 DeleteTreshRegions(this._lightRegions, image.Width, image.Height);
             //    DeleteInnerRegions(this._lightRegions);
                 GetTextRegions(this._lightRegions, out this._lightTextRegions, image.Width, image.Height);
@@ -228,7 +243,9 @@ namespace DigitalImageProcessingLib.Algorithms.TextDetection
                 this._darkTextLightBg = this._SWTFilter.MinIntensityDirectionImage();
                 this._darkTextConnectedComponent.FindComponents(this._darkTextLightBg);
                 this._darkRegions = new Dictionary<int, Region>(this._darkTextConnectedComponent.Regions);
-                CountTruePixels(this._darkRegions, this._darkTextLightBg);
+             //   CountTruePixels(this._darkRegions, this._darkTextLightBg);
+                CalculateStrokeWidthVariance(this._darkRegions, this._darkTextLightBg);
+                //CalculateRegionsThatContanMoreThanTwoOther(this._darkRegions);
                 DeleteTreshRegions(this._darkRegions, image.Width, image.Height);
             //    DeleteInnerRegions(this._darkRegions);
                 GetTextRegions(this._darkRegions, out this._darkTextRegions, image.Width, image.Height);                
@@ -239,16 +256,19 @@ namespace DigitalImageProcessingLib.Algorithms.TextDetection
             }
         }
 
-        private void DeleteRegionsThatContanMoreThanTwoOther(Dictionary<int, Region> regions)
+        private void CalculateRegionsThatContanMoreThanTwoOther(Dictionary<int, Region> regions)
         {
             try
             {
                 foreach (var firstPair in regions.ToList())
                 {
-                    int regionsNumber = 0;
                     foreach (var secondPair in regions)
                     {
-                       // if (secondPair.Value.CenterPointIndexI > )
+                        if (firstPair.Key != secondPair.Key)
+                            if (secondPair.Value.CenterPointIndexI > firstPair.Value.MinBorderIndexI && secondPair.Value.CenterPointIndexI <
+                                firstPair.Value.MaxBorderIndexI && secondPair.Value.CenterPointIndexJ > firstPair.Value.MinBorderIndexJ &&
+                                secondPair.Value.CenterPointIndexJ < firstPair.Value.MaxBorderIndexJ)
+                                firstPair.Value.OtherRegionsNumberInIt++;
                     }
                 }
             }
@@ -304,7 +324,7 @@ namespace DigitalImageProcessingLib.Algorithms.TextDetection
                         {
                             double averageStrokeWidth = regions[pixelRegionNumber].AverageStrokeWidth;
                             double pixelStrokeWidth = image.Pixels[i, j].StrokeWidth.Width;
-                            regions[pixelRegionNumber].VarianceSumm += Math.Pow(pixelStrokeWidth - averageStrokeWidth, 2);
+                            regions[pixelRegionNumber].VarianceSumm += Math.Pow(pixelStrokeWidth - averageStrokeWidth, 2.0);
                         }
                     }
             }
@@ -321,7 +341,7 @@ namespace DigitalImageProcessingLib.Algorithms.TextDetection
                 foreach (var pair in regions)
                 {
                     if (pair.Value.PixelsNumber != 0)
-                        pair.Value.StrokeWidthVarience = Math.Sqrt(pair.Value.VarianceSumm / (double)pair.Value.PixelsNumber);                     
+                        pair.Value.StrokeWidthVarience = (double) pair.Value.VarianceSumm / (double)pair.Value.PixelsNumber;                     
                 }
             }
             catch (Exception exception)
@@ -396,7 +416,7 @@ namespace DigitalImageProcessingLib.Algorithms.TextDetection
             {
                 foreach (var pair in regions.ToList())
                 {
-                    double percent = (double) pair.Value.TruePixelsNumber / (double) pair.Value.PixelsNumber;
+                   // double percent = (double) pair.Value.TruePixelsNumber / (double) pair.Value.PixelsNumber;
                     double aspectRatio = ERROR_VALUE;
                     double diameterStrokeWidthRatio = ERROR_VALUE;
                     double bbPixelsNumberRation = ERROR_VALUE;
@@ -418,8 +438,9 @@ namespace DigitalImageProcessingLib.Algorithms.TextDetection
                     }
 
                 //    double squareRatio = (double)pair.Value.PixelsNumber / pair.Value.Square;
-                    if (percent * 100.0 < this._pixelsPercentTreshold ||/* || pair.Value.PixelsNumber < this._minPixelsNumberInRegion ||*/
-                         isZeroHeightOrWidth  ||   (aspectRatio != ERROR_VALUE && aspectRatio > ASPECT_RATIO) ||
+                    if (/*percent * 100.0 < this._pixelsPercentTreshold || || pair.Value.PixelsNumber < this._minPixelsNumberInRegion ||
+                         pair.Value.OtherRegionsNumberInIt >= 2 ||*/
+                         isZeroHeightOrWidth || pair.Value.StrokeWidthVarience > pair.Value.AverageStrokeWidthHalf /* ((double)pair.Value.StrokeWidthVarience / (double)pair.Value.AverageStrokeWidth > 2.5) */ || (aspectRatio != ERROR_VALUE && aspectRatio > ASPECT_RATIO) ||
                          (diameterStrokeWidthRatio != ERROR_VALUE && diameterStrokeWidthRatio > DIAMETER_SW_RATIO) ||
                         (bbPixelsNumberRation != ERROR_VALUE && (bbPixelsNumberRation < BB_PIXELS_NUMBER_MIN_RATIO ||
                          bbPixelsNumberRation > BB_PIXELS_NUMBER_MAX_RATIO)) ||
@@ -445,7 +466,7 @@ namespace DigitalImageProcessingLib.Algorithms.TextDetection
             {
                 textRegions = new List<TextRegion>();
 
-             /*      foreach (var pair in regions)
+             /*    foreach (var pair in regions)
                    {
                        TextRegion textRegion = new TextRegion()
                        {
@@ -458,14 +479,14 @@ namespace DigitalImageProcessingLib.Algorithms.TextDetection
                        textRegions.Add(textRegion);
                    }*/
 
-            /*    List<RegionPair> letterPairs = null;
+             /*   List<RegionChain> letterPairs = null;
                 GetLetterPairs(regions, out letterPairs);
                 DeleteBigLetterPairs(letterPairs, imageWidth, imageHeight);
 
                    for (int i = 0; i < letterPairs.Count; i++)
                    {
                        int n1 = letterPairs[i].FirstRegionNumber;
-                       int n2 = letterPairs[i].SecondRegionNumber;
+                       int n2 = letterPairs[i].LastRegionNumber;
 
                        Region fR = regions[n1];
                        Region sR = regions[n2];
@@ -481,7 +502,7 @@ namespace DigitalImageProcessingLib.Algorithms.TextDetection
                        textRegions.Add(textRegion);
                    } */
 
-                List<RegionPair> letterPairs = null;
+                List<RegionChain> letterPairs = null;
                 GetLetterPairs(regions, out letterPairs);
                 DeleteBigLetterPairs(letterPairs, imageWidth, imageHeight);
 
@@ -489,9 +510,11 @@ namespace DigitalImageProcessingLib.Algorithms.TextDetection
 
                 DeleteRegionsThatDoesnotBelongToAnyRagionsPais(regions, letterPairs);
 
+               // MakeChains(regions, letterPairs, out mergedBigRegions);
+
                 MergePairsToBigRegions(regions, letterPairs, out mergedBigRegions);
 
-                CreateTextRegions(regions, mergedBigRegions, out textRegions);
+                CreateTextRegions(regions, mergedBigRegions, out textRegions); 
             }
             catch (Exception exception)
             {
@@ -504,7 +527,7 @@ namespace DigitalImageProcessingLib.Algorithms.TextDetection
         /// </summary>
         /// <param name="regions">Регионы</param>
         /// <param name="letterPairs">Пары регионов</param>
-        private void DeleteRegionsThatDoesnotBelongToAnyRagionsPais(Dictionary<int, Region> regions, List<RegionPair> letterPairs)
+        private void DeleteRegionsThatDoesnotBelongToAnyRagionsPais(Dictionary<int, Region> regions, List<RegionChain> letterPairs)
         {
             try
             {
@@ -512,7 +535,7 @@ namespace DigitalImageProcessingLib.Algorithms.TextDetection
                 {
                     bool contains = false;
                     for (int i = 0; i < letterPairs.Count && !contains; i++)
-                        if (letterPairs[i].FirstRegionNumber == pair.Key || letterPairs[i].SecondRegionNumber == pair.Key)
+                        if (letterPairs[i].FirstRegionNumber == pair.Key || letterPairs[i].LastRegionNumber == pair.Key)
                             contains = true;
                     if (!contains)
                         regions.Remove(pair.Key);
@@ -530,7 +553,7 @@ namespace DigitalImageProcessingLib.Algorithms.TextDetection
         /// <param name="letterPairs">Пары регионов</param>
         /// <param name="imageWidth">Ширина изображения</param>
         /// <param name="imageHeight">Высота изображения</param>
-        private void DeleteBigLetterPairs(List<RegionPair> letterPairs, int imageWidth, int imageHeight)
+        private void DeleteBigLetterPairs(List<RegionChain> letterPairs, int imageWidth, int imageHeight)
         {
             try
             {
@@ -606,7 +629,7 @@ namespace DigitalImageProcessingLib.Algorithms.TextDetection
         /// <param name="regions">Регионы</param>
         /// <param name="letterPairsNumbers">Пары номеров регионов</param>
         /// <param name="mergedRegions">Список списков номеров больших областей</param>
-        private void MergePairsToBigRegions(Dictionary<int, Region> regions, List<RegionPair> letterPairsNumbers, out List<RegionChain> mergedRegions)
+        private void MergePairsToBigRegions(Dictionary<int, Region> regions, List<RegionChain> letterPairsNumbers, out List<RegionChain> mergedRegions)
         {
             try
             {
@@ -634,13 +657,13 @@ namespace DigitalImageProcessingLib.Algorithms.TextDetection
                         int currentPairNumber = listOfPairs[i];
                      
                         int differentPairElement = letterPairsNumbers[currentPairNumber].FirstRegionNumber != currentRegionNumber ? 
-                                                   letterPairsNumbers[currentPairNumber].FirstRegionNumber : letterPairsNumbers[currentPairNumber].SecondRegionNumber;
+                                                   letterPairsNumbers[currentPairNumber].FirstRegionNumber : letterPairsNumbers[currentPairNumber].LastRegionNumber;
                         int pairMergedRegionIndex = GetMergedRegionNumberByRegionNumber(mergedRegions, differentPairElement);
 
                         if (pairMergedRegionIndex == ERROR_VALUE)
                         {
                             mergedRegions[numberOfMergedRegion].RegionsNumber.Add(differentPairElement);
-                            RecalculateAngleDirectionForChain(mergedRegions[numberOfMergedRegion], regions);
+                            //RecalculateAngleDirectionForChain(mergedRegions[numberOfMergedRegion], regions); РАСКОММЕНТИТь
                         }
                         else
                         {
@@ -687,14 +710,14 @@ namespace DigitalImageProcessingLib.Algorithms.TextDetection
         /// <param name="letterPairs">Номера пар регионов</param>
         /// <param name="regionNumber">Номер региона</param>
         /// <returns>Номера пар регионов, кот принадлежит заданный регион</returns>
-        private List<int> GetNumbersOfPairsByRegionNumber(List<RegionPair> letterPairs, int regionNumber)
+        private List<int> GetNumbersOfPairsByRegionNumber(List<RegionChain> letterPairs, int regionNumber)
         {
             try
             {
                 List<int> listOfPairs = new List<int>();
                 int pairsNumber = letterPairs.Count;
                 for (int i = 0; i < pairsNumber; i++)
-                    if (letterPairs[i].FirstRegionNumber == regionNumber || letterPairs[i].SecondRegionNumber == regionNumber)
+                    if (letterPairs[i].FirstRegionNumber == regionNumber || letterPairs[i].LastRegionNumber == regionNumber)
                         listOfPairs.Add(i);
                 return listOfPairs;
             }
@@ -731,7 +754,7 @@ namespace DigitalImageProcessingLib.Algorithms.TextDetection
                         if (!mergedRegions[firstRegionIndexToUnit].RegionsNumber.Contains(indexFromRegion))
                             mergedRegions[firstRegionIndexToUnit].RegionsNumber.Add(indexFromRegion);
                     }
-                    RecalculateAngleDirectionForChain(mergedRegions[firstRegionIndexToUnit], regions);
+                 //   RecalculateAngleDirectionForChain(mergedRegions[firstRegionIndexToUnit], regions);  РАСКОММЕНТИИТЬ!!
                     mergedRegions.RemoveAt(secondRegionIndexToUnit);
                // }
             }
@@ -741,7 +764,7 @@ namespace DigitalImageProcessingLib.Algorithms.TextDetection
             }
         }
 
-        private void RecalculateAngleDirectionForChain(RegionChain chain, Dictionary<int, Region> regions)
+     /*   private void RecalculateAngleDirectionForChain(RegionChain chain, Dictionary<int, Region> regions)
         {
             try
             {
@@ -757,7 +780,7 @@ namespace DigitalImageProcessingLib.Algorithms.TextDetection
             {
                 throw exception;
             }
-        }
+        }*/
 
         /// <summary>
         /// Составляет 1 текстовый регион по номерам обалстей, входящим в него
@@ -800,6 +823,87 @@ namespace DigitalImageProcessingLib.Algorithms.TextDetection
                 throw exception;
             }
         }
+
+
+
+        private void GetLetterPairs(Dictionary<int, Region> regions, out List<RegionChain> letterPairsNumbers)
+        {
+            try
+            {
+                List<KeyValuePair<int, Region>> listOfRegions = regions.ToList();
+                letterPairsNumbers = new List<RegionChain>();
+
+                int regionsNumber = listOfRegions.Count;
+
+                for (int i = 0; i < regionsNumber; i++)
+                    for (int j = i + 1; j < regionsNumber; j++)
+                    {
+                        double firstRegionAverageSW = listOfRegions[i].Value.AverageStrokeWidth;
+                        double secondRegionAverageSW = listOfRegions[j].Value.AverageStrokeWidth;
+
+                        int firstRegionHeight = listOfRegions[i].Value.Height;
+                        int secondRegionHeight = listOfRegions[j].Value.Height;
+
+                        int firstRegionWidth = listOfRegions[i].Value.Width;
+                        int secondRegionWidth = listOfRegions[j].Value.Width;
+
+                        int firstRegionAverageIntensity = listOfRegions[i].Value.AverageIntensity;
+                        int secondRegionAverageIntensity = listOfRegions[i].Value.AverageIntensity;
+
+                       // int maxRegionWidth = firstRegionWidth > secondRegionWidth ? firstRegionWidth : secondRegionWidth;
+
+                        double swRatio = firstRegionAverageSW > secondRegionAverageSW ? (double)firstRegionAverageSW / (double)secondRegionAverageSW :
+                                                                                        (double)secondRegionAverageSW / (double)firstRegionAverageSW;
+                        double heightRatio = firstRegionHeight > secondRegionHeight ? (double)firstRegionHeight / (double)secondRegionHeight :
+                                                                                      (double)secondRegionHeight / (double)firstRegionHeight;
+                      //  double widthRatio = firstRegionWidth > secondRegionWidth ? (double)firstRegionWidth / (double)secondRegionWidth :
+                      //                                                             (double)secondRegionWidth / (double)firstRegionWidth;
+
+                        double distance = GetDistanceSqrBetweenRegions(listOfRegions[i].Value.CenterPointIndexI, listOfRegions[i].Value.CenterPointIndexJ,
+                            listOfRegions[j].Value.CenterPointIndexI, listOfRegions[j].Value.CenterPointIndexJ);
+                       // double ditanseWidthRatio = (double)distance / (double)maxRegionWidth;
+
+                        double widthHeightMetric = Math.Pow(Math.Max(Math.Min(firstRegionHeight, firstRegionWidth), Math.Min(secondRegionHeight, secondRegionWidth)), 2.0);
+                        double occupationRationMetric = (double)Math.Abs(listOfRegions[i].Value.PixelsNumber - listOfRegions[j].Value.PixelsNumber) / (double)Math.Min(listOfRegions[i].Value.PixelsNumber, listOfRegions[j].Value.PixelsNumber);
+
+                        if (heightRatio < HEIGHT_RATIO && swRatio <= 1.5 /*STROKE_WIDTH_RATIO*/ // && ditanseWidthRatio < WIDTH_DISTANCE_RATIO &&
+                            && distance < 9.0 * widthHeightMetric && occupationRationMetric <= 2 /*3*/ &&
+                           /* widthRatio < WIDTH_RATIO &&*/ Math.Abs(firstRegionAverageIntensity - secondRegionAverageIntensity) < INTENSITY_DIFFERENCE)
+                        {
+                            RegionChain pair = new RegionChain();
+                            pair.FirstRegionNumber = listOfRegions[i].Value.Number;
+                            pair.LastRegionNumber = listOfRegions[j].Value.Number;
+                            pair.DistanceSqr = distance;
+
+                            pair.RegionsNumber.Add(listOfRegions[i].Value.Number);  ///new
+                            pair.RegionsNumber.Add(listOfRegions[j].Value.Number);   // new
+
+                            double dx = listOfRegions[i].Value.CenterPointIndexI - listOfRegions[j].Value.CenterPointIndexI;
+                            double dy = listOfRegions[i].Value.CenterPointIndexJ - listOfRegions[j].Value.CenterPointIndexJ;
+
+                          //  double magnitude = Math.Sqrt(distance);
+
+                          //  pair.DirectionX = dx / magnitude;
+                         //   pair.DirectionY = dy / magnitude;                         
+
+                            pair.MinBorderIndexI = Math.Min(listOfRegions[i].Value.MinBorderIndexI, listOfRegions[j].Value.MinBorderIndexI);
+                            pair.MinBorderIndexJ = Math.Min(listOfRegions[i].Value.MinBorderIndexJ, listOfRegions[j].Value.MinBorderIndexJ);
+
+                            pair.MaxBorderIndexI = Math.Max(listOfRegions[i].Value.MaxBorderIndexI, listOfRegions[j].Value.MaxBorderIndexI);
+                            pair.MaxBorderIndexJ = Math.Max(listOfRegions[i].Value.MaxBorderIndexJ, listOfRegions[j].Value.MaxBorderIndexJ);
+
+                            pair.Height = pair.MaxBorderIndexI - pair.MinBorderIndexI;
+                            pair.Width = pair.MaxBorderIndexJ - pair.MinBorderIndexJ;
+                        
+                            letterPairsNumbers.Add(pair);
+                        }
+                    }
+            }
+            catch (Exception exception)
+            {
+                throw exception;
+            }
+        }
         
 
         /// <summary>
@@ -807,7 +911,7 @@ namespace DigitalImageProcessingLib.Algorithms.TextDetection
         /// </summary>
         /// <param name="regions">Области символов</param>
         /// <param name="letterPairs">Пары номеров символов</param>
-        private void GetLetterPairs(Dictionary<int, Region> regions, out List<RegionPair> letterPairsNumbers)
+      /*  private void GetLetterPairs(Dictionary<int, Region> regions, out List<RegionPair> letterPairsNumbers)
         {
             try
             {
@@ -844,7 +948,11 @@ namespace DigitalImageProcessingLib.Algorithms.TextDetection
                             listOfRegions[j].Value.CenterPointIndexI, listOfRegions[j].Value.CenterPointIndexJ);
                         double ditanseWidthRatio = (double)distance / (double) maxRegionWidth;
 
-                        if (heightRatio < HEIGHT_RATIO && swRatio < STROKE_WIDTH_RATIO && ditanseWidthRatio < WIDTH_DISTANCE_RATIO &&
+                        double widthHeightMetric = Math.Pow(Math.Max(Math.Min(firstRegionHeight, firstRegionWidth), Math.Min(secondRegionHeight, secondRegionWidth)), 2.0);
+                        double occupationRationMetric = (double) Math.Abs(listOfRegions[i].Value.PixelsNumber - listOfRegions[j].Value.PixelsNumber) / (double) Math.Min(listOfRegions[i].Value.PixelsNumber, listOfRegions[j].Value.PixelsNumber);
+
+                        if (heightRatio < HEIGHT_RATIO && swRatio < STROKE_WIDTH_RATIO // && ditanseWidthRatio < WIDTH_DISTANCE_RATIO &&
+                            && distance < 9.0 * widthHeightMetric &&  occupationRationMetric <= 3 &&
                             widthRatio < WIDTH_RATIO && Math.Abs(firstRegionAverageIntensity - secondRegionAverageIntensity) < INTENSITY_DIFFERENCE)
                         {
                            // List<int> pair = new List<int>();
@@ -855,7 +963,7 @@ namespace DigitalImageProcessingLib.Algorithms.TextDetection
                             int deltaI = listOfRegions[i].Value.CenterPointIndexI - listOfRegions[j].Value.CenterPointIndexI;
                             int deltaJ = listOfRegions[i].Value.CenterPointIndexJ - listOfRegions[j].Value.CenterPointIndexJ;
 
-                            pair.AngleDirection = Math.Atan((double)deltaI / (double)deltaJ) * (180 / Math.PI);
+                         ///   pair.AngleDirection = Math.Atan((double)deltaI / (double)deltaJ) * (180 / Math.PI);  РАСКОММЕНИТИть
 
                             pair.MinBorderIndexI = Math.Min(listOfRegions[i].Value.MinBorderIndexI, listOfRegions[j].Value.MinBorderIndexI);
                             pair.MinBorderIndexJ = Math.Min(listOfRegions[i].Value.MinBorderIndexJ, listOfRegions[j].Value.MinBorderIndexJ);
@@ -875,19 +983,246 @@ namespace DigitalImageProcessingLib.Algorithms.TextDetection
             {
                 throw exception;
             }
+        }*/
+
+        private void MakeChains(Dictionary<int, Region> regions, List<RegionChain> letterPairs, out List<RegionChain> chains)
+        {
+            try
+            {
+             //   chains = new List<RegionChain>();
+                int merges = 1;
+                while (merges > 0)
+                {
+                    SetMergeToFalseForChains(letterPairs);
+                    int letterPairsNumber = letterPairs.Count;                    
+                    merges = 0;
+                    List<RegionChain> temporaryChains = new List<RegionChain>();
+
+                    for (int i = 0; i < letterPairsNumber; i++)
+                        for (int j = 0; j < letterPairsNumber; j++)
+                        {
+                            if (i != j)
+                            {
+                                if (!letterPairs[i].WasMerged && !letterPairs[j].WasMerged && ShareOneEnd(letterPairs[i], letterPairs[j]))
+                                {
+                                    if (letterPairs[i].FirstRegionNumber == letterPairs[j].FirstRegionNumber)
+                                        FirstFirstElementsCoincidence(regions, letterPairs[i], letterPairs[j], ref merges);
+                                    else if (letterPairs[i].FirstRegionNumber == letterPairs[j].LastRegionNumber)
+                                        FirstLastElementsCoincidence(regions, letterPairs[i], letterPairs[j], ref merges);
+                                    else if (letterPairs[i].LastRegionNumber == letterPairs[j].FirstRegionNumber)
+                                        LastFirstElementsCoincidence(regions, letterPairs[i], letterPairs[j], ref merges);
+                                    else if (letterPairs[i].LastRegionNumber == letterPairs[j].LastRegionNumber)
+                                        LastLastElementsCoincidence(regions, letterPairs[i], letterPairs[j], ref merges);
+                                }
+                            }
+                        }
+                    DistributeChains(letterPairs, temporaryChains);
+                    letterPairs = temporaryChains;
+                }
+                chains = new List<RegionChain>(letterPairs);
+            }
+            catch (Exception exception)
+            {
+                throw exception;
+            }
+        }
+
+        private void SetMergeToFalseForChains(List<RegionChain> chains)
+        {
+            try
+            {
+                int chainsNumber = chains.Count;
+                for (int i = 0; i < chainsNumber; i++)
+                    chains[i].WasMerged = false;
+            }
+            catch (Exception exception)
+            {
+                throw exception;
+            }
+        }
+
+        private void DistributeChains(List<RegionChain> source, List<RegionChain> notMergedChains)
+        {
+            try
+            {
+                int sourceElementsNumber = source.Count;
+                for (int i = 0; i < sourceElementsNumber; i++)
+                {
+                    if (!source[i].WasMerged)
+                        notMergedChains.Add(source[i]);
+                  //  else
+                    //    mergedChains.Add(source[i]);
+                }
+                
+            }
+            catch (Exception exception)
+            {
+                throw exception;
+            }
         }
 
         /// <summary>
-        /// Нахождение расстояния мужду двумя регионами
+        /// Слияние двух цепочек, результат сливается в первую цепочку
+        /// </summary>
+        /// <param name="firstChain">Первая цепочка</param>
+        /// <param name="secondChain">Вторая цепочка</param>
+        private void MergeTwoChains(RegionChain firstChain, RegionChain secondChain)
+        {
+            try
+            {
+                int secondChainRegionsNumber = secondChain.RegionsNumber.Count;
+                for (int i = 0; i < secondChainRegionsNumber; i++)
+                {
+                    int regionNumber = secondChain.RegionsNumber[i];
+                    if (!firstChain.RegionsNumber.Contains(regionNumber))
+                        firstChain.RegionsNumber.Add(regionNumber);
+                }
+            }
+            catch (Exception exception)
+            {
+                throw exception;
+            }
+        }
+
+        void FirstFirstElementsCoincidence(Dictionary<int, Region> regions, RegionChain firstChain, RegionChain secondChain, ref int merges)
+        {
+            try
+            {
+                if (Math.Acos(firstChain.DirectionX * -secondChain.DirectionX + firstChain.DirectionY * -secondChain.DirectionY) < STRICTNESS)
+                {
+                    firstChain.FirstRegionNumber = secondChain.LastRegionNumber;
+                    MergeTwoChains(firstChain, secondChain);
+
+                    double d_x = regions[firstChain.FirstRegionNumber].CenterPointIndexI - regions[firstChain.LastRegionNumber].CenterPointIndexI;
+                    double d_y = regions[firstChain.FirstRegionNumber].CenterPointIndexJ - regions[firstChain.LastRegionNumber].CenterPointIndexJ;
+                    double distanceSqr = d_x * d_x + d_y * d_y;
+                    double magitude = Math.Sqrt(distanceSqr);
+
+                    firstChain.DirectionX = d_x / magitude;
+                    firstChain.DirectionY = d_y / magitude;
+
+                    firstChain.DistanceSqr = distanceSqr;
+
+                    secondChain.WasMerged = true;
+                    ++merges;
+                }
+
+            }
+            catch (Exception exception)
+            {
+                throw exception;
+            }
+        }
+
+        void FirstLastElementsCoincidence(Dictionary<int, Region> regions, RegionChain firstChain, RegionChain secondChain, ref int merges)
+        {
+            try
+            {
+                if (Math.Acos(firstChain.DirectionX * secondChain.DirectionX + firstChain.DirectionY * secondChain.DirectionY) < STRICTNESS)
+                {
+                    firstChain.FirstRegionNumber = secondChain.FirstRegionNumber;
+                    MergeTwoChains(firstChain, secondChain);
+
+                    double d_x = regions[firstChain.FirstRegionNumber].CenterPointIndexI - regions[firstChain.LastRegionNumber].CenterPointIndexI;
+                    double d_y = regions[firstChain.FirstRegionNumber].CenterPointIndexJ - regions[firstChain.LastRegionNumber].CenterPointIndexJ;
+                    double distanceSqr = d_x * d_x + d_y * d_y;
+                    double magitude = Math.Sqrt(distanceSqr);
+
+                    firstChain.DirectionX = d_x / magitude;
+                    firstChain.DirectionY = d_y / magitude;
+
+                    firstChain.DistanceSqr = distanceSqr;
+
+                    secondChain.WasMerged = true;
+                    ++merges;
+                }
+
+            }
+            catch (Exception exception)
+            {
+                throw exception;
+            }
+        }
+
+        void LastFirstElementsCoincidence(Dictionary<int, Region> regions, RegionChain firstChain, RegionChain secondChain, ref int merges)
+        {
+            try
+            {
+                //acos(chains[i].direction.x * chains[j].direction.x + chains[i].direction.y * chains[j].direction.y) < strictness
+                if (Math.Acos(firstChain.DirectionX * secondChain.DirectionX + firstChain.DirectionY * secondChain.DirectionY) < STRICTNESS)
+                {
+                    firstChain.LastRegionNumber = secondChain.LastRegionNumber;
+                    MergeTwoChains(firstChain, secondChain);
+
+                    double d_x = regions[firstChain.FirstRegionNumber].CenterPointIndexI - regions[firstChain.LastRegionNumber].CenterPointIndexI;
+                    double d_y = regions[firstChain.FirstRegionNumber].CenterPointIndexJ - regions[firstChain.LastRegionNumber].CenterPointIndexJ;
+                    double distanceSqr = d_x * d_x + d_y * d_y;
+                    double magitude = Math.Sqrt(distanceSqr);
+
+                    firstChain.DirectionX = d_x / magitude;
+                    firstChain.DirectionY = d_y / magitude;
+
+                    firstChain.DistanceSqr = distanceSqr;
+
+                    secondChain.WasMerged = true;
+                    ++merges;
+                }
+            }
+            catch (Exception exception)
+            {
+                throw exception;
+            }
+        }
+
+        void LastLastElementsCoincidence(Dictionary<int, Region> regions, RegionChain firstChain, RegionChain secondChain, ref int merges)
+        {
+            try
+            {
+                //acos(chains[i].direction.x * -chains[j].direction.x + chains[i].direction.y * -chains[j].direction.y) < strictness
+                if (Math.Acos(firstChain.DirectionX * -secondChain.DirectionX + firstChain.DirectionY * -secondChain.DirectionY) < STRICTNESS)
+                {
+                    firstChain.LastRegionNumber = secondChain.FirstRegionNumber;
+                    MergeTwoChains(firstChain, secondChain);
+
+                    double d_x = regions[firstChain.FirstRegionNumber].CenterPointIndexI - regions[firstChain.LastRegionNumber].CenterPointIndexI;
+                    double d_y = regions[firstChain.FirstRegionNumber].CenterPointIndexJ - regions[firstChain.LastRegionNumber].CenterPointIndexJ;
+                    double distanceSqr = d_x * d_x + d_y * d_y;
+                    double magitude = Math.Sqrt(distanceSqr);
+
+                    firstChain.DirectionX = d_x / magitude;
+                    firstChain.DirectionY = d_y / magitude;
+
+                    firstChain.DistanceSqr = distanceSqr;
+
+                    secondChain.WasMerged = true;
+                    ++merges;
+                }
+            }
+            catch (Exception exception)
+            {
+                throw exception;
+            }
+        }
+
+        bool ShareOneEnd(RegionChain firstChain, RegionChain secondChain)
+        {
+            if (firstChain.FirstRegionNumber == secondChain.FirstRegionNumber || firstChain.FirstRegionNumber == secondChain.LastRegionNumber ||
+                firstChain.LastRegionNumber == secondChain.FirstRegionNumber || firstChain.LastRegionNumber == secondChain.LastRegionNumber)
+                return true;
+            return false;
+        }
+
+        /// <summary>
+        /// Нахождение квадрата расстояния мужду двумя регионами
         /// </summary>
         /// <param name="firstRegionCenterI">Индекс центра первого региона по строке</param>
         /// <param name="firstRegionCenterJ">Индекс центра первого региона по столбцу</param>
         /// <param name="secondRegionCenterI">Индекс центра второго региона по строке</param>
         /// <param name="secondRegionCenterJ">Индекс центра второго региона по столбцу</param>
         /// <returns></returns>
-        private double GetDistanceBetweenRegions(int firstRegionCenterI, int firstRegionCenterJ, int secondRegionCenterI, int secondRegionCenterJ)
+        private double GetDistanceSqrBetweenRegions(int firstRegionCenterI, int firstRegionCenterJ, int secondRegionCenterI, int secondRegionCenterJ)
         {
-            return Math.Sqrt((double) ((firstRegionCenterI - secondRegionCenterI) * (firstRegionCenterI - secondRegionCenterI) +
+            return /*Math.Sqrt*/((double) ((firstRegionCenterI - secondRegionCenterI) * (firstRegionCenterI - secondRegionCenterI) +
                 (firstRegionCenterJ - secondRegionCenterJ) * (firstRegionCenterJ - secondRegionCenterJ)));
         }    
 
