@@ -1,0 +1,119 @@
+﻿using DigitalImageProcessingLib.ColorType;
+using DigitalImageProcessingLib.ImageType;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace DigitalImageProcessingLib.Filters.FilterType.EdgeDetectionFilterType
+{
+    public class ScharrFilter: EdgeDetectionFilter
+    {
+        public ScharrFilter()
+        {
+            try
+            {
+                this.Size = FILTER_SIZE;
+                this.Gx = new int[,] { { -3, 0, 3 }, { -10, 0, 10 }, { -3, 0, 3 } };
+                this.Gy = new int[,] { { 3, 10, 3 }, { 0, 0, 0 }, { -3, -10, -3 } };   // { -1, -2, -1 }, { 0, 0, 0 }, { 1, 2, 1 } 
+            }
+            catch (Exception exception)
+            {
+                throw exception;
+            }
+        }
+
+        /// <summary>
+        /// Применение фильтра Собеля к серому изображению
+        /// </summary>
+        /// <param name="image">Серое изображение</param>
+        public override void Apply(GreyImage image)
+        {
+            try
+            {
+                if (image == null)
+                    throw new ArgumentNullException("Null image in Apply");
+                if (image.Height < this.Size)
+                    throw new ArgumentException("Image height must be >= filter size");
+                if (image.Width < this.Size)
+                    throw new ArgumentException("Image width must be >= filter size");
+
+                GreyImage copyImage = (GreyImage)image.Copy();
+                if (copyImage == null)
+                    throw new NullReferenceException("Null copy image in Apply");
+
+                int lowIndex = Size / 2;
+                int highIndexI = image.Height - lowIndex;
+                int highIndexJ = image.Width - lowIndex;
+                for (int i = lowIndex; i < highIndexI; i++)
+                    for (int j = lowIndex; j < highIndexJ; j++)
+                    {
+                        byte pixelI_1J_1 = copyImage.Pixels[i - 1, j - 1].Color.Data;
+                        byte pixelI_1J1 = copyImage.Pixels[i - 1, j + 1].Color.Data;
+                        byte pixelI1J1 = copyImage.Pixels[i + 1, j + 1].Color.Data;
+
+
+                        int gradientStrengthY = pixelI_1J_1 * Gy[0, 0] +
+                          copyImage.Pixels[i - 1, j].Color.Data * Gy[0, 1] + pixelI_1J1 * Gy[0, 2] +
+                          copyImage.Pixels[i + 1, j - 1].Color.Data * Gy[2, 0] + copyImage.Pixels[i + 1, j].Color.Data * Gy[2, 1] +
+                          pixelI1J1 * Gy[2, 2];
+
+                        int gradientStrengthX = pixelI_1J_1 * Gx[0, 0] +
+                          pixelI_1J1 * Gx[0, 2] + copyImage.Pixels[i, j - 1].Color.Data * Gx[1, 0] +
+                          copyImage.Pixels[i, j + 1].Color.Data * Gx[1, 2] + copyImage.Pixels[i + 1, j - 1].Color.Data * Gx[2, 0] +
+                          pixelI1J1 * Gx[2, 2];
+
+
+                        image.Pixels[i, j].Gradient.GradientX = (double)gradientStrengthX;
+                        image.Pixels[i, j].Gradient.GradientY = (double)gradientStrengthY;
+                        double magnitude = Math.Sqrt(Math.Pow(image.Pixels[i, j].Gradient.GradientX, 2.0) + Math.Pow(image.Pixels[i, j].Gradient.GradientY, 2.0));
+                        image.Pixels[i, j].Gradient.Magnitude = magnitude;
+
+                        if (magnitude != 0.0)
+                        {
+                            image.Pixels[i, j].Gradient.StepX = (double) image.Pixels[i, j].Gradient.GradientX / magnitude;
+                            image.Pixels[i, j].Gradient.StepY = (double) image.Pixels[i, j].Gradient.GradientY / magnitude;
+                        }
+                        else
+                        {
+                            image.Pixels[i, j].Gradient.StepX = GradientData.Gradient.UNDEFINED_VALUE;
+                            image.Pixels[i, j].Gradient.StepY = GradientData.Gradient.UNDEFINED_VALUE;
+                        }
+                        
+                        int gradientStrengthSqr = gradientStrengthX * gradientStrengthX + gradientStrengthY * gradientStrengthY;
+                        image.Pixels[i, j].Gradient.Strength = (int)Math.Sqrt((double)gradientStrengthSqr);
+
+                        if (gradientStrengthSqr > TRESHOLD)
+                        {
+                            image.Pixels[i, j].Color.Data = (byte)ColorBase.MIN_COLOR_VALUE;
+                            image.Pixels[i, j].BorderType = BorderType.Border.STRONG;
+                        }
+                        else
+                        {
+                            image.Pixels[i, j].Color.Data = (byte)ColorBase.MAX_COLOR_VALUE;
+                            image.Pixels[i, j].BorderType = BorderType.Border.WEAK;
+                        }
+
+                        if (gradientStrengthX == 0)
+                        {
+                            if (gradientStrengthY == 0)
+                                image.Pixels[i, j].Gradient.Angle = 0;
+                            else
+                                image.Pixels[i, j].Gradient.Angle = 90;
+                        }
+                        else
+                            image.Pixels[i, j].Gradient.Angle = (int)((Math.Atan((double)gradientStrengthY / gradientStrengthX)) * (180 / Math.PI));
+                    }
+            }
+            catch (Exception exception)
+            {
+                throw exception;
+            }
+        }
+        public override void Apply(RGBImage image)
+        {
+            throw new NotImplementedException();
+        }
+    }
+}
