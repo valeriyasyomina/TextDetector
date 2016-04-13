@@ -1,4 +1,5 @@
 ﻿using DigitalImageProcessingLib.Algorithms.TextDetection;
+using DigitalImageProcessingLib.Filters.FilterType;
 using DigitalImageProcessingLib.Interface;
 using DigitalVideoProcessingLib.Interface;
 using DigitalVideoProcessingLib.VideoFrameType;
@@ -14,18 +15,32 @@ namespace DigitalVideoProcessingLib.Algorithms.TextDetection
     public class SWTVideoTextDetection : DigitalVideoProcessingLib.Interface.ITextDetection
     {
         public IEdgeDetection EdgeDetector { get; set; }
-        public int SWTPixelsDelta { get; set; }
-        public double PixelsStrokeWidthTreshold { get; set; }
-        public int MinimumPixelsNumberInRegion { get; set; }
-        public SWTVideoTextDetection(IEdgeDetection edgeDetector, int SWTPixelsDelta, double pixelsStrokeWidthTreshold,
-            int minimumPixelsNumberInRegion)
+        private GradientFilter GradientFilter { get; set; }
+        public double VarienceAverageSWRation { get; set; }
+        public double AspectRatio { get; set; }
+        public double DiamiterSWRatio { get; set; }
+        public double BbPixelsNumberMinRatio { get; set; }
+        public double BbPixelsNumberMaxRatio { get; set; }
+        public double ImageRegionHeightRationMin { get; set; }
+        public double ImageRegionWidthRatioMin { get; set; }
+        public SWTVideoTextDetection(IEdgeDetection edgeDetector, GradientFilter gradientFiler, double varienceAverageSWRation, double aspectRatio = 5.0,
+            double diamiterSWRatio = 10, double bbPixelsNumberMinRatio = 1.5, double bbPixelsNumberMaxRatio = 25.0,
+            double imageRegionHeightRationMin = 1.5, double imageRegionWidthRatioMin = 1.5)
         {
             if (edgeDetector == null)
-                throw new ArgumentNullException("Null edgeDetector in SWTVideoTextDetection");
+                throw new ArgumentNullException("Null edgeDetector in SWTVideoTextDetection");            
+            if (gradientFiler == null)
+                throw new ArgumentNullException("Null gradientFiler in ctor");
             this.EdgeDetector = edgeDetector;
-            this.SWTPixelsDelta = SWTPixelsDelta;
-            this.PixelsStrokeWidthTreshold = pixelsStrokeWidthTreshold;
-            this.MinimumPixelsNumberInRegion = minimumPixelsNumberInRegion;
+            this.GradientFilter = gradientFiler;
+
+            this.VarienceAverageSWRation = varienceAverageSWRation;
+            this.AspectRatio = aspectRatio;
+            this.DiamiterSWRatio = diamiterSWRatio;
+            this.BbPixelsNumberMinRatio = bbPixelsNumberMinRatio;
+            this.BbPixelsNumberMaxRatio = bbPixelsNumberMaxRatio;
+            this.ImageRegionHeightRationMin = imageRegionHeightRationMin;
+            this.ImageRegionWidthRatioMin = imageRegionWidthRatioMin;            
         }
 
         /// <summary>
@@ -33,7 +48,7 @@ namespace DigitalVideoProcessingLib.Algorithms.TextDetection
         /// </summary>
         /// <param name="video">Видеоролик</param>
         /// <returns>true</returns>
-        public Task<bool> DetectText(GreyVideo video)
+        public Task<bool> DetectText(GreyVideo video, int threadsNumber)
         {
             try
             {
@@ -63,18 +78,18 @@ namespace DigitalVideoProcessingLib.Algorithms.TextDetection
         /// </summary>
         /// <param name="videoFrame">Кадр видео</param>
         /// <returns>true</returns>
-        public Task<bool> DetectText(GreyVideoFrame videoFrame)
+        public Task<bool> DetectText(GreyVideoFrame videoFrame, int threadsNumber)
         {
             try
             {
                 if (videoFrame == null || videoFrame.Frame == null)
                     throw new ArgumentNullException("Null frame in DetectText");
 
-              /*  SWTTextDetection SWTTextDetection = new SWTTextDetection(this.EdgeDetector, this.SWTPixelsDelta, this.PixelsStrokeWidthTreshold,
-                                                                    this.MinimumPixelsNumberInRegion);
-               */ return Task.Run(() =>
+                SWTTextDetection SWTTextDetection = new SWTTextDetection(this.EdgeDetector, this.GradientFilter, this.VarienceAverageSWRation,
+                    this.AspectRatio, this.DiamiterSWRatio, this.BbPixelsNumberMinRatio, this.BbPixelsNumberMaxRatio, this.ImageRegionHeightRationMin, this.ImageRegionWidthRatioMin);
+                return Task.Run(() =>
                 {
-                       // SWTTextDetection.DetectText(videoFrame.Frame);
+                        SWTTextDetection.DetectText(videoFrame.Frame, threadsNumber);
                         return true;
                 });
             }

@@ -1,6 +1,7 @@
 ﻿using DigitalImageProcessingLib.Algorithms.EdgeDetection;
 using DigitalImageProcessingLib.Filters.FilterType;
 using DigitalImageProcessingLib.Filters.FilterType.EdgeDetectionFilterType;
+using DigitalImageProcessingLib.Filters.FilterType.GradientFilterType;
 using DigitalImageProcessingLib.Filters.FilterType.SmoothingFilterType;
 using DigitalImageProcessingLib.IO;
 using DigitalImageProcessingLib.RegionData;
@@ -580,13 +581,14 @@ namespace WPFVideoTextDetector.ViewModels
             try
             {
                 EdgeDetectionFilter sobel = new SobelFilter();
-                SmoothingFilter gauss = new AdaptiveGaussFilter(1.4);
+                SmoothingFilter gauss = new GaussFilter(5, 1.4);
+                GradientFilter gradientFiler = new SimpleGradientFilter();
                 CannyEdgeDetection canny = new CannyEdgeDetection(gauss, sobel, 20, 80);
 
-                SWTVideoTextDetection SWTVideoTextDetection = new SWTVideoTextDetection(canny, 20, 80, 30);
+                SWTVideoTextDetection SWTVideoTextDetection = new SWTVideoTextDetection(canny, gradientFiler, 0.5);
                 
                 this.StartLoader(DETECT_TEXT_VIDEO_FRAME_STRING);
-                await SWTVideoTextDetection.DetectText(this.videoFrame);
+                await SWTVideoTextDetection.DetectText(this.videoFrame, 4);
                 this.StopLoader();
 
                 OkButtonWindow okButtonWindow = OkButtonWindow.InitializeOkButtonWindow();
@@ -620,12 +622,13 @@ namespace WPFVideoTextDetector.ViewModels
             try
             {
                 EdgeDetectionFilter sobel = new SobelFilter();
-                SmoothingFilter gauss = new AdaptiveGaussFilter(1.4);
+                SmoothingFilter gauss = new GaussFilter(5, 1.4);
+                GradientFilter gradientFiler = new SimpleGradientFilter();
                 CannyEdgeDetection canny = new CannyEdgeDetection(gauss, sobel, 20, 80);
 
-                SWTVideoTextDetection SWTVideoTextDetection = new SWTVideoTextDetection(canny, 20, 80, 30);
+                SWTVideoTextDetection SWTVideoTextDetection = new SWTVideoTextDetection(canny, gradientFiler, 0.5);
                 this.StartLoader(DETECT_TEXT_VIDEO_STRING);
-                await SWTVideoTextDetection.DetectText(this.video);
+                await SWTVideoTextDetection.DetectText(this.video, 4);
                 this.StopLoader();
 
                 OkButtonWindow okButtonWindow = OkButtonWindow.InitializeOkButtonWindow();

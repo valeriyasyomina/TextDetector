@@ -10,7 +10,7 @@ namespace DigitalVideoProcessingLib.Interface
 {
     public interface ITextDetection
     {
-        Task<bool> DetectText(GreyVideo video);
-        Task<bool> DetectText(GreyVideoFrame videoFrame);
+        Task<bool> DetectText(GreyVideo video, int threadsNumber);
+        Task<bool> DetectText(GreyVideoFrame videoFrame, int threadsNumber);
     }
 }

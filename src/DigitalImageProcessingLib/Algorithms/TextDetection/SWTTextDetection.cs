@@ -22,32 +22,39 @@ namespace DigitalImageProcessingLib.Algorithms.TextDetection
         private IConnectedComponent _lightTextConnectedComponent = null;
         private IConnectedComponent _darkTextConnectedComponent = null;
         private SWTFilterSmart _SWTFilter = null;
-        private int _strokeWidthDelta = 0;
-        private double _pixelsPercentTreshold = 0;
-        private int _minPixelsNumberInRegion = 0;
+       // private int _strokeWidthDelta = 0;
+       // private double _pixelsPercentTreshold = 0;
+       // private int _minPixelsNumberInRegion = 0;
        // private int _regionSquareTheshold = 0;
         //private int _regionWidthTreshold = 0;
+
+        private double _varienceAverageSWRation = 0.0;
+        private double _aspectRatio = 0.0;        
+        private double _diamiterSWRatio = 0.0;
+        private double _bbPixelsNumberMinRatio = 0.0;
+        private double _bbPixelsNumberMaxRatio = 0.0;
+        private double _imageRegionHeightRationMin = 0.0;
+        private double _imageRegionWidthRatioMin = 0.0;
 
         private static double STROKE_WIDTH_RATIO = 2.0;
         private static double HEIGHT_RATIO = 2.0;
         private static double WIDTH_RATIO = 2.0;
         private static double INTENSITY_DIFFERENCE = 1.0;
         private static double WIDTH_DISTANCE_RATIO = 3.0;
-        private static double ASPECT_RATIO = 5.0;
-        private static double DIAMETER_SW_RATIO = 10.0;
-        private static double BB_PIXELS_NUMBER_MIN_RATIO = 1.5;
-        private static double BB_PIXELS_NUMBER_MAX_RATIO = 25.0;  //20
+    //    private static double ASPECT_RATIO = 5.0;
+     //   private static double DIAMETER_SW_RATIO = 10.0;
+      //  private static double BB_PIXELS_NUMBER_MIN_RATIO = 1.5;
+     //   private static double BB_PIXELS_NUMBER_MAX_RATIO = 25.0;  //20
         private static double IMAGE_REGION_HEIGHT_RATIO_MAX = 50.0;
         private static double IMAGE_REGION_WIDTH_RATIO_MAX = 50.0;
-        private static double IMAGE_REGION_HEIGHT_RATIO_MIN = 1.5;
-        private static double IMAGE_REGION_WIDTH_RATIO_MIN = 1.5;
+      //  private static double IMAGE_REGION_HEIGHT_RATIO_MIN = 1.5;
+      //  private static double IMAGE_REGION_WIDTH_RATIO_MIN = 1.5;
 
         private static int MIN_LETTERS_IN_TEXT_REGION = 2;
 
         private static double STRICTNESS = Math.PI / 6.0;
 
-        private GradientFilter _gradientFilter = null;
-        private SmoothingFilter _smoothingFilter = null;
+        private GradientFilter _gradientFilter = null;       
 
         private GreyImage _darkTextLightBg = null;
         private GreyImage _lightTextDarkBg = null;
@@ -58,34 +65,19 @@ namespace DigitalImageProcessingLib.Algorithms.TextDetection
         private Dictionary<int, Region> _darkRegions = null;
         private Dictionary<int, Region> _lightRegions = null;
 
-
-        private GreyImage _smoothedImage = null;
-        private GreyImage _cannyImage = null;
-
         private static int ERROR_VALUE = -1;
 
-        public SWTTextDetection(IEdgeDetection edgeDetector, SmoothingFilter smoothingFilter, GradientFilter gradientFiler,
-            int swtDelta, double percentTreshold, int minPixelsNumber, GreyImage smoothedImage, GreyImage cannyImage)
+        public SWTTextDetection(IEdgeDetection edgeDetector, GradientFilter gradientFiler, double varienceAverageSWRation, double aspectRatio = 5.0,
+            double diamiterSWRatio = 10, double bbPixelsNumberMinRatio = 1.5, double bbPixelsNumberMaxRatio = 25.0,
+            double imageRegionHeightRationMin = 1.5, double imageRegionWidthRatioMin = 1.5)           
         {
             if (edgeDetector == null)
-                throw new ArgumentNullException("Null edgeDetector in ctor");
-            if (smoothingFilter == null)
-                throw new ArgumentNullException("Null smoothingFilter in ctor");
+                throw new ArgumentNullException("Null edgeDetector in ctor");           
             if (gradientFiler == null)
                 throw new ArgumentNullException("Null gradientFiler in ctor");
-            if (swtDelta < 0)
-                throw new ArgumentException("Error swtDelta in ctor");
-            if (percentTreshold <= 0)
-                throw new ArgumentException("Error percentTreshold in ctor");
-            if (minPixelsNumber <= 0)
-                throw new ArgumentException("Error minPixelsNumber in ctor");
-            this._edgeDetector = edgeDetector;
-            this._smoothingFilter = smoothingFilter;
+            
+            this._edgeDetector = edgeDetector;         
             this._gradientFilter = gradientFiler;
-
-
-            this._cannyImage = cannyImage;
-            this._smoothedImage = smoothedImage;
 
           //  this._lightTextConnectedComponent = new TwoPassCCAlgorithm(connectedComponent);
 
@@ -93,18 +85,22 @@ namespace DigitalImageProcessingLib.Algorithms.TextDetection
                                                             DigitalImageProcessingLib.Interface.ConnectivityType.EightConnectedRegion);
             this._darkTextConnectedComponent = new TwoPassCCAlgorithm(DigitalImageProcessingLib.Interface.UnifyingFeature.StrokeWidth,
                                                             DigitalImageProcessingLib.Interface.ConnectivityType.EightConnectedRegion);
-            this._strokeWidthDelta = swtDelta;
-            this._pixelsPercentTreshold = percentTreshold;
-            this._minPixelsNumberInRegion = minPixelsNumber;
-           // this._regionSquareTheshold = regionSquareThreshold;
-            //this._regionWidthTreshold = regionWidthTreshold;
+
+            this._varienceAverageSWRation = varienceAverageSWRation;
+            this._aspectRatio = aspectRatio;
+            this._diamiterSWRatio = diamiterSWRatio;
+            this._bbPixelsNumberMinRatio = bbPixelsNumberMinRatio;
+            this._bbPixelsNumberMaxRatio = bbPixelsNumberMaxRatio;
+            this._imageRegionHeightRationMin = imageRegionHeightRationMin;
+            this._imageRegionWidthRatioMin = imageRegionWidthRatioMin;
 
             this._lightRegions = new Dictionary<int, Region>();
             this._darkRegions = new Dictionary<int, Region>();
             this._lightTextRegions = new List<TextRegion>();
             this._darkTextRegions = new List<TextRegion>();
         }
-        public void DetectText(GreyImage image)
+
+        public void DetectText(GreyImage image, int threadsNumber)
         {
             try
             {
@@ -112,9 +108,43 @@ namespace DigitalImageProcessingLib.Algorithms.TextDetection
                     throw new ArgumentNullException("Null image in DetectText");
                 FreeResources();
 
-             //   textRegions = null;
+                GreyImage imageCanny = this._edgeDetector.Detect(image, threadsNumber);
+                GreyImage smoothedImage = this._edgeDetector.GreySmoothedImage();
+                this._gradientFilter.Apply(smoothedImage, threadsNumber);  
 
-         
+                GreyImage gradienMapX = this._gradientFilter.GradientXMap();
+                GreyImage gradienMapY = this._gradientFilter.GradientYMap();
+              
+                this._SWTFilter = new SWTFilterSmart(gradienMapX, gradienMapY);
+                this._SWTFilter.Apply(imageCanny);              
+
+                Thread lightTextThread = new Thread(new ParameterizedThreadStart(this.DetectLightTextOnDarkBackGroundThread));
+                Thread darkTextThread = new Thread(new ParameterizedThreadStart(this.DetectDarkTextOnLightBackGroundThread));
+
+                darkTextThread.Start(image);
+                lightTextThread.Start(image);
+
+                darkTextThread.Join();
+                lightTextThread.Join();
+
+                this._lightTextRegions.AddRange(this._darkTextRegions);
+                image.TextRegions = new List<TextRegion>(this._lightTextRegions);
+            }
+            catch (Exception exception)
+            {
+                throw exception;
+            }
+        }
+
+        public void DetectText(GreyImage image)
+        {
+            try
+            {
+              /*  if (image == null)
+                    throw new ArgumentNullException("Null image in DetectText");
+                FreeResources();
+
+             //   textRegions = null;         
 
               //  GreyImage copyImage = (GreyImage)image.Copy();
               //  GreyImage copyImageForGradientMap = (GreyImage)image.Copy();
@@ -122,7 +152,7 @@ namespace DigitalImageProcessingLib.Algorithms.TextDetection
             //    this._edgeDetector.Detect(copyImage);
               //  this._smoothingFilter.Apply(copyImageForGradientMap);
 
-                this._gradientFilter.Apply(this._smoothedImage);  //copyImageForGradientMap
+                this._gradientFilter.Apply(this._smoothedImage, 4);  //copyImageForGradientMap
 
                 GreyImage gradienMapX = this._gradientFilter.GradientXMap();
                 GreyImage gradienMapY = this._gradientFilter.GradientYMap();
@@ -136,30 +166,7 @@ namespace DigitalImageProcessingLib.Algorithms.TextDetection
                // darkTextLightBg = this._SWTFilter.MaxIntensityDirectionImage();
                // GreyImage lightTextDarkBg = this._SWTFilter.MaxIntensityDirectionImage();
 
-              /*  this._connectedComponent.FindComponents(darkTextLightBg);
-                Dictionary<int, Region> darkRegions = this._connectedComponent.Regions;
-                CountTruePixels(darkRegions, darkTextLightBg);
-                DeleteTreshRegions(darkRegions, image.Width, image.Height);
-                               
-                GetTextRegions(darkRegions, out textRegions);*/
-                //DeleteInnerRegions(darkRegions);
-
-            /*    this._lightTextDarkBg = this._SWTFilter.MinIntensityDirectionImage();  
-                this._lightTextConnectedComponent.FindComponents(_lightTextDarkBg);
-                this._lightRegions = new Dictionary<int,Region>(this._lightTextConnectedComponent.Regions);
-                CountTruePixels(this._lightRegions, this._lightTextDarkBg);
-                CalculateStrokeWidthVariance(this._lightRegions, this._lightTextDarkBg);
-                DeleteTreshRegions(this._lightRegions, image.Width, image.Height);
-                GetTextRegions(this._lightRegions, out this._lightTextRegions, image.Width, image.Height);*/
-            
-
-
-           /*     this._darkTextLightBg = this._SWTFilter.MinIntensityDirectionImage();
-                this._darkTextConnectedComponent.FindComponents(_darkTextLightBg);
-                this._darkRegions = new Dictionary<int,Region>(this._darkTextConnectedComponent.Regions);
-                CountTruePixels(this._darkRegions, this._darkTextLightBg);
-                DeleteTreshRegions(this._darkRegions, image.Width, image.Height);
-                GetTextRegions(this._darkRegions, out this._darkTextRegions, image.Width, image.Height);*/
+                //DeleteInnerRegions(darkRegions);           
 
                 Thread lightTextThread = new Thread(new ParameterizedThreadStart(this.DetectLightTextOnDarkBackGroundThread));
                 Thread darkTextThread = new Thread(new ParameterizedThreadStart(this.DetectDarkTextOnLightBackGroundThread));
@@ -173,7 +180,7 @@ namespace DigitalImageProcessingLib.Algorithms.TextDetection
                 this._lightTextRegions.AddRange(this._darkTextRegions);
                 image.TextRegions = new List<TextRegion>(this._lightTextRegions);
               //  textRegions = this._lightTextRegions;
-               // SetRegionColor(this._darkRegions, image, this._darkTextLightBg);            
+               // SetRegionColor(this._darkRegions, image, this._darkTextLightBg);    */        
                           
             }
             catch (Exception exception)
@@ -283,7 +290,7 @@ namespace DigitalImageProcessingLib.Algorithms.TextDetection
         /// </summary>
         /// <param name="regions">Области</param>
         /// <param name="image">Серое изображение</param>
-        private void CountTruePixels(Dictionary<int, Region> regions, GreyImage image)
+       /* private void CountTruePixels(Dictionary<int, Region> regions, GreyImage image)
         {
             try
             {
@@ -307,7 +314,7 @@ namespace DigitalImageProcessingLib.Algorithms.TextDetection
             {
                 throw exception;
             }
-        }
+        }*/
 
         private void CalculateVarianceSumm(Dictionary<int, Region> regions, GreyImage image)
         {
@@ -422,6 +429,7 @@ namespace DigitalImageProcessingLib.Algorithms.TextDetection
                     double bbPixelsNumberRation = ERROR_VALUE;
                     double imageRegionHeightRatio = ERROR_VALUE;
                     double imageRegionWidthRatio = ERROR_VALUE;
+                    double varienceAverageSWRatio = ERROR_VALUE;
 
                     bool isZeroHeightOrWidth = pair.Value.Height == 0 || pair.Value.Width == 0;
                     if (!isZeroHeightOrWidth)
@@ -435,17 +443,18 @@ namespace DigitalImageProcessingLib.Algorithms.TextDetection
 
                         imageRegionHeightRatio = (double)imageHeight / (double)pair.Value.Height;
                         imageRegionWidthRatio = (double)imageWidth / (double) pair.Value.Width;
+                        varienceAverageSWRatio = pair.Value.StrokeWidthVarience / pair.Value.AverageStrokeWidth;
                     }
 
                 //    double squareRatio = (double)pair.Value.PixelsNumber / pair.Value.Square;
                     if (/*percent * 100.0 < this._pixelsPercentTreshold || || pair.Value.PixelsNumber < this._minPixelsNumberInRegion ||
                          pair.Value.OtherRegionsNumberInIt >= 2 ||*/
-                         isZeroHeightOrWidth || pair.Value.StrokeWidthVarience > pair.Value.AverageStrokeWidthHalf /* ((double)pair.Value.StrokeWidthVarience / (double)pair.Value.AverageStrokeWidth > 2.5) */ || (aspectRatio != ERROR_VALUE && aspectRatio > ASPECT_RATIO) ||
-                         (diameterStrokeWidthRatio != ERROR_VALUE && diameterStrokeWidthRatio > DIAMETER_SW_RATIO) ||
-                        (bbPixelsNumberRation != ERROR_VALUE && (bbPixelsNumberRation < BB_PIXELS_NUMBER_MIN_RATIO ||
-                         bbPixelsNumberRation > BB_PIXELS_NUMBER_MAX_RATIO)) ||
-                         (imageRegionHeightRatio != ERROR_VALUE && (/*imageRegionHeightRatio > IMAGE_REGION_HEIGHT_RATIO_MAX ||*/ imageRegionHeightRatio < IMAGE_REGION_HEIGHT_RATIO_MIN)) ||
-                         (imageRegionWidthRatio != ERROR_VALUE && (/*imageRegionWidthRatio > IMAGE_REGION_WIDTH_RATIO_MAX ||*/ imageRegionWidthRatio < IMAGE_REGION_WIDTH_RATIO_MIN)))
+                         isZeroHeightOrWidth || varienceAverageSWRatio > this._varienceAverageSWRation   /* pair.Value.StrokeWidthVarience > pair.Value.AverageStrokeWidthHalf*/ /* ((double)pair.Value.StrokeWidthVarience / (double)pair.Value.AverageStrokeWidth > 2.5) */ || (aspectRatio != ERROR_VALUE && aspectRatio > this._aspectRatio) ||
+                         (diameterStrokeWidthRatio != ERROR_VALUE && diameterStrokeWidthRatio > this._diamiterSWRatio) ||
+                        (bbPixelsNumberRation != ERROR_VALUE && (bbPixelsNumberRation < this._bbPixelsNumberMinRatio ||
+                         bbPixelsNumberRation > this._bbPixelsNumberMaxRatio)) ||
+                         (imageRegionHeightRatio != ERROR_VALUE && (/*imageRegionHeightRatio > IMAGE_REGION_HEIGHT_RATIO_MAX ||*/ imageRegionHeightRatio < this._imageRegionHeightRationMin)) ||
+                         (imageRegionWidthRatio != ERROR_VALUE && (/*imageRegionWidthRatio > IMAGE_REGION_WIDTH_RATIO_MAX ||*/ imageRegionWidthRatio < this._imageRegionWidthRatioMin)))
                    
                         regions.Remove(pair.Key);
                 }             
@@ -561,7 +570,7 @@ namespace DigitalImageProcessingLib.Algorithms.TextDetection
                 {
                     double heightRatio = (double)imageHeight / (double)letterPairs[i].Height;
                     double widthHeight = (double)imageWidth / (double)letterPairs[i].Width;
-                    if (heightRatio < IMAGE_REGION_HEIGHT_RATIO_MIN || widthHeight < IMAGE_REGION_WIDTH_RATIO_MIN)
+                    if (heightRatio < this._imageRegionHeightRationMin || widthHeight < this._imageRegionWidthRatioMin)
                         letterPairs.RemoveAt(i);
                 }
             }
@@ -1264,5 +1273,6 @@ namespace DigitalImageProcessingLib.Algorithms.TextDetection
                 throw exception;
             }
         }
+        
     }
 }

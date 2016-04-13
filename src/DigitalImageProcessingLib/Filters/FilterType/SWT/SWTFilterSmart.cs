@@ -1,5 +1,6 @@
 ﻿using DigitalImageProcessingLib.ImageType;
 using DigitalImageProcessingLib.SWTData;
+using DigitalImageProcessingLib.ThreadData;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -34,18 +35,23 @@ namespace DigitalImageProcessingLib.Filters.FilterType.SWT
             this._gradientMapY = gradientMapY;
         }
 
+        /// <summary>
+        /// Вычисление SWT карты изображения
+        /// </summary>
+        /// <param name="image">Изображение</param>
         public override void Apply(GreyImage image)
         {
             if (image == null)
-                throw new ArgumentNullException("Null image in Apply");
-          //  if (image.Height != this._gradientMap.Height || image.Width != this._gradientMap.Width)
-          //      throw new ArgumentException("Image must be the same size with gaussSmoothedImage in ctor");
+                throw new ArgumentNullException("Null image in Apply");        
             this._maxIntensityDirectionImage = (GreyImage)image.Copy();
             if (this._maxIntensityDirectionImage == null)
                 throw new NullReferenceException("Null _minIntensityDirectionImage in Apply");
             this._minIntensityDirectionImage = (GreyImage)image.Copy();
             if (this._minIntensityDirectionImage == null)
                 throw new NullReferenceException("Null _minIntensityDirectionImage in Apply");
+
+            this._rayMaxIntensityDirection.Clear();
+            this._rayMinIntensityDirection.Clear();
 
             Thread lightTextThread = new Thread(new ParameterizedThreadStart(this.FillMaxIntensityImage));
             Thread darkTextThread = new Thread(new ParameterizedThreadStart(this.FillMinIntensityImage));
@@ -55,11 +61,11 @@ namespace DigitalImageProcessingLib.Filters.FilterType.SWT
 
             darkTextThread.Join();
             lightTextThread.Join();
-
-           // FillMaxIntensityImage(image);
-           // FillMinIntensityImage(image);
         }
-
+        /// <summary>
+        /// Заполнение карты ширины штриха дл случая, когда текст светлее фона
+        /// </summary>
+        /// <param name="image">Изображение</param>
         private void FillMaxIntensityImage(object image)
         {
             try
@@ -74,6 +80,25 @@ namespace DigitalImageProcessingLib.Filters.FilterType.SWT
                 throw exception;
             }
         }
+
+        private void FillMaxIntensityImageMultiThread(object image)
+        {
+            try
+            {
+                if (image == null)
+                    throw new ArgumentNullException("Null image in FillMaxIntensityDirectionImage");
+                FillStrokeImageMultiThread((GreyImage)image, this._maxIntensityDirectionImage, this._rayMaxIntensityDirection, -1.0);
+                TwoPassAlongRays(this._maxIntensityDirectionImage, this._rayMaxIntensityDirection);
+            }
+            catch (Exception exception)
+            {
+                throw exception;
+            }
+        }
+        /// <summary>
+        /// Заполнение карты ширины штриха дл случая, когда текст темнее фона
+        /// </summary>
+        /// <param name="image">Изображение</param>
         private void FillMinIntensityImage(object image)
         {
             try
@@ -89,6 +114,64 @@ namespace DigitalImageProcessingLib.Filters.FilterType.SWT
             }
         }
 
+        private void FillMinIntensityImageMultiThread(object image)
+        {
+            try
+            {
+                if (image == null)
+                    throw new ArgumentNullException("Null image in FillMaxIntensityDirectionImage");
+                FillStrokeImageMultiThread((GreyImage)image, this._minIntensityDirectionImage, this._rayMinIntensityDirection, 1.0);
+                TwoPassAlongRays(this._minIntensityDirectionImage, this._rayMinIntensityDirection);
+            }
+            catch (Exception exception)
+            {
+                throw exception;
+            }
+        }
+        private void FillStrokeImageMultiThread(GreyImage image, GreyImage fillingImage, List<Ray> rays, double multValue)
+        {
+            try
+            {
+                int deltaI = image.Height / this.ThreadsNumber;           
+                int lowIndexI = 1;
+                int highIndexI = lowIndexI + deltaI;
+                int lowIndexJ = 1;
+                int highIndexJ = image.Width - 1;
+
+                List<Thread> threads = new List<Thread>();
+
+                for (int i = 0; i < this.ThreadsNumber; i++)
+                {
+                    if (i == this.ThreadsNumber - 1)
+                        highIndexI = image.Height - 1;
+
+                    MatrixFilterData matrixFilterData = new ThreadData.MatrixFilterData(image, lowIndexI, highIndexI, lowIndexJ, highIndexJ);
+                    matrixFilterData.SWTRays = rays;
+                    matrixFilterData.FillingImage = fillingImage;
+                    matrixFilterData.MultValueForText = multValue;
+
+                    Thread thread = new Thread(new ParameterizedThreadStart(this.ApplyThread));
+                    threads.Add(thread);
+                    threads[i].Start(matrixFilterData);
+
+                    lowIndexI = highIndexI;
+                    highIndexI += deltaI;
+                }
+                WaitForThreads(threads);
+            }
+            catch (Exception exception)
+            {
+                throw exception;
+            }
+        }
+
+        /// <summary>
+        /// Заполнение swt карты
+        /// </summary>
+        /// <param name="image">Изображение</param>
+        /// <param name="fillingImage">Заполняемое изображение</param>
+        /// <param name="rays">МАссив лучей</param>
+        /// <param name="multValue">Множитель (для темного текста или светлого)</param>
         private void FillStrokeImage(GreyImage image, GreyImage fillingImage, List<Ray> rays, double multValue)
         {
             try
@@ -185,7 +268,12 @@ namespace DigitalImageProcessingLib.Filters.FilterType.SWT
                 throw exception;
             }
         }
-
+        /// <summary>
+        /// Установка значения ширины штриха в изображение вдоль луча
+        /// </summary>
+        /// <param name="image">Изображение</param>
+        /// <param name="ray">Луч</param>
+        /// <param name="widthValue">Ширина штриха</param>
         private void SetWidthValueToImage(GreyImage image, Ray ray, double widthValue)
         {
             try
@@ -208,7 +296,11 @@ namespace DigitalImageProcessingLib.Filters.FilterType.SWT
                 throw exception;
             }
         }
-
+        /// <summary>
+        /// Второй проход алгоритма
+        /// </summary>
+        /// <param name="image">Изображение</param>
+        /// <param name="rays">Массив лучей</param>
         private void TwoPassAlongRays(GreyImage image, List<Ray> rays)
         {
             try
@@ -225,7 +317,12 @@ namespace DigitalImageProcessingLib.Filters.FilterType.SWT
                 throw exception;
             }
         }
-
+        /// <summary>
+        /// Усреднение значения ширин штриха для каждого пикселя каждого луча
+        /// </summary>
+        /// <param name="image">Изображение</param>
+        /// <param name="ray">Луч</param>
+        /// <param name="mean">Среднее значение ширины штриха</param>
         private void AveragingStrokeValue(GreyImage image, Ray ray, double mean)
         {
             try
@@ -244,7 +341,12 @@ namespace DigitalImageProcessingLib.Filters.FilterType.SWT
                 throw exception;
             }
         }
-
+        /// <summary>
+        /// Вычисление среднего значения ширины штриха для каждого луча
+        /// </summary>
+        /// <param name="image">Изображение</param>
+        /// <param name="ray">Массив лучей</param>
+        /// <returns></returns>
         private double CalculeMeanStrokeWidth(GreyImage image, Ray ray)
         {
             try
@@ -268,6 +370,162 @@ namespace DigitalImageProcessingLib.Filters.FilterType.SWT
         public override void Apply(RGBImage image)
         {
             throw new NotImplementedException();
+        }
+
+        public override GreyImage Apply(GreyImage image, int threadsNumber)
+        {
+            try
+            {
+                this.ThreadsNumber = threadsNumber;
+
+                if (image == null)
+                    throw new ArgumentNullException("Null image in Apply");
+                this._maxIntensityDirectionImage = (GreyImage)image.Copy();
+                if (this._maxIntensityDirectionImage == null)
+                    throw new NullReferenceException("Null _minIntensityDirectionImage in Apply");
+                this._minIntensityDirectionImage = (GreyImage)image.Copy();
+                if (this._minIntensityDirectionImage == null)
+                    throw new NullReferenceException("Null _minIntensityDirectionImage in Apply");
+
+                Thread lightTextThread = new Thread(new ParameterizedThreadStart(this.FillMaxIntensityImageMultiThread));
+                Thread darkTextThread = new Thread(new ParameterizedThreadStart(this.FillMinIntensityImageMultiThread));
+
+                darkTextThread.Start(image);
+                lightTextThread.Start(image);
+
+                darkTextThread.Join();
+                lightTextThread.Join();
+
+                return image;
+            }
+            catch (Exception exception)
+            {
+                throw exception;
+            }
+        }
+
+        /// <summary>
+        /// Ожидание завершения потоков
+        /// </summary>
+        private void WaitForThreads(List<Thread> threads)
+        {
+            try
+            {
+                for (int i = 0; i < threads.Count; i++)
+                    threads[i].Join();
+            }
+            catch (Exception exception)
+            {
+                throw exception;
+            }
+        }
+
+
+        protected override void ApplyThread(object data)
+        {
+            try
+            {
+                MatrixFilterData matrixFilterData = (MatrixFilterData)data;
+
+                GreyImage image = matrixFilterData.GreyImage;
+                GreyImage fillingImage = matrixFilterData.FillingImage;
+                List<Ray> rays = matrixFilterData.SWTRays;
+                int imageHeight = image.Height - 1;
+                int imageWidth = image.Width - 1;
+                int startI = matrixFilterData.StartIndexI;
+                int endI = matrixFilterData.EndIndexI;
+                int startJ = matrixFilterData.StartIndexJ;
+                int endJ = matrixFilterData.EndIndexJ;
+                double multValue = matrixFilterData.MultValueForText;
+
+                double prec = 0.05;   //0.05
+
+                for (int i = startI; i < endI; i++)
+                    for (int j = startJ; j < endJ; j++)
+                    {
+                        if (image.Pixels[i, j].BorderType == BorderType.Border.STRONG) //&& !fillingImage.Pixels[i, j].StrokeWidth.WasProcessed)
+                        {
+                            Ray ray = new Ray();
+                            RayPixel rayPixel = new RayPixel();
+                            rayPixel.X = i;
+                            rayPixel.Y = j;
+
+                            ray.Pixels.Add(rayPixel);
+
+                            double curX = (double)i + 0.5;
+                            double curY = (double)j + 0.5;
+
+                            int curPixX = i;
+                            int curPixY = j;
+
+                            double gradientX = this._gradientMapX.Pixels[i, j].Gradient.GradientX;
+                            double gradientY = this._gradientMapY.Pixels[i, j].Gradient.GradientY;
+
+                            double magnitude = Math.Sqrt(gradientX * gradientX + gradientY * gradientY);
+
+                            double stepX = gradientX / magnitude * multValue;
+                            double stepY = gradientY / magnitude * multValue;
+
+                            //  double stepX = image.Pixels[i, j].Gradient.StepX * multValue;
+                            //  double stepY = image.Pixels[i, j].Gradient.StepY * multValue;
+
+                            while (true)
+                            {
+                                curX += stepX * prec;
+                                curY += stepY * prec;
+
+                                int nextPixelX = (int)Math.Floor(curX);
+                                int nextPixelY = (int)Math.Floor(curY);
+
+                                /// Если не тот же самый пискель
+                                if (nextPixelX != curPixX || nextPixelY != curPixY)
+                                {
+                                    curPixX = nextPixelX;
+                                    curPixY = nextPixelY;
+
+                                    // если вышли за границы, обработка от 1 до N - 1, т.к. так построена градиентная карта Собелем
+                                    if (curPixX < 1 || curPixX >= imageHeight || curPixY < 1 || curPixY >= imageWidth)
+                                        break;
+
+                                    RayPixel newRayPixel = new RayPixel();
+                                    newRayPixel.X = curPixX;
+                                    newRayPixel.Y = curPixY;
+                                    ray.Pixels.Add(newRayPixel);
+
+                                    // Если найденный пиксель тоже граничный
+                                    if (image.Pixels[curPixX, curPixY].BorderType == BorderType.Border.STRONG)
+                                    {
+                                        double gradientXNewPixel = this._gradientMapX.Pixels[curPixX, curPixY].Gradient.GradientX;
+                                        double gradientYNewPixel = this._gradientMapY.Pixels[curPixX, curPixY].Gradient.GradientY;
+
+                                        double magnitudeNewPixel = Math.Sqrt(gradientX * gradientX + gradientY * gradientY);
+
+                                        double stepXNewPixel = gradientXNewPixel / magnitudeNewPixel * multValue;
+                                        double stepYNewPixel = gradientYNewPixel / magnitudeNewPixel * multValue;
+
+                                        // double stepXNewPixel = image.Pixels[curPixY, curPixX].Gradient.StepX * multValue;
+                                        //  double stepYNewPixel = image.Pixels[curPixY, curPixX].Gradient.StepY * multValue;
+
+                                        // Нашли противоположный пиксель
+                                        if (Math.Acos(stepX * -stepXNewPixel + stepY * -stepYNewPixel) < (double)(Math.PI / 2.0))
+                                        {
+                                            //float length = sqrt( ((float)r.q.x - (float)r.p.x)*((float)r.q.x - (float)r.p.x) + ((float)r.q.y - (float)r.p.y)*((float)r.q.y - (float)r.p.y));
+                                            double length = Math.Sqrt(((double)newRayPixel.X - (double)rayPixel.X) * ((double)newRayPixel.X - (double)rayPixel.X) +
+                                                                        ((double)newRayPixel.Y - (double)rayPixel.Y) * ((double)newRayPixel.Y - (double)rayPixel.Y));
+                                            SetWidthValueToImage(fillingImage, ray, length);
+                                            rays.Add(ray);
+                                        }
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                    }
+            }
+            catch (Exception exception)
+            {
+                throw exception;
+            }
         }
     }
 }

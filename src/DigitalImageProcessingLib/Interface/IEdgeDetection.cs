@@ -12,6 +12,7 @@ namespace DigitalImageProcessingLib.Interface
         int LowTreshold { get; set; }
         int HighTreshold { get; set; }
         void Detect(GreyImage image);
+        GreyImage Detect(GreyImage image, int threadsNumber);
         void Detect(RGBImage image);
         GreyImage GreySmoothedImage();
     }

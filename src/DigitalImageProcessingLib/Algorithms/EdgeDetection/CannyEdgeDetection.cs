@@ -38,6 +38,37 @@ namespace DigitalImageProcessingLib.Algorithms.EdgeDetection
         }
 
         public GreyImage GreySmoothedImage() { return this._greySmoothedImage; }
+
+        /// <summary>
+        /// Определяет границы серого изображения (многопоточная)
+        /// </summary>
+        /// <param name="image">Серое изображение</param>
+        /// <param name="threadsNumber">Число потоков</param>
+        public GreyImage Detect(GreyImage image, int threadsNumber)
+        {
+            try
+            {
+                if (image == null)
+                    throw new ArgumentNullException("Null image in Detect");
+                if (threadsNumber <= 0)
+                    throw new ArgumentException("Error threadsNumber in Detect");
+
+                GreyImage smoothedImage = _smoothingFilter.Apply(image, threadsNumber);
+                _greySmoothedImage = (GreyImage)smoothedImage.Copy();
+                smoothedImage = _edgeDetectionFilter.Apply(smoothedImage, threadsNumber);
+                SetGradientDirection(smoothedImage);
+                NonMaximaSuppression(smoothedImage);
+                DoubleTresholding(smoothedImage);
+                EdgeTrackingByHysteresis(smoothedImage);
+                SetEdgesColor(smoothedImage);
+
+                return smoothedImage;
+            }
+            catch (Exception exception)
+            {
+                throw exception;
+            }
+        }       
          
         /// <summary>
         /// Определяет границы серого изображения
@@ -372,5 +403,6 @@ namespace DigitalImageProcessingLib.Algorithms.EdgeDetection
                 throw exception;
             }
         }
+        
     }
 }

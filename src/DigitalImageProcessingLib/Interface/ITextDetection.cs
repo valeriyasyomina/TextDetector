@@ -11,6 +11,7 @@ namespace DigitalImageProcessingLib.Interface
     public interface ITextDetection
     {
         void DetectText(GreyImage image);
+        void DetectText(GreyImage image, int threadsNumber);
         void DetectText(RGBImage image);
     }
 }

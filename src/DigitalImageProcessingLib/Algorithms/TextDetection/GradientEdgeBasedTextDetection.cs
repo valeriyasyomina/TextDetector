@@ -199,5 +199,11 @@ namespace DigitalImageProcessingLib.Algorithms.TextDetection
         {
             throw new NotImplementedException();
         }
+
+
+        public void DetectText(GreyImage image, int threadsNumber)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

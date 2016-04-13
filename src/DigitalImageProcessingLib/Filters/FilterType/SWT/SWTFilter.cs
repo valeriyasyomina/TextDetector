@@ -1024,5 +1024,15 @@ namespace DigitalImageProcessingLib.Filters.FilterType.SWT
                 throw exception;
             }
         }
+
+        public override GreyImage Apply(GreyImage image, int threadsNumber)
+        {
+            throw new NotImplementedException();
+        }
+
+        protected override void ApplyThread(object data)
+        {
+            throw new NotImplementedException();
+        }
     }
 }
