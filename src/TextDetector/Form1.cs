@@ -65,12 +65,15 @@ namespace TextDetector
 
            // currentFrame.Save("100500.jpg");
 
-            Bitmap bitmap = new Bitmap(@"C:\Users\valeriya\Desktop\ICDAR\frames_51\146.jpg");
+            Bitmap bitmap = new Bitmap(@"C:\Users\valeriya\Desktop\ICDAR\frames_51\230.jpg");
 
             BitmapConvertor conv = new BitmapConvertor();
             GreyImage image1 = conv.ToGreyImage(bitmap);
 
-            GreyImage copyImageCanny = (GreyImage)image1.Copy();
+         //   EnhancingGradientFilter ench = new EnhancingGradientFilter();
+         //   ench.Apply(image1);
+
+            //GreyImage copyImageCanny = (GreyImage)image1.Copy();
           //  GreyImage copyImageGauss = (GreyImage)image1.Copy();
             
 
@@ -109,21 +112,33 @@ namespace TextDetector
 
           //  NiblackBinarization nib = new NiblackBinarization(15);
           //  nib.Binarize(image1);
-          
-            
-            
-            SmoothingFilter gauss = new GaussFilter(5, 1.4);
-           //  SmoothingFilter gauss = new AdaptiveGaussFilter(1.4);   // (1.4)
 
-             SmoothingFilter gauss1 = new AdaptiveGaussFilter(1.4);
-           // gauss.Apply(image1);
-            //prev.Apply(image1);
+
+
+            GaussFilter gauss = new GaussFilter(5, 1.4);
+            SmoothingFilter gauss1 = new AdaptiveGaussFilter(1.4);
 
 
             CannyEdgeDetection canny = new CannyEdgeDetection(gauss, sobel, 20, 80);
 
-            canny.Detect(copyImageCanny);
+           // Stopwatch time10kOperations = Stopwatch.StartNew();
+           // GreyImage imageCanny = canny.Detect(image1, 4);
+          //  time10kOperations.Stop();
+          //  long milliSec = time10kOperations.ElapsedMilliseconds;
+
+
+           //  SmoothingFilter gauss = new AdaptiveGaussFilter(1.4);   // (1.4)
+
+             
+           // gauss.Apply(image1);
+            //prev.Apply(image1);
+
+
+           
+
+         //   canny.Detect(copyImageCanny);
           //  gauss.Apply(copyImageGauss);
+
 
           //  CannyEdgeDetection canny1 = new CannyEdgeDetection(gauss, sobel, 20, 80);
 
@@ -156,16 +171,16 @@ namespace TextDetector
 
             SimpleGradientFilter simpleGradintFilter = new DigitalImageProcessingLib.Filters.FilterType.GradientFilterType.SimpleGradientFilter();
 
-            SWTTextDetection stext1 = new SWTTextDetection(canny, gauss, simpleGradintFilter, 15, 90, 30, canny.GreySmoothedImage(), copyImageCanny);
+            SWTTextDetection stext1 = new SWTTextDetection(canny, simpleGradintFilter, 0.5);
 
             
-             stext1.DetectText(image1);
+             stext1.DetectText(image1, 4);
 
             //stext.DetectText(imageCopy);
 
 
 
-            //Stopwatch time10kOperations = Stopwatch.StartNew();
+            //
 
            
         
@@ -177,8 +192,7 @@ namespace TextDetector
             textd.DetectText(image1, out textRegions);*/
 
 
-           // time10kOperations.Stop();
-           // long milliSec = time10kOperations.ElapsedMilliseconds;
+           
 
             MessageBox.Show("Edges detected");
 
