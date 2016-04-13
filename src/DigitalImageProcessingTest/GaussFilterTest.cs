@@ -282,9 +282,9 @@ namespace DigitalImageProcessingTest
             patternImage.Pixels[6, 8].Color.Data = 57;
             patternImage.Pixels[6, 9].Color.Data = 200;
 
-            SmoothingFilter gaussFilter = new GaussFilter(5, 1.4);
+            GaussFilter gaussFilter = new GaussFilter(5, 1.4);
             //act
-            gaussFilter.Apply(image);      
+            image = gaussFilter.Apply(image, 4);      
 
             //assert           
             Assert.IsTrue(image.IsEqual(patternImage));

@@ -176,7 +176,7 @@ namespace DigitalImageProcessingTest
             patternImage.Pixels[2, 3].Gradient.Angle = 82;
          
             //act
-            sobel.Apply(image);
+            image = sobel.Apply(image, 4);
 
             //assert
             Assert.IsTrue(image.IsEqual(patternImage));
