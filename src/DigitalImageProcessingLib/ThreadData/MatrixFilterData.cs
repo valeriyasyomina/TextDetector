@@ -1,4 +1,5 @@
-﻿using DigitalImageProcessingLib.ImageType;
+﻿using DigitalImageProcessingLib.Filters.FilterType.SWT;
+using DigitalImageProcessingLib.ImageType;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -33,5 +34,8 @@ namespace DigitalImageProcessingLib.ThreadData
         public int EndIndexI { get; set; }
         public int StartIndexJ { get; set; }
         public int EndIndexJ { get; set; }
+        public double MultValueForText { get; set; }
+        public GreyImage FillingImage { get; set; }
+        public List<Ray> SWTRays { get; set; }
     }
 }
