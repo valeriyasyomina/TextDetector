@@ -7,7 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace WPFVideoTextDetector.VideoSave
+namespace DigitalVideoProcessingLib.Interface
 {
     public interface IVideoSaver
     {
