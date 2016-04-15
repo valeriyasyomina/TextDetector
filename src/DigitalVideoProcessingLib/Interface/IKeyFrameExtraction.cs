@@ -11,5 +11,6 @@ namespace DigitalVideoProcessingLib.Interface
     {
         Task<List<GreyVideoFrame>> ExtractKeyFramesAsync(object data);
         Task<List<GreyVideoFrame>> ExtractKeyFramesTwoPassAsync(object data);
+        Task<List<GreyVideoFrame>> ExtractKeyFramesByListNumberAsync(object data);
     }
 }

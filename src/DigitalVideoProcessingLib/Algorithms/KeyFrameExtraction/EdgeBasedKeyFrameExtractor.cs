@@ -182,11 +182,11 @@ namespace DigitalVideoProcessingLib.Algorithms.KeyFrameExtraction
 
                 Capture capture = new Capture(videoFileName);
                 Image<Gray, Byte> frame = capture.QueryGrayFrame().Resize(frameWidth, frameHeight, Emgu.CV.CvEnum.INTER.CV_INTER_LINEAR);                
-                AddKeyFrameFunction(keyFrames, frame, Path.Combine(framesDirName, "0.jpg"), 0);       
+                AddKeyFrameFunction(keyFrames, frame, Path.Combine(framesDirName, "0.jpg"), 0, true);       
 
                 int framesDifferencesNumber = framesDifferences.Count;
                 int previousFrameNumber = 0;
-                BitmapConvertor bitmapConvertor = new BitmapConvertor();
+             //   BitmapConvertor bitmapConvertor = new BitmapConvertor();
                 for (int i = 0; i < framesDifferencesNumber; i++)
                 {
                     frame = capture.QueryGrayFrame();
@@ -195,7 +195,7 @@ namespace DigitalVideoProcessingLib.Algorithms.KeyFrameExtraction
                         int frameNumber = i + 1;
                         previousFrameNumber = i + 1; 
                         frame = capture.QueryGrayFrame().Resize(frameWidth, frameHeight, Emgu.CV.CvEnum.INTER.CV_INTER_LINEAR);                       
-                        AddKeyFrameFunction(keyFrames, frame, Path.Combine(framesDirName, frameNumber.ToString() + ".jpg"), frameNumber);                   
+                        AddKeyFrameFunction(keyFrames, frame, Path.Combine(framesDirName, frameNumber.ToString() + ".jpg"), frameNumber, true);                   
                     }
                     if (i == framesDifferencesNumber - 1)
                         keyFrameExtractedEvent(i, i + 1, true);
@@ -217,7 +217,9 @@ namespace DigitalVideoProcessingLib.Algorithms.KeyFrameExtraction
         /// <param name="frame">Ключевой кадр</param>
         /// <param name="frameFileName">Имя файла для сохранения ключевого кадра</param>
         /// <param name="frameNumber">Номер ключевого кадра</param>
-        private void AddKeyFrameFunction(List<GreyVideoFrame> keyFrames, Image<Gray, Byte> frame, string frameFileName, int frameNumber)
+        /// <param name="needProcess">Нуждается ли кадр в обработке</param>
+        private void AddKeyFrameFunction(List<GreyVideoFrame> keyFrames, Image<Gray, Byte> frame, string frameFileName, int frameNumber,
+            bool needProcess)
         {
             try
             {
@@ -228,6 +230,7 @@ namespace DigitalVideoProcessingLib.Algorithms.KeyFrameExtraction
                 keyFrame.FrameNumber = frameNumber;
                 BitmapConvertor bitmapConvertor = new BitmapConvertor();   
                 keyFrame.Frame = bitmapConvertor.ToGreyImage(bitmapFrame);
+                keyFrame.NeedProcess = needProcess;
                 keyFrames.Add(keyFrame);
             }
             catch (Exception exception)
@@ -395,6 +398,149 @@ namespace DigitalVideoProcessingLib.Algorithms.KeyFrameExtraction
                         framesDifference += firstFrame.Data[i, j, 0] - secondFrame.Data[i, j, 0];
                     
                 return framesDifference;
+            }
+            catch (Exception exception)
+            {
+                throw exception;
+            }
+        }
+        /// <summary>
+        /// Проверка, есть ли кадр в списке ключевых и добавление его в список ключевых
+        /// </summary>
+        /// <param name="keyFrames">Ключевые кадры</param>
+        /// <param name="keyFramesInformation">Информация, какие кадры нужны</param>
+        /// <param name="frame">Текущий кадр</param>
+        /// <param name="framesDirName">Путь к директории</param>
+        /// <param name="frameNumber">Номер текущего кадра по порядку</param>
+        /// <param name="frameWidth">Ширина кадра</param>
+        /// <param name="frameHeight">Высота кадра</param>
+        private void CheckKeyFrameAndAddIfInList(List<GreyVideoFrame> keyFrames, List<KeyFrameIOInformation> keyFramesInformation,
+            Image<Gray, Byte> frame, string framesDirName, int frameNumber, int frameWidth, int frameHeight)
+        {
+            try
+            {
+                if (frame != null)
+                {
+                    bool needProcess = false;
+                    if (IsPresentInKeyFrameInformationList(keyFramesInformation, frameNumber, ref needProcess))
+                    {                    
+                        frame = frame.Resize(frameWidth, frameHeight, Emgu.CV.CvEnum.INTER.CV_INTER_LINEAR);
+                        AddKeyFrameFunction(keyFrames, frame, Path.Combine(framesDirName, frameNumber.ToString() + ".jpg"), frameNumber, needProcess);                        
+                    }
+                }
+            }
+            catch (Exception exception)
+            {
+                throw exception;
+            }
+        }
+        /// <summary>
+        /// Проверка, присутствует ли номер кадра в списке кадров, необходимых для извлечения
+        /// </summary>
+        /// <param name="keyFramesInformation">Информация о кадрах, котрые необходимо извлечь</param>
+        /// <param name="frameNumber">Номер кадра, котрый ищем в списке</param>
+        /// <param name="needProcess">Нуждается ли кадр в обработке или нет</param>
+        /// <returns>1 - кадр найден, 0 - иначе</returns>
+        private bool IsPresentInKeyFrameInformationList(List<KeyFrameIOInformation> keyFramesInformation, int frameNumber, ref bool needProcess)
+        {
+            try
+            {
+                bool result = false;
+                for (int i = 0; i < keyFramesInformation.Count && !result; i++)
+                {
+                    if (keyFramesInformation[i].Number == frameNumber)
+                    {
+                        result = true;
+                        needProcess = keyFramesInformation[i].NeedProcess;
+                    }
+                }            
+                return result;
+            }
+            catch (Exception exception)
+            {
+                throw exception;
+            }
+        }
+
+        /// <summary>
+        /// Извлечение ключевых кадров из списка кадров
+        /// </summary>
+        /// <param name="videoFileName">Имя видео файла</param>
+        /// <param name="frameWidth">Ширина кадра</param>
+        /// <param name="frameHeight">Высота кадра</param>
+        /// <param name="keyFramesInformation">Список нужных кадров</param>
+        /// <returns>Ключевые кадры</returns>
+        private List<GreyVideoFrame> GetKeyFrames(string videoFileName, int frameWidth, int frameHeight, List<KeyFrameIOInformation> keyFramesInformation)
+        {
+            try
+            {
+                List<GreyVideoFrame> keyFrames = new List<GreyVideoFrame>();
+                ImageConvertor imageConvertor = new ImageConvertor();
+
+                string videoPath = System.IO.Path.GetDirectoryName(videoFileName);
+                string framesDirName = Path.Combine(videoPath, "VideoFrames");
+                if (!Directory.Exists(framesDirName))
+                    Directory.CreateDirectory(framesDirName);      
+
+                Capture capture = new Capture(videoFileName);
+                Image<Gray, Byte> frame = capture.QueryGrayFrame();
+
+                int frameNumber = 0;
+                CheckKeyFrameAndAddIfInList(keyFrames, keyFramesInformation, frame, framesDirName, frameNumber, frameWidth, frameHeight);
+                if (frame != null)
+                {
+                    keyFrameExtractedEvent(frameNumber, frameNumber + 1, false);
+                    do
+                    {
+                        frame = capture.QueryGrayFrame();
+                        ++frameNumber;
+                        CheckKeyFrameAndAddIfInList(keyFrames, keyFramesInformation, frame, framesDirName, frameNumber, frameWidth, frameHeight);
+                        if (frame != null)
+                            keyFrameExtractedEvent(frameNumber, frameNumber + 1, false);
+                        else
+                            keyFrameExtractedEvent(frameNumber, frameNumber + 1, true);
+                    }
+                    while (frame != null);
+                }
+                else
+                    keyFrameExtractedEvent(frameNumber, frameNumber + 1, true);
+                return keyFrames;
+            }
+            catch (Exception exception)
+            {
+                throw exception;
+            }
+        }
+
+        /// <summary>
+        /// Извлечение ключевых кадров по номерам из заданного списка
+        /// </summary>
+        /// <param name="data">Данные</param>
+        /// <returns>Ключевые кадры</returns>
+        public Task<List<GreyVideoFrame>> ExtractKeyFramesByListNumberAsync(object data)
+        {
+            try
+            {
+                if (data == null)
+                    throw new ArgumentNullException("Null data in ExtractKeyFrames");
+                IOData ioData = (IOData)data;
+                string videoFileName = ioData.FileName;
+                if (videoFileName == null || videoFileName.Length == 0)
+                    throw new ArgumentNullException("Null videoFileName in LoadFrames");
+                int frameWidth = ioData.FrameWidth;
+                if (frameWidth <= 0)
+                    throw new ArgumentException("Error frameWidth in LoadFrames");
+                int frameHeight = ioData.FrameHeight;
+                if (frameHeight <= 0)
+                    throw new ArgumentException("Error frameHeight in LoadFrames");
+                List<KeyFrameIOInformation> keyFramesInformation = ioData.KeyFrameIOInformation;
+                if (keyFramesInformation == null)
+                    throw new ArgumentNullException("Null keyFramesInformation in ExtractKeyFrames");
+                
+                return Task.Run(() =>
+                {
+                    return GetKeyFrames(videoFileName, frameWidth, frameHeight, keyFramesInformation);
+                });
             }
             catch (Exception exception)
             {
