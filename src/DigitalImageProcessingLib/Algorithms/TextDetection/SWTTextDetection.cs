@@ -21,12 +21,8 @@ namespace DigitalImageProcessingLib.Algorithms.TextDetection
         private IEdgeDetection _edgeDetector = null;
         private IConnectedComponent _lightTextConnectedComponent = null;
         private IConnectedComponent _darkTextConnectedComponent = null;
+
         private SWTFilterSmart _SWTFilter = null;
-       // private int _strokeWidthDelta = 0;
-       // private double _pixelsPercentTreshold = 0;
-       // private int _minPixelsNumberInRegion = 0;
-       // private int _regionSquareTheshold = 0;
-        //private int _regionWidthTreshold = 0;
 
         private double _varienceAverageSWRation = 0.0;
         private double _aspectRatio = 0.0;        
@@ -36,21 +32,13 @@ namespace DigitalImageProcessingLib.Algorithms.TextDetection
         private double _imageRegionHeightRationMin = 0.0;
         private double _imageRegionWidthRatioMin = 0.0;
 
-        private static double STROKE_WIDTH_RATIO = 2.0;
-        private static double HEIGHT_RATIO = 2.0;
-        private static double WIDTH_RATIO = 2.0;
-        private static double INTENSITY_DIFFERENCE = 1.0;
-        private static double WIDTH_DISTANCE_RATIO = 3.0;
-    //    private static double ASPECT_RATIO = 5.0;
-     //   private static double DIAMETER_SW_RATIO = 10.0;
-      //  private static double BB_PIXELS_NUMBER_MIN_RATIO = 1.5;
-     //   private static double BB_PIXELS_NUMBER_MAX_RATIO = 25.0;  //20
-        private static double IMAGE_REGION_HEIGHT_RATIO_MAX = 50.0;
-        private static double IMAGE_REGION_WIDTH_RATIO_MAX = 50.0;
-      //  private static double IMAGE_REGION_HEIGHT_RATIO_MIN = 1.5;
-      //  private static double IMAGE_REGION_WIDTH_RATIO_MIN = 1.5;
+        private double _pairsHeightRatio = 0.0;
+        private double _pairsIntensityRatio = 0.0;
+        private double _pairsSWRatio = 0.0;
+        private double _pairsWidthDistanceSqrRatio = 0.0;
+        private double _pairsOccupationRatio = 0.0;
 
-        private static int MIN_LETTERS_IN_TEXT_REGION = 2;
+        private int _minLettersNumberInTextRegion = 0;
 
         private static double STRICTNESS = Math.PI / 6.0;
 
@@ -69,7 +57,9 @@ namespace DigitalImageProcessingLib.Algorithms.TextDetection
 
         public SWTTextDetection(IEdgeDetection edgeDetector, GradientFilter gradientFiler, double varienceAverageSWRation, double aspectRatio = 5.0,
             double diamiterSWRatio = 10, double bbPixelsNumberMinRatio = 1.5, double bbPixelsNumberMaxRatio = 25.0,
-            double imageRegionHeightRationMin = 1.5, double imageRegionWidthRatioMin = 1.5)           
+            double imageRegionHeightRationMin = 1.5, double imageRegionWidthRatioMin = 1.5, double pairsHeightRatio = 2.0,
+            double pairsIntensityRatio = 1.0, double pairsSWRatio = 1.5, double pairsWidthDistanceSqrRatio = 9.0,
+            double pairsOccupationRatio = 2.0, int minLettersNumberInTextRegion = 2)           
         {
             if (edgeDetector == null)
                 throw new ArgumentNullException("Null edgeDetector in ctor");           
@@ -78,8 +68,6 @@ namespace DigitalImageProcessingLib.Algorithms.TextDetection
             
             this._edgeDetector = edgeDetector;         
             this._gradientFilter = gradientFiler;
-
-          //  this._lightTextConnectedComponent = new TwoPassCCAlgorithm(connectedComponent);
 
             this._lightTextConnectedComponent = new TwoPassCCAlgorithm(DigitalImageProcessingLib.Interface.UnifyingFeature.StrokeWidth,
                                                             DigitalImageProcessingLib.Interface.ConnectivityType.EightConnectedRegion);
@@ -94,12 +82,25 @@ namespace DigitalImageProcessingLib.Algorithms.TextDetection
             this._imageRegionHeightRationMin = imageRegionHeightRationMin;
             this._imageRegionWidthRatioMin = imageRegionWidthRatioMin;
 
+            this._pairsHeightRatio = pairsHeightRatio;
+            this._pairsIntensityRatio = pairsIntensityRatio;
+            this._pairsSWRatio = pairsSWRatio;
+            this._pairsWidthDistanceSqrRatio = pairsWidthDistanceSqrRatio;
+            this._pairsOccupationRatio = pairsOccupationRatio;
+
+            this._minLettersNumberInTextRegion = minLettersNumberInTextRegion;
+
             this._lightRegions = new Dictionary<int, Region>();
             this._darkRegions = new Dictionary<int, Region>();
             this._lightTextRegions = new List<TextRegion>();
             this._darkTextRegions = new List<TextRegion>();
         }
 
+        /// <summary>
+        /// Выделение текста на изображении (многопоточный метод)
+        /// </summary>
+        /// <param name="image">Изображение</param>
+        /// <param name="threadsNumber">Количество кадров</param>
         public void DetectText(GreyImage image, int threadsNumber)
         {
             try
@@ -138,55 +139,7 @@ namespace DigitalImageProcessingLib.Algorithms.TextDetection
 
         public void DetectText(GreyImage image)
         {
-            try
-            {
-              /*  if (image == null)
-                    throw new ArgumentNullException("Null image in DetectText");
-                FreeResources();
-
-             //   textRegions = null;         
-
-              //  GreyImage copyImage = (GreyImage)image.Copy();
-              //  GreyImage copyImageForGradientMap = (GreyImage)image.Copy();
-
-            //    this._edgeDetector.Detect(copyImage);
-              //  this._smoothingFilter.Apply(copyImageForGradientMap);
-
-                this._gradientFilter.Apply(this._smoothedImage, 4);  //copyImageForGradientMap
-
-                GreyImage gradienMapX = this._gradientFilter.GradientXMap();
-                GreyImage gradienMapY = this._gradientFilter.GradientYMap();
-             //   this._smoothingFilter.Apply(gradienMapX);
-             //   this._smoothingFilter.Apply(gradienMapY);
-
-              //  this._SWTFilter = new SWTFilter(this._edgeDetector.GreySmoothedImage());
-                this._SWTFilter = new SWTFilterSmart(gradienMapX, gradienMapY);
-                this._SWTFilter.Apply(this._cannyImage);  //copyImage
-
-               // darkTextLightBg = this._SWTFilter.MaxIntensityDirectionImage();
-               // GreyImage lightTextDarkBg = this._SWTFilter.MaxIntensityDirectionImage();
-
-                //DeleteInnerRegions(darkRegions);           
-
-                Thread lightTextThread = new Thread(new ParameterizedThreadStart(this.DetectLightTextOnDarkBackGroundThread));
-                Thread darkTextThread = new Thread(new ParameterizedThreadStart(this.DetectDarkTextOnLightBackGroundThread));
-
-                darkTextThread.Start(image);
-                lightTextThread.Start(image);
-
-                darkTextThread.Join();
-                lightTextThread.Join();
-
-                this._lightTextRegions.AddRange(this._darkTextRegions);
-                image.TextRegions = new List<TextRegion>(this._lightTextRegions);
-              //  textRegions = this._lightTextRegions;
-               // SetRegionColor(this._darkRegions, image, this._darkTextLightBg);    */        
-                          
-            }
-            catch (Exception exception)
-            {
-                throw exception;
-            }
+            throw new NotImplementedException();
         }
 
         public void DetectText(RGBImage image)
@@ -223,12 +176,9 @@ namespace DigitalImageProcessingLib.Algorithms.TextDetection
 
                 this._lightTextDarkBg = this._SWTFilter.MaxIntensityDirectionImage();
                 this._lightTextConnectedComponent.FindComponents(_lightTextDarkBg);
-                this._lightRegions = new Dictionary<int, Region>(this._lightTextConnectedComponent.Regions);
-              //  CountTruePixels(this._lightRegions, this._lightTextDarkBg);
-                CalculateStrokeWidthVariance(this._lightRegions, this._lightTextDarkBg);
-                //CalculateRegionsThatContanMoreThanTwoOther(this._lightRegions);
-                DeleteTreshRegions(this._lightRegions, image.Width, image.Height);
-            //    DeleteInnerRegions(this._lightRegions);
+                this._lightRegions = new Dictionary<int, Region>(this._lightTextConnectedComponent.Regions);             
+                CalculateStrokeWidthVariance(this._lightRegions, this._lightTextDarkBg);          
+                DeleteTreshRegions(this._lightRegions, image.Width, image.Height);           
                 GetTextRegions(this._lightRegions, out this._lightTextRegions, image.Width, image.Height);
             }
             catch (Exception exception)
@@ -249,12 +199,9 @@ namespace DigitalImageProcessingLib.Algorithms.TextDetection
 
                 this._darkTextLightBg = this._SWTFilter.MinIntensityDirectionImage();
                 this._darkTextConnectedComponent.FindComponents(this._darkTextLightBg);
-                this._darkRegions = new Dictionary<int, Region>(this._darkTextConnectedComponent.Regions);
-             //   CountTruePixels(this._darkRegions, this._darkTextLightBg);
-                CalculateStrokeWidthVariance(this._darkRegions, this._darkTextLightBg);
-                //CalculateRegionsThatContanMoreThanTwoOther(this._darkRegions);
-                DeleteTreshRegions(this._darkRegions, image.Width, image.Height);
-            //    DeleteInnerRegions(this._darkRegions);
+                this._darkRegions = new Dictionary<int, Region>(this._darkTextConnectedComponent.Regions);     
+                CalculateStrokeWidthVariance(this._darkRegions, this._darkTextLightBg);             
+                DeleteTreshRegions(this._darkRegions, image.Width, image.Height);        
                 GetTextRegions(this._darkRegions, out this._darkTextRegions, image.Width, image.Height);                
             }
             catch (Exception exception)
@@ -263,7 +210,7 @@ namespace DigitalImageProcessingLib.Algorithms.TextDetection
             }
         }
 
-        private void CalculateRegionsThatContanMoreThanTwoOther(Dictionary<int, Region> regions)
+      /*  private void CalculateRegionsThatContanMoreThanTwoOther(Dictionary<int, Region> regions)
         {
             try
             {
@@ -283,7 +230,7 @@ namespace DigitalImageProcessingLib.Algorithms.TextDetection
             {
                 throw exception;
             }
-        }
+        }*/
 
         /// <summary>
         /// Вычисляет количество пикселей в каждом регионе, значение ширины штриха которых +-= this._strokeWidthDelta
@@ -316,6 +263,11 @@ namespace DigitalImageProcessingLib.Algorithms.TextDetection
             }
         }*/
 
+        /// <summary>
+        /// Вычисление суммы отклонения ширины штриха
+        /// </summary>
+        /// <param name="regions">Регионы</param>
+        /// <param name="image">Изображение</param>
         private void CalculateVarianceSumm(Dictionary<int, Region> regions, GreyImage image)
         {
             try
@@ -340,7 +292,10 @@ namespace DigitalImageProcessingLib.Algorithms.TextDetection
                 throw exception;
             }
         }
-
+        /// <summary>
+        /// Вычисление отклонения ширины штриха для регионов
+        /// </summary>
+        /// <param name="regions">Регионы</param>
         private void CalculateStrokeWidthVariance(Dictionary<int, Region> regions)
         {
             try
@@ -357,6 +312,11 @@ namespace DigitalImageProcessingLib.Algorithms.TextDetection
             }
         }
 
+        /// <summary>
+        /// Вычисление отклонения ширины штриха для регионов
+        /// </summary>
+        /// <param name="regions">Регионы</param>
+        /// <param name="image">Изображение</param>
         private void CalculateStrokeWidthVariance(Dictionary<int, Region> regions, GreyImage image)
         {
             try
@@ -371,7 +331,7 @@ namespace DigitalImageProcessingLib.Algorithms.TextDetection
         }
 
 
-        private void DeleteInnerRegions(Dictionary<int, Region> regions)
+     /*   private void DeleteInnerRegions(Dictionary<int, Region> regions)
         {
             try
             {
@@ -410,20 +370,20 @@ namespace DigitalImageProcessingLib.Algorithms.TextDetection
             {
                 throw exception;
             }
-        }
+        }*/
 
         /// <summary>
-        /// Удаляет области, в котрых процент пикселей попавших в диапазо среднего значения ширины штриха меньше заданного порога
-        /// А также регионы с больши количеством пиксель и маленьким колическом пикселей и неплотные регионы
+        /// Удаление регионов, не уловлетворяющих эвристикам
         /// </summary>
-        /// <param name="regions"></param>
+        /// <param name="regions">Регионы</param>
+        /// <param name="imageWidth">Ширина изображения</param>
+        /// <param name="imageHeight">Высота изображения</param>
         private void DeleteTreshRegions(Dictionary<int, Region> regions, int imageWidth, int imageHeight)
         {
             try
             {
                 foreach (var pair in regions.ToList())
                 {
-                   // double percent = (double) pair.Value.TruePixelsNumber / (double) pair.Value.PixelsNumber;
                     double aspectRatio = ERROR_VALUE;
                     double diameterStrokeWidthRatio = ERROR_VALUE;
                     double bbPixelsNumberRation = ERROR_VALUE;
@@ -436,26 +396,16 @@ namespace DigitalImageProcessingLib.Algorithms.TextDetection
                     {
                         aspectRatio = pair.Value.Height > pair.Value.Width ? (double)pair.Value.Height / (double)pair.Value.Width :
                                                                              (double)pair.Value.Width / (double)pair.Value.Height;
-
                         diameterStrokeWidthRatio = (double)pair.Value.Diameter / (double)pair.Value.AverageStrokeWidth;
-
                         bbPixelsNumberRation = (double)pair.Value.PixelsNumber / (double)pair.Value.BoundingBoxPixelsNumber;
-
                         imageRegionHeightRatio = (double)imageHeight / (double)pair.Value.Height;
                         imageRegionWidthRatio = (double)imageWidth / (double) pair.Value.Width;
                         varienceAverageSWRatio = pair.Value.StrokeWidthVarience / pair.Value.AverageStrokeWidth;
                     }
-
-                //    double squareRatio = (double)pair.Value.PixelsNumber / pair.Value.Square;
-                    if (/*percent * 100.0 < this._pixelsPercentTreshold || || pair.Value.PixelsNumber < this._minPixelsNumberInRegion ||
-                         pair.Value.OtherRegionsNumberInIt >= 2 ||*/
-                         isZeroHeightOrWidth || varienceAverageSWRatio > this._varienceAverageSWRation   /* pair.Value.StrokeWidthVarience > pair.Value.AverageStrokeWidthHalf*/ /* ((double)pair.Value.StrokeWidthVarience / (double)pair.Value.AverageStrokeWidth > 2.5) */ || (aspectRatio != ERROR_VALUE && aspectRatio > this._aspectRatio) ||
-                         (diameterStrokeWidthRatio != ERROR_VALUE && diameterStrokeWidthRatio > this._diamiterSWRatio) ||
-                        (bbPixelsNumberRation != ERROR_VALUE && (bbPixelsNumberRation < this._bbPixelsNumberMinRatio ||
-                         bbPixelsNumberRation > this._bbPixelsNumberMaxRatio)) ||
-                         (imageRegionHeightRatio != ERROR_VALUE && (/*imageRegionHeightRatio > IMAGE_REGION_HEIGHT_RATIO_MAX ||*/ imageRegionHeightRatio < this._imageRegionHeightRationMin)) ||
-                         (imageRegionWidthRatio != ERROR_VALUE && (/*imageRegionWidthRatio > IMAGE_REGION_WIDTH_RATIO_MAX ||*/ imageRegionWidthRatio < this._imageRegionWidthRatioMin)))
-                   
+                    if (isZeroHeightOrWidth || varienceAverageSWRatio > this._varienceAverageSWRation || aspectRatio > this._aspectRatio ||
+                         diameterStrokeWidthRatio > this._diamiterSWRatio || bbPixelsNumberRation < this._bbPixelsNumberMinRatio ||
+                         bbPixelsNumberRation > this._bbPixelsNumberMaxRatio || imageRegionHeightRatio < this._imageRegionHeightRationMin ||
+                         imageRegionWidthRatio < this._imageRegionWidthRatioMin)                   
                         regions.Remove(pair.Key);
                 }             
             }
@@ -516,13 +466,8 @@ namespace DigitalImageProcessingLib.Algorithms.TextDetection
                 DeleteBigLetterPairs(letterPairs, imageWidth, imageHeight);
 
                 List<RegionChain> mergedBigRegions = null;
-
                 DeleteRegionsThatDoesnotBelongToAnyRagionsPais(regions, letterPairs);
-
-               // MakeChains(regions, letterPairs, out mergedBigRegions);
-
                 MergePairsToBigRegions(regions, letterPairs, out mergedBigRegions);
-
                 CreateTextRegions(regions, mergedBigRegions, out textRegions); 
             }
             catch (Exception exception)
@@ -578,30 +523,7 @@ namespace DigitalImageProcessingLib.Algorithms.TextDetection
             {
                 throw exception;
             }
-        }
-
-        /// <summary>
-        /// Удаление дублирующихся пар регионов
-        /// </summary>
-        /// <param name="letterPairs">Список пар регионов</param>
-     /*   private void DeleteDoublePairs(List<List<int>> letterPairs)
-        {
-            try
-            {
-                for (int i = 0; i < letterPairs.Count; i++)
-                    for (int j = i + 1; j < letterPairs.Count; j++)
-                    {
-                        List<int> firstPair = letterPairs[i];
-                        List<int> secondPair = letterPairs[j];
-                        if (firstPair[0] == secondPair[1] && firstPair[1] == secondPair[0])
-                            letterPairs.RemoveAt(j);
-                    }
-            }
-            catch (Exception exception)
-            {
-                throw exception;
-            }
-        }*/
+        }      
 
         /// <summary>
         /// Формирует текстовые области по большим областям
@@ -619,7 +541,7 @@ namespace DigitalImageProcessingLib.Algorithms.TextDetection
                 {
                     List<int> currentRegionsNumbersList = regionsMerged[i].RegionsNumber;
 
-                    if (currentRegionsNumbersList.Count > MIN_LETTERS_IN_TEXT_REGION)
+                    if (currentRegionsNumbersList.Count > this._minLettersNumberInTextRegion)
                     {
                         TextRegion textRegion = CreateTextRegion(regions, currentRegionsNumbersList);
                         textRegions.Add(textRegion);
@@ -633,7 +555,7 @@ namespace DigitalImageProcessingLib.Algorithms.TextDetection
         }
 
         /// <summary>
-        /// Формировани списка больших областей
+        /// Формирование списка больших областей
         /// </summary>
         /// <param name="regions">Регионы</param>
         /// <param name="letterPairsNumbers">Пары номеров регионов</param>
@@ -653,10 +575,7 @@ namespace DigitalImageProcessingLib.Algorithms.TextDetection
                         RegionChain chain = new RegionChain();
                         chain.RegionsNumber = new List<int>();
                         chain.RegionsNumber.Add(currentRegionNumber);
-                        mergedRegions.Add(chain);
-                        /*List<int> mergeRegionsSubList = new List<int>();
-                        mergeRegionsSubList.Add(currentRegionNumber);
-                        mergedRegions.Add(mergeRegionsSubList);*/
+                        mergedRegions.Add(chain);                    
                         numberOfMergedRegion = mergedRegions.Count - 1;
                     }
 
@@ -792,7 +711,7 @@ namespace DigitalImageProcessingLib.Algorithms.TextDetection
         }*/
 
         /// <summary>
-        /// Составляет 1 текстовый регион по номерам обалстей, входящим в него
+        /// Составляет 1 текстовый регион по номерам областей, входящим в него
         /// </summary>
         /// <param name="regions">Регионы</param>
         /// <param name="regionsNumbersList">Номера областей будущего текстового региона</param>
@@ -832,9 +751,12 @@ namespace DigitalImageProcessingLib.Algorithms.TextDetection
                 throw exception;
             }
         }
-
-
-
+        /// <summary>
+        /// Формирование пар регионов
+        /// </summary>
+        /// <param name="regions">Регионы</param>
+        /// <param name="letterPairsNumbers">Пары</param>
+        
         private void GetLetterPairs(Dictionary<int, Region> regions, out List<RegionChain> letterPairsNumbers)
         {
             try
@@ -857,27 +779,22 @@ namespace DigitalImageProcessingLib.Algorithms.TextDetection
                         int secondRegionWidth = listOfRegions[j].Value.Width;
 
                         int firstRegionAverageIntensity = listOfRegions[i].Value.AverageIntensity;
-                        int secondRegionAverageIntensity = listOfRegions[i].Value.AverageIntensity;
-
-                       // int maxRegionWidth = firstRegionWidth > secondRegionWidth ? firstRegionWidth : secondRegionWidth;
+                        int secondRegionAverageIntensity = listOfRegions[i].Value.AverageIntensity;                    
 
                         double swRatio = firstRegionAverageSW > secondRegionAverageSW ? (double)firstRegionAverageSW / (double)secondRegionAverageSW :
                                                                                         (double)secondRegionAverageSW / (double)firstRegionAverageSW;
                         double heightRatio = firstRegionHeight > secondRegionHeight ? (double)firstRegionHeight / (double)secondRegionHeight :
                                                                                       (double)secondRegionHeight / (double)firstRegionHeight;
-                      //  double widthRatio = firstRegionWidth > secondRegionWidth ? (double)firstRegionWidth / (double)secondRegionWidth :
-                      //                                                             (double)secondRegionWidth / (double)firstRegionWidth;
-
+                      
                         double distance = GetDistanceSqrBetweenRegions(listOfRegions[i].Value.CenterPointIndexI, listOfRegions[i].Value.CenterPointIndexJ,
-                            listOfRegions[j].Value.CenterPointIndexI, listOfRegions[j].Value.CenterPointIndexJ);
-                       // double ditanseWidthRatio = (double)distance / (double)maxRegionWidth;
+                            listOfRegions[j].Value.CenterPointIndexI, listOfRegions[j].Value.CenterPointIndexJ);                     
 
                         double widthHeightMetric = Math.Pow(Math.Max(Math.Min(firstRegionHeight, firstRegionWidth), Math.Min(secondRegionHeight, secondRegionWidth)), 2.0);
                         double occupationRationMetric = (double)Math.Abs(listOfRegions[i].Value.PixelsNumber - listOfRegions[j].Value.PixelsNumber) / (double)Math.Min(listOfRegions[i].Value.PixelsNumber, listOfRegions[j].Value.PixelsNumber);
 
-                        if (heightRatio < HEIGHT_RATIO && swRatio <= 1.5 /*STROKE_WIDTH_RATIO*/ // && ditanseWidthRatio < WIDTH_DISTANCE_RATIO &&
-                            && distance < 9.0 * widthHeightMetric && occupationRationMetric <= 2 /*3*/ &&
-                           /* widthRatio < WIDTH_RATIO &&*/ Math.Abs(firstRegionAverageIntensity - secondRegionAverageIntensity) < INTENSITY_DIFFERENCE)
+                        if (heightRatio < this._pairsHeightRatio && swRatio <= this._pairsSWRatio && distance < this._pairsWidthDistanceSqrRatio * widthHeightMetric && 
+                            occupationRationMetric <= this._pairsOccupationRatio  &&
+                            Math.Abs(firstRegionAverageIntensity - secondRegionAverageIntensity) < this._pairsIntensityRatio)
                         {
                             RegionChain pair = new RegionChain();
                             pair.FirstRegionNumber = listOfRegions[i].Value.Number;
@@ -912,93 +829,12 @@ namespace DigitalImageProcessingLib.Algorithms.TextDetection
             {
                 throw exception;
             }
-        }
-        
+        }   
 
-        /// <summary>
-        /// Объединяет буквы в пары номеров областей, используя эвристические правила
-        /// </summary>
-        /// <param name="regions">Области символов</param>
-        /// <param name="letterPairs">Пары номеров символов</param>
-      /*  private void GetLetterPairs(Dictionary<int, Region> regions, out List<RegionPair> letterPairsNumbers)
+      /*  private void MakeChains(Dictionary<int, Region> regions, List<RegionChain> letterPairs, out List<RegionChain> chains)
         {
             try
             {
-                List<KeyValuePair<int, Region> > listOfRegions = regions.ToList();
-                letterPairsNumbers = new List<RegionPair>();
-
-                int regionsNumber = listOfRegions.Count;
-
-                for (int i = 0; i < regionsNumber; i++)
-                    for (int j = i + 1; j < regionsNumber; j++)
-                    {
-                        double firstRegionAverageSW = listOfRegions[i].Value.AverageStrokeWidth;
-                        double secondRegionAverageSW = listOfRegions[j].Value.AverageStrokeWidth;
-
-                        int firstRegionHeight = listOfRegions[i].Value.Height;
-                        int secondRegionHeight = listOfRegions[j].Value.Height;
-
-                        int firstRegionWidth = listOfRegions[i].Value.Width;
-                        int secondRegionWidth = listOfRegions[j].Value.Width;
-
-                        int firstRegionAverageIntensity = listOfRegions[i].Value.AverageIntensity;
-                        int secondRegionAverageIntensity = listOfRegions[i].Value.AverageIntensity;
-
-                        int maxRegionWidth = firstRegionWidth > secondRegionWidth ? firstRegionWidth : secondRegionWidth;
-
-                        double swRatio = firstRegionAverageSW > secondRegionAverageSW ? (double)firstRegionAverageSW / (double)secondRegionAverageSW :
-                                                                                        (double)secondRegionAverageSW / (double)firstRegionAverageSW;
-                        double heightRatio = firstRegionHeight > secondRegionHeight ? (double)firstRegionHeight / (double)secondRegionHeight :
-                                                                                      (double)secondRegionHeight / (double)firstRegionHeight;
-                        double widthRatio = firstRegionWidth > secondRegionWidth ? (double)firstRegionWidth / (double)secondRegionWidth :
-                                                                                   (double)secondRegionWidth / (double)firstRegionWidth;
-
-                        double distance = GetDistanceBetweenRegions(listOfRegions[i].Value.CenterPointIndexI, listOfRegions[i].Value.CenterPointIndexJ,
-                            listOfRegions[j].Value.CenterPointIndexI, listOfRegions[j].Value.CenterPointIndexJ);
-                        double ditanseWidthRatio = (double)distance / (double) maxRegionWidth;
-
-                        double widthHeightMetric = Math.Pow(Math.Max(Math.Min(firstRegionHeight, firstRegionWidth), Math.Min(secondRegionHeight, secondRegionWidth)), 2.0);
-                        double occupationRationMetric = (double) Math.Abs(listOfRegions[i].Value.PixelsNumber - listOfRegions[j].Value.PixelsNumber) / (double) Math.Min(listOfRegions[i].Value.PixelsNumber, listOfRegions[j].Value.PixelsNumber);
-
-                        if (heightRatio < HEIGHT_RATIO && swRatio < STROKE_WIDTH_RATIO // && ditanseWidthRatio < WIDTH_DISTANCE_RATIO &&
-                            && distance < 9.0 * widthHeightMetric &&  occupationRationMetric <= 3 &&
-                            widthRatio < WIDTH_RATIO && Math.Abs(firstRegionAverageIntensity - secondRegionAverageIntensity) < INTENSITY_DIFFERENCE)
-                        {
-                           // List<int> pair = new List<int>();
-                            RegionPair pair = new RegionPair();
-                            pair.FirstRegionNumber = listOfRegions[i].Value.Number;
-                            pair.SecondRegionNumber = listOfRegions[j].Value.Number;
-
-                            int deltaI = listOfRegions[i].Value.CenterPointIndexI - listOfRegions[j].Value.CenterPointIndexI;
-                            int deltaJ = listOfRegions[i].Value.CenterPointIndexJ - listOfRegions[j].Value.CenterPointIndexJ;
-
-                         ///   pair.AngleDirection = Math.Atan((double)deltaI / (double)deltaJ) * (180 / Math.PI);  РАСКОММЕНИТИть
-
-                            pair.MinBorderIndexI = Math.Min(listOfRegions[i].Value.MinBorderIndexI, listOfRegions[j].Value.MinBorderIndexI);
-                            pair.MinBorderIndexJ = Math.Min(listOfRegions[i].Value.MinBorderIndexJ, listOfRegions[j].Value.MinBorderIndexJ);
-
-                            pair.MaxBorderIndexI = Math.Max(listOfRegions[i].Value.MaxBorderIndexI, listOfRegions[j].Value.MaxBorderIndexI);
-                            pair.MaxBorderIndexJ = Math.Max(listOfRegions[i].Value.MaxBorderIndexJ, listOfRegions[j].Value.MaxBorderIndexJ);
-
-                            pair.Height = pair.MaxBorderIndexI - pair.MinBorderIndexI;
-                            pair.Width = pair.MaxBorderIndexJ - pair.MinBorderIndexJ;
-                         //   pair.Add(listOfRegions[i].Value.Number);
-                          //  pair.Add(listOfRegions[j].Value.Number);
-                            letterPairsNumbers.Add(pair);
-                        }
-                    }        
-            }
-            catch (Exception exception)
-            {
-                throw exception;
-            }
-        }*/
-
-        private void MakeChains(Dictionary<int, Region> regions, List<RegionChain> letterPairs, out List<RegionChain> chains)
-        {
-            try
-            {
-             //   chains = new List<RegionChain>();
                 int merges = 1;
                 while (merges > 0)
                 {
@@ -1219,7 +1055,7 @@ namespace DigitalImageProcessingLib.Algorithms.TextDetection
                 firstChain.LastRegionNumber == secondChain.FirstRegionNumber || firstChain.LastRegionNumber == secondChain.LastRegionNumber)
                 return true;
             return false;
-        }
+        }*/
 
         /// <summary>
         /// Нахождение квадрата расстояния мужду двумя регионами
@@ -1231,7 +1067,7 @@ namespace DigitalImageProcessingLib.Algorithms.TextDetection
         /// <returns></returns>
         private double GetDistanceSqrBetweenRegions(int firstRegionCenterI, int firstRegionCenterJ, int secondRegionCenterI, int secondRegionCenterJ)
         {
-            return /*Math.Sqrt*/((double) ((firstRegionCenterI - secondRegionCenterI) * (firstRegionCenterI - secondRegionCenterI) +
+            return ((double) ((firstRegionCenterI - secondRegionCenterI) * (firstRegionCenterI - secondRegionCenterI) +
                 (firstRegionCenterJ - secondRegionCenterJ) * (firstRegionCenterJ - secondRegionCenterJ)));
         }    
 
