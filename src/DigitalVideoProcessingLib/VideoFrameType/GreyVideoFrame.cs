@@ -15,5 +15,6 @@ namespace DigitalVideoProcessingLib.VideoFrameType
         public GreyImage Frame { get; set; }
         public Image<Bgr, Byte> OriginalFrame { get; set; }
         public int FrameNumber { get; set; }
+        public bool NeedProcess { get; set; }
     }
 }
