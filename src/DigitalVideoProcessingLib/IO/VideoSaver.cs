@@ -1,5 +1,6 @@
 ﻿using DigitalImageProcessingLib.IO;
 using DigitalImageProcessingLib.RegionData;
+using DigitalVideoProcessingLib.Graphics;
 using DigitalVideoProcessingLib.VideoFrameType;
 using DigitalVideoProcessingLib.VideoType;
 using System;
@@ -70,7 +71,7 @@ namespace WPFVideoTextDetector.VideoSave
                     BitmapConvertor bitmapConvertor = new BitmapConvertor();
                     Bitmap bitmapFrame = bitmapConvertor.ToBitmap(videoFrame.Frame);
 
-                    VideoSaver.DrawTextBoundingBoxes(bitmapFrame, videoFrame.Frame.TextRegions, pen);
+                    Draw.DrawTextBoundingBoxes(bitmapFrame, videoFrame.Frame.TextRegions, pen);
                     bitmapFrame.Save(saveFileName);
 
                     return true;
@@ -80,33 +81,7 @@ namespace WPFVideoTextDetector.VideoSave
             {
                 throw exception;
             }
-        }
-
-        public static void DrawTextBoundingBoxes(Bitmap bitmapFrame, List<TextRegion> textRegions, System.Drawing.Pen pen)
-        {
-            try
-            {
-                if (bitmapFrame == null)
-                    throw new ArgumentNullException("Null bitmap frame in DrawTextBoundingBoxes");
-                if (textRegions == null)
-                    throw new ArgumentNullException("Null textRegions in DrawTextBoundingBoxes");
-                if (pen == null)
-                    throw new ArgumentNullException("Null pen in DrawTextBoundingBoxes");
-
-                Graphics graphics = Graphics.FromImage(bitmapFrame);               
-
-                if (textRegions != null)
-                {
-                    for (int i = 0; i < textRegions.Count; i++)
-                        graphics.DrawRectangle(pen, textRegions[i].MinBorderIndexJ, textRegions[i].MinBorderIndexI,
-                            textRegions[i].MaxBorderIndexJ - textRegions[i].MinBorderIndexJ, textRegions[i].MaxBorderIndexI - textRegions[i].MinBorderIndexI);
-                }
-            }
-            catch (Exception exception)
-            {
-                throw exception;
-            }
-        }
+        }        
 
         /// <summary>
         /// Сохранение обработанных ключевых кадров видео
