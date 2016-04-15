@@ -51,17 +51,23 @@
   <ItemGroup>
     <Compile Include="Algorithms\KeyFrameExtraction\EdgeBasedKeyFrameExtractor.cs" />
     <Compile Include="Algorithms\TextDetection\SWTVideoTextDetection.cs" />
+    <Compile Include="Graphics\Draw.cs" />
+    <Compile Include="Interface\IFileReader.cs" />
     <Compile Include="Interface\IFrameLoader.cs" />
     <Compile Include="Interface\IImageConvertor.cs" />
     <Compile Include="Interface\IKeyFrameExtraction.cs" />
     <Compile Include="Interface\ITextDetection.cs" />
     <Compile Include="Interface\IVideoLoader.cs" />
+    <Compile Include="IO\FileReader.cs" />
     <Compile Include="IO\FrameLoader.cs" />
     <Compile Include="IO\ImageConvertor.cs" />
     <Compile Include="IO\IOData.cs" />
     <Compile Include="Interface\IVideoSaver.cs" />
+    <Compile Include="IO\KeyFrameIOInformation.cs" />
     <Compile Include="IO\VideoLoader.cs" />
     <Compile Include="IO\VideoSaver.cs" />
+    <Compile Include="IO\XMLReader.cs" />
+    <Compile Include="IO\XMLWriter.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="VideoFrameType\GreyVideoFrame.cs" />
     <Compile Include="VideoType\GreyVideo.cs" />
