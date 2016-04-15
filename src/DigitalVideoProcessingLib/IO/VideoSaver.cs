@@ -1,6 +1,7 @@
 ﻿using DigitalImageProcessingLib.IO;
 using DigitalImageProcessingLib.RegionData;
 using DigitalVideoProcessingLib.Graphics;
+using DigitalVideoProcessingLib.Interface;
 using DigitalVideoProcessingLib.VideoFrameType;
 using DigitalVideoProcessingLib.VideoType;
 using System;
@@ -11,7 +12,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace WPFVideoTextDetector.VideoSave
+namespace DigitalVideoProcessingLib.IO
 {
     public delegate void VideoFrameSaved(int frameNumber, bool isLastFrame);    
     public class VideoSaver: IVideoSaver
