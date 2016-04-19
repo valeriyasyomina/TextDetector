@@ -28,6 +28,19 @@ namespace DigitalVideoProcessingLib.IO
             {
                 return Task.Run(() =>
                 {
+                    XmlWriterSettings settings = new XmlWriterSettings();
+                    settings.Indent = true;
+                    settings.IndentChars = "\t";
+                    System.Xml.XmlWriter xmlWriter = System.Xml.XmlWriter.Create(fileName, settings);
+                    xmlWriter.WriteStartDocument();
+                    xmlWriter.WriteStartElement("Video");
+
+                    for (int i = 0; i < video.Frames.Count; i++)
+                        XMLWriter.WriteTextBlocksInformation(video.Frames[i].Frame.TextRegions, xmlWriter, video.Frames[i].FrameNumber, fileName);
+                    
+                    xmlWriter.WriteEndDocument();
+                    xmlWriter.Flush();
+                    xmlWriter.Close();
                     return true;
                 });
             }
@@ -52,7 +65,10 @@ namespace DigitalVideoProcessingLib.IO
             {
                 return Task.Run(() =>
                 {
-                    XmlWriter xmlWriter = XmlWriter.Create(fileName);
+                    XmlWriterSettings settings = new XmlWriterSettings();
+                    settings.Indent = true;
+                    settings.IndentChars = "\t";
+                    XmlWriter xmlWriter = XmlWriter.Create(fileName, settings);
                     xmlWriter.WriteStartDocument();
                     xmlWriter.WriteStartElement("Video");                    
                     XMLWriter.WriteTextBlocksInformation(videoFrame.Frame.TextRegions, xmlWriter, videoFrame.FrameNumber, fileName);                    
@@ -74,18 +90,19 @@ namespace DigitalVideoProcessingLib.IO
         /// <param name="xmlWriter">xml - writer</param>
         /// <param name="frameNumber">Номер кадра</param>
         /// <param name="fileName">Имя xml - файла</param>
-        private static void WriteTextBlocksInformation(List<TextRegion> textRegions, XmlWriter xmlWriter, int frameNumber, string fileName)
+        private static void WriteTextBlocksInformation(List<TextRegion> textRegions, System.Xml.XmlWriter xmlWriter, int frameNumber, string fileName)
         {
             try
             {
                 if (textRegions == null)
                     throw new ArgumentNullException("Null textRegions in WriteTextBlocksInformation");
 
+                xmlWriter.WriteStartElement("Frame");
+                xmlWriter.WriteAttributeString("ID", frameNumber.ToString());
+                int textRegionsNumber = textRegions.Count;
+                xmlWriter.WriteAttributeString("TextRegionsNumber", textRegionsNumber.ToString());
                 if (textRegions.Count != 0)
-                {
-                    xmlWriter.WriteStartElement("Frame");
-                    xmlWriter.WriteAttributeString("ID", frameNumber.ToString());
-                    int textRegionsNumber = textRegions.Count;
+                {                    
                     for (int i = 0; i < textRegionsNumber; i++)
                     {
                         xmlWriter.WriteStartElement("TextRegion");
@@ -95,8 +112,8 @@ namespace DigitalVideoProcessingLib.IO
                         xmlWriter.WriteAttributeString("RightDownPointIndexJ", textRegions[i].MaxBorderIndexJ.ToString());
                         xmlWriter.WriteEndElement();
                     }
-                    xmlWriter.WriteEndElement();
                 }
+                xmlWriter.WriteEndElement();
             }
             catch (Exception exception)
             {
