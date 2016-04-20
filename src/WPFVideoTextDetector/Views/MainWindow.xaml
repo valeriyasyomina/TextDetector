@@ -50,6 +50,13 @@
                 <MenuItem Style="{StaticResource MenuSubItemStyle}" Header="Выделить текст на единичном кадре"
                           Command="{Binding DetectTextOnFrameCommand}">                    
                 </MenuItem>
+                <Separator></Separator>
+                <MenuItem Style="{StaticResource MenuSubItemStyle}" Header="Тестирование"
+                          Command="{Binding AccuracyEstimationCommand}">
+                    <MenuItem.Icon>
+                        <Image Width="20" Height="20" Source="/WPFVideoTextDetector;component/icons/science.png" />
+                    </MenuItem.Icon>
+                </MenuItem>
             </MenuItem>
             <MenuItem Style="{StaticResource MainMenuItemStyle}" Header="Настройка">
                 <MenuItem.Icon>
