@@ -161,7 +161,7 @@ namespace TextDetectionAccuracyEstimationLib.AccuracyEstimation
                         List<Metric> metrics = new List<Metric>();
                         metrics.Add(secondTypeErrorProbabilityMF.GetMetric(falseTextBlockNumber, generatedTextBlocks[frameNumber].Count));
                         metrics.Add(firstTypeErrorProbabilityMF.GetMetric(notDetectedTextBlocksNumber, patternTextBlocks[frameNumber].Count));
-                        metrics.Add(missingTypeErrorProbabilityMF.GetMetric(textBlocksWithMissedDataNumber, generatedTextBlocks[frameNumber].Count));
+                        metrics.Add(missingTypeErrorProbabilityMF.GetMetric(textBlocksWithMissedDataNumber, generatedTextBlocks[frameNumber].Count - falseTextBlockNumber));
                         metrics.Add(precisionMetricFactory.GetMetric(precision));
 
                         double recall = 0.0;
