@@ -106,17 +106,16 @@ namespace DigitalImageProcessingLib.Algorithms.TextDetection
             try
             {
                 if (image == null)
-                    throw new ArgumentNullException("Null image in DetectText");
-                FreeResources();
+                    throw new ArgumentNullException("Null image in DetectText");                
 
                 GreyImage imageCanny = this._edgeDetector.Detect(image, threadsNumber);
                 GreyImage smoothedImage = this._edgeDetector.GreySmoothedImage();
-                this._gradientFilter.Apply(smoothedImage, threadsNumber);  
+                this._gradientFilter.Apply(smoothedImage);   // threadsNumber
 
-                GreyImage gradienMapX = this._gradientFilter.GradientXMap();
-                GreyImage gradienMapY = this._gradientFilter.GradientYMap();
-              
-                this._SWTFilter = new SWTFilterSmart(gradienMapX, gradienMapY);
+              //  GreyImage gradienMapX = this._gradientFilter.GradientXMap();
+             //   GreyImage gradienMapY = this._gradientFilter.GradientYMap();
+
+                this._SWTFilter = new SWTFilterSmart(smoothedImage, smoothedImage);
                 this._SWTFilter.Apply(imageCanny);              
 
                 Thread lightTextThread = new Thread(new ParameterizedThreadStart(this.DetectLightTextOnDarkBackGroundThread));
@@ -130,6 +129,8 @@ namespace DigitalImageProcessingLib.Algorithms.TextDetection
 
                 this._lightTextRegions.AddRange(this._darkTextRegions);
                 image.TextRegions = new List<TextRegion>(this._lightTextRegions);
+
+                FreeResources();
             }
             catch (Exception exception)
             {
