@@ -3,9 +3,6 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:TabUserControl="clr-namespace:WPFVideoTextDetector.Views.TabViews"       
         Title="MainWindow" Height="699.383" Width="990.741" WindowStartupLocation="CenterScreen">  
-    
-   
-
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="auto"></RowDefinition>
@@ -103,210 +100,16 @@
                 </LinearGradientBrush>
             </TabControl.Background>
             <TabItem IsSelected="{Binding IsVideoTabSelected}" Header="Видео" Style="{StaticResource TabItemStyle}">
-                <TabUserControl:VideoUserControl />
-                
-                
-              
-              <!--  <Grid>
-                    <Grid.RowDefinitions>
-                        <RowDefinition ></RowDefinition>
-                    </Grid.RowDefinitions>
-
-                    <Grid Grid.Row="0">
-                        <Grid.RowDefinitions>
-                            <RowDefinition></RowDefinition>
-                            <RowDefinition></RowDefinition>
-                            <RowDefinition></RowDefinition>
-                        </Grid.RowDefinitions>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition></ColumnDefinition>
-                            <ColumnDefinition></ColumnDefinition>
-                            <ColumnDefinition></ColumnDefinition>
-                        </Grid.ColumnDefinitions>
-                        <Image Visibility="{Binding VideoWasNotLoaded}" Grid.Column="1" Grid.Row="1" Source="/WPFVideoTextDetector;component/icons/video_big.png" HorizontalAlignment="Center" />
-                    </Grid>
-
-                    <Grid Grid.Row="0" Margin="50">
-                        <Grid.RowDefinitions>
-                            <RowDefinition ></RowDefinition>
-                            <RowDefinition></RowDefinition>
-                        </Grid.RowDefinitions>
-                        <Image Visibility="{Binding MediaPlayerNavigationVisibility}" Grid.Row="0" Source="/WPFVideoTextDetector;component/icons/video_big.png" HorizontalAlignment="Center" />
-                        <MediaElement Grid.Row="0" Width="auto" Height="auto" Name="VideoPlayer" 
-                                      Source="{Binding VideoFileName}" Stretch='Uniform'
-                                       LoadedBehavior="Manual" ScrubbingEnabled="True" Loaded="VideoWasLoaded"/>
-                        <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Center">
-                            <Grid>
-                                <Grid.RowDefinitions>
-                                    <RowDefinition></RowDefinition>
-                                    <RowDefinition></RowDefinition>
-                                </Grid.RowDefinitions>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition></ColumnDefinition>
-                                    <ColumnDefinition></ColumnDefinition>
-                                    <ColumnDefinition></ColumnDefinition>
-                                </Grid.ColumnDefinitions>
-                                <Button Visibility="{Binding MediaPlayerNavigationVisibility}" Style="{StaticResource ButtonStyle}" 
-                                        Grid.Row="0" Grid.Column="0" Margin="10" Width="40" Height="50" Click="PlayVideoButtonClick">
-                                    <Image Source="/WPFVideoTextDetector;component/icons/play.png" />                                                                     
-                                </Button>
-                                <Button Visibility="{Binding MediaPlayerNavigationVisibility}" Style="{StaticResource ButtonStyle}" 
-                                        Grid.Row="0" Grid.Column="1" Margin="10" Width="40" Height="50" Click="PauseVideoButtonClick">
-                                    <Image Source="/WPFVideoTextDetector;component/icons/pause.png" />
-                                </Button>
-                                <Button Visibility="{Binding MediaPlayerNavigationVisibility}" Style="{StaticResource ButtonStyle}" 
-                                        Grid.Row="0" Grid.Column="2" Margin="10" Width="40" Height="50" Click="StopVideoButtonClick">
-                                    <Image Source="/WPFVideoTextDetector;component/icons/stop.png" />
-                                </Button>
-                            </Grid>
-                        </StackPanel>
-                    </Grid>
-                </Grid> -->
-               
+                <TabUserControl:VideoUserControl />              
             </TabItem>
-
             <TabItem IsSelected="{Binding IsProcessedVideoFramesTabSelected}" Header="Обработанное видео" Style="{StaticResource TabItemStyle}">
-                <TabUserControl:ProcessedVideoUserControl />
-               <!-- <Grid>
-                    <Grid.RowDefinitions>
-                        <RowDefinition></RowDefinition>                        
-                    </Grid.RowDefinitions>
-
-                    <Grid Grid.Row="0">
-                        <Grid.RowDefinitions>
-                            <RowDefinition></RowDefinition>
-                            <RowDefinition></RowDefinition>
-                            <RowDefinition></RowDefinition>
-                        </Grid.RowDefinitions>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition></ColumnDefinition>
-                            <ColumnDefinition></ColumnDefinition>
-                            <ColumnDefinition></ColumnDefinition>
-                        </Grid.ColumnDefinitions>
-                        <Image Grid.Column="1" Grid.Row="1" Source="/WPFVideoTextDetector;component/icons/many_photo_big.png" HorizontalAlignment="Center" />
-                    </Grid>
-                    <Grid Grid.Row="0">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition></ColumnDefinition>
-                            <ColumnDefinition Width="2.5*"></ColumnDefinition>
-                            <ColumnDefinition></ColumnDefinition>
-                        </Grid.ColumnDefinitions>
-                        <Image Visibility="{Binding CurrentProcessedFrameVisibility}" Grid.Column="1" Source="/WPFVideoTextDetector;component/icons/photo_big.png" HorizontalAlignment="Center" />
-
-                        <Grid Grid.Column="0">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="2.5*"></ColumnDefinition>
-                                <ColumnDefinition></ColumnDefinition>                              
-                            </Grid.ColumnDefinitions>
-
-                            <Image Visibility="{Binding PreviousProcessedFrameVisibility}" Margin="10" Grid.Column="0" Source="/WPFVideoTextDetector;component/icons/photo_big.png" HorizontalAlignment="Center" />
-
-                            <Grid Grid.Column="1" Margin="10">
-                                <Grid.RowDefinitions>
-                                    <RowDefinition></RowDefinition>
-                                    <RowDefinition></RowDefinition>
-                                    <RowDefinition></RowDefinition>
-                                    <RowDefinition></RowDefinition>
-                                    <RowDefinition></RowDefinition>
-                                    <RowDefinition></RowDefinition>
-                                    <RowDefinition></RowDefinition>
-                                    <RowDefinition></RowDefinition>
-                                    <RowDefinition></RowDefinition>
-                                    <RowDefinition></RowDefinition>
-                                    <RowDefinition></RowDefinition>
-                                    <RowDefinition></RowDefinition>
-                                    <RowDefinition></RowDefinition>
-                                    <RowDefinition></RowDefinition>
-                                    <RowDefinition></RowDefinition>
-                                </Grid.RowDefinitions>
-                                <Button Grid.Row="7" Style="{StaticResource ButtonStyle}" Visibility="{Binding ArrowLeftVisibility}">
-                                    <Image Source="/WPFVideoTextDetector;component/icons/arrow_left.png" />
-                                </Button>
-                            </Grid>                   
-                        </Grid>
-                        <Grid Grid.Column="2">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition></ColumnDefinition>
-                                <ColumnDefinition Width="2.5*"></ColumnDefinition>                                
-                            </Grid.ColumnDefinitions>
-
-                            <Image Visibility="{Binding NextProcessedFrameVisibility}" Margin="10" Grid.Column="1" Source="/WPFVideoTextDetector;component/icons/photo_big.png" HorizontalAlignment="Center" />
-
-                            <Grid Grid.Column="0" Margin="10">
-                                <Grid.RowDefinitions>
-                                    <RowDefinition></RowDefinition>
-                                    <RowDefinition></RowDefinition>
-                                    <RowDefinition></RowDefinition>
-                                    <RowDefinition></RowDefinition>
-                                    <RowDefinition></RowDefinition>
-                                    <RowDefinition></RowDefinition>
-                                    <RowDefinition></RowDefinition>
-                                    <RowDefinition></RowDefinition>
-                                    <RowDefinition></RowDefinition>
-                                    <RowDefinition></RowDefinition>
-                                    <RowDefinition></RowDefinition>
-                                    <RowDefinition></RowDefinition>
-                                    <RowDefinition></RowDefinition>
-                                    <RowDefinition></RowDefinition>
-                                    <RowDefinition></RowDefinition>
-                                </Grid.RowDefinitions>
-                                <Button Grid.Row="7" Style="{StaticResource ButtonStyle}" Visibility="{Binding ArrowRightVisibility}">
-                                    <Image Source="/WPFVideoTextDetector;component/icons/arrow_right.png" />
-                                </Button>
-                            </Grid>
-                        </Grid>
-                    </Grid>
-                </Grid>         -->       
+                <TabUserControl:ProcessedVideoUserControl />               
             </TabItem>
-
             <TabItem IsSelected="{Binding IsVideoFrameTabSelected}" Header="Единичный кадр" Style="{StaticResource TabItemStyle}">
-                <TabUserControl:VideoFrameUserControl />
-               <!-- <Grid>
-                    <Grid.RowDefinitions>
-                        <RowDefinition></RowDefinition>
-                    </Grid.RowDefinitions>
-                    <Grid Grid.Row="0">
-                        <Grid.RowDefinitions>
-                            <RowDefinition></RowDefinition>
-                            <RowDefinition></RowDefinition>
-                            <RowDefinition></RowDefinition>
-                        </Grid.RowDefinitions>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition></ColumnDefinition>
-                            <ColumnDefinition></ColumnDefinition>
-                            <ColumnDefinition></ColumnDefinition>
-                        </Grid.ColumnDefinitions>
-                        <Image Grid.Column="1" Grid.Row="1" Source="/WPFVideoTextDetector;component/icons/photo_big.png" HorizontalAlignment="Center" />
-                    </Grid>
-                    
-                    <Grid Grid.Row="0">
-                        <Image Source="{Binding FrameSource}" HorizontalAlignment="Center" Name="VideoFramePicture" />
-                    </Grid>               
-                </Grid>  -->
+                <TabUserControl:VideoFrameUserControl />              
             </TabItem>
             <TabItem IsSelected="{Binding IsProcessedVideoFrameTabSelected}" Header="Обработанный кадр" Style="{StaticResource TabItemStyle}">
-                <TabUserControl:ProcessedVideoFrameUserControl />
-              <!--  <Grid>
-                    <Grid.RowDefinitions>
-                        <RowDefinition></RowDefinition>
-                    </Grid.RowDefinitions>
-                    <Grid Grid.Row="0">
-                        <Grid.RowDefinitions>
-                            <RowDefinition></RowDefinition>
-                            <RowDefinition></RowDefinition>
-                            <RowDefinition></RowDefinition>
-                        </Grid.RowDefinitions>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition></ColumnDefinition>
-                            <ColumnDefinition></ColumnDefinition>
-                            <ColumnDefinition></ColumnDefinition>
-                        </Grid.ColumnDefinitions>
-                        <Image Grid.Column="1" Grid.Row="1" Source="/WPFVideoTextDetector;component/icons/photo_big.png" HorizontalAlignment="Center" />
-                    </Grid>
-                    <Grid Grid.Row="0">
-                        <Image Source="{Binding ProcessedFrameSource}" HorizontalAlignment="Center" Name="ProcessedVideoFramePicture"/>
-                    </Grid>
-                </Grid>  -->
+                <TabUserControl:ProcessedVideoFrameUserControl />          
             </TabItem>
         </TabControl>
     </Grid>
