@@ -168,6 +168,10 @@
       <Project>{61322e3c-a01b-438e-ac0e-227758b47cd8}</Project>
       <Name>DigitalVideoProcessingLib</Name>
     </ProjectReference>
+    <ProjectReference Include="..\TextDetectionAccuracyEstimationLib\TextDetectionAccuracyEstimationLib.csproj">
+      <Project>{c3500900-c2a8-43bd-98f8-abfa2655e9d8}</Project>
+      <Name>TextDetectionAccuracyEstimationLib</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <Resource Include="icons\tool.png">
@@ -240,6 +244,11 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Resource>
     <Resource Include="icons\arrow_right.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Resource>
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="icons\science.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Resource>
   </ItemGroup>
