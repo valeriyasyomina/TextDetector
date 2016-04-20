@@ -13,12 +13,22 @@ namespace TextDetectionAccuracyEstimationLib.AccuracyEstimation
     public class AccuracyEstimator: IAccuracyEstimation
     {
         public static int VIDEO_METRICS = -1;
+        /// <summary>
+        /// Коэффициент для расчета f1 меры
+        /// </summary>
         public double Alhpa {get; set;}
-        public AccuracyEstimator(double alpha = 0.5)
+        /// <summary>
+        /// Порог площади перекрытия для двух текстовых блоков
+        /// </summary>
+        public double IntersectionSquareThreshold { get; set; }
+        public AccuracyEstimator(double alpha = 0.5, double intersectionSquareThreshold = 0.8)
         {
-            if (alpha <= 0)
-                throw new ArgumentException("Error alpha in AccuracyEstimator");
+            if (alpha < 0 || alpha > 1)
+                throw new ArgumentException("Error alpha in AccuracyEstimator, alpha [0; 1]");
+            if (intersectionSquareThreshold < 0 || intersectionSquareThreshold > 1)
+                throw new ArgumentException("Error intersectionSquareThreshold in AccuracyEstimator, intersectionSquareThreshold [0; 1]");
             this.Alhpa = alpha;
+            this.IntersectionSquareThreshold = intersectionSquareThreshold;
         }
         /// <summary>
         /// Вычисление матрик для двух видео
@@ -58,14 +68,15 @@ namespace TextDetectionAccuracyEstimationLib.AccuracyEstimation
             {
                 AbstractMetricFactory firstTypeErrorProbabilityMF = new FirstTypeErrorProbabilityMetricFactory();
                 AbstractMetricFactory secondTypeErrorProbabilityMF = new SecondTypeErrorProbabilityMetricFactory();
-                PrecisionMetricFactory precisionMetricFactory = new PrecisionMetricFactory();
-                RecallMetricFactory recallMetricFactory = new RecallMetricFactory();
-                F1MeasureMetricFactory f1MeasureMetricFactory = new F1MeasureMetricFactory();
+                AbstractMetricFactory missingTypeErrorProbabilityMF = new MissingProbabilityMetricFactory();
+                AbstractMetricFactory precisionMetricFactory = new PrecisionMetricFactory();
+                AbstractMetricFactory recallMetricFactory = new RecallMetricFactory();
+                AbstractMetricFactory f1MeasureMetricFactory = new F1MeasureMetricFactory();
 
                 double secondTypeErrorMetric = 0, firstTypeErrorMetric = 0, precisionMetric = 0,
-                    recallMetric = 0, f1Metric = 0;
+                    recallMetric = 0, f1Metric = 0, missingTypeErrorMetric = 0;
                 int secondTypeErrorMetricNumber = 0, firstTypeErrorMetricNumber = 0, precisionMetricNumber = 0,
-                    recallMetricNumber = 0, f1MetricNumber = 0;
+                    recallMetricNumber = 0, f1MetricNumber = 0, missingTypeErrorMetricNumber = 0;
                 foreach (var pair in metricsList)
                 {
                     List<Metric> metrisFrame = pair.Value;
@@ -80,6 +91,11 @@ namespace TextDetectionAccuracyEstimationLib.AccuracyEstimation
                         {
                             firstTypeErrorMetric += metrisFrame[i].Value;
                             firstTypeErrorMetricNumber++;
+                        }
+                        else if (metrisFrame[i].GetType() == typeof(MissingProbability) && metrisFrame[i].Value != Metric.UNDEFINED_METRIC)
+                        {
+                            missingTypeErrorMetric += metrisFrame[i].Value;
+                            missingTypeErrorMetricNumber++;
                         }
                         else if (metrisFrame[i].GetType() == typeof(Precision) && metrisFrame[i].Value != Metric.UNDEFINED_METRIC)
                         {
@@ -101,6 +117,7 @@ namespace TextDetectionAccuracyEstimationLib.AccuracyEstimation
                 List<Metric> videoMetricList = new List<Metric>();
                 videoMetricList.Add(secondTypeErrorProbabilityMF.GetMetric(secondTypeErrorMetric, secondTypeErrorMetricNumber));
                 videoMetricList.Add(firstTypeErrorProbabilityMF.GetMetric(firstTypeErrorMetric, firstTypeErrorMetricNumber));
+                videoMetricList.Add(missingTypeErrorProbabilityMF.GetMetric(missingTypeErrorMetric, missingTypeErrorMetricNumber));
                 videoMetricList.Add(precisionMetricFactory.GetMetric(precisionMetric, precisionMetricNumber));
                 videoMetricList.Add(recallMetricFactory.GetMetric(recallMetric, recallMetricNumber));
                 videoMetricList.Add(f1MeasureMetricFactory.GetMetric(f1Metric, f1MetricNumber));
@@ -121,13 +138,13 @@ namespace TextDetectionAccuracyEstimationLib.AccuracyEstimation
         private void CalculateMetricsForFrames(Dictionary<int, List<Metric>> metricsList, Dictionary<int, List<TextRegion>> patternTextBlocks, Dictionary<int, List<TextRegion>> generatedTextBlocks)
         {
             try
-            {
-                AbstractMetricFactory detectProbabilityMF = new DetectionProbabilityMetricFactory();
+            {                
                 AbstractMetricFactory firstTypeErrorProbabilityMF = new FirstTypeErrorProbabilityMetricFactory();
                 AbstractMetricFactory secondTypeErrorProbabilityMF = new SecondTypeErrorProbabilityMetricFactory();
-                PrecisionMetricFactory precisionMetricFactory = new PrecisionMetricFactory();
-                RecallMetricFactory recallMetricFactory = new RecallMetricFactory();
-                F1MeasureMetricFactory f1MeasureMetricFactory = new F1MeasureMetricFactory();
+                AbstractMetricFactory missingTypeErrorProbabilityMF = new MissingProbabilityMetricFactory();
+                AbstractMetricFactory precisionMetricFactory = new PrecisionMetricFactory();
+                AbstractMetricFactory recallMetricFactory = new RecallMetricFactory();
+                AbstractMetricFactory f1MeasureMetricFactory = new F1MeasureMetricFactory();
 
                 foreach (var pair in generatedTextBlocks)
                 {
@@ -144,6 +161,7 @@ namespace TextDetectionAccuracyEstimationLib.AccuracyEstimation
                         List<Metric> metrics = new List<Metric>();
                         metrics.Add(secondTypeErrorProbabilityMF.GetMetric(falseTextBlockNumber, generatedTextBlocks[frameNumber].Count));
                         metrics.Add(firstTypeErrorProbabilityMF.GetMetric(notDetectedTextBlocksNumber, patternTextBlocks[frameNumber].Count));
+                        metrics.Add(missingTypeErrorProbabilityMF.GetMetric(textBlocksWithMissedDataNumber, generatedTextBlocks[frameNumber].Count));
                         metrics.Add(precisionMetricFactory.GetMetric(precision));
 
                         double recall = 0.0;
@@ -151,9 +169,13 @@ namespace TextDetectionAccuracyEstimationLib.AccuracyEstimation
                             out falseTextBlockNumber, out notDetectedTextBlocksNumber, out recall);
 
                         metrics.Add(recallMetricFactory.GetMetric(recall));
-
-                        double denominator = 1.0 / ((this.Alhpa / precision) + ((1 - this.Alhpa) / recall));
-                        metrics.Add(f1MeasureMetricFactory.GetMetric(1.0, denominator));
+                        if (precision == Metric.UNDEFINED_METRIC || recall == Metric.UNDEFINED_METRIC)
+                            metrics.Add(f1MeasureMetricFactory.GetMetric(precision, recall));
+                        else
+                        {
+                            double denominator = 1.0 / ((this.Alhpa / precision) + ((1 - this.Alhpa) / recall));
+                            metrics.Add(f1MeasureMetricFactory.GetMetric(1.0, denominator));
+                        }
                         metricsList.Add(frameNumber, metrics);                    
                     }
                 }
@@ -205,7 +227,7 @@ namespace TextDetectionAccuracyEstimationLib.AccuracyEstimation
                     {
                         detectedTextBlocksNumber++;
                         squareSum += bestMatch;
-                        if (bestMatch < 0.8)
+                        if (bestMatch < this.IntersectionSquareThreshold)
                             textBlocksWithMissedDataNumber++;
                     }
                     else
