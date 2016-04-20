@@ -39,14 +39,33 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AccuracyEstimation\AccuracyEstimator.cs" />
+    <Compile Include="AccuracyEstimation\IAccuracyEstimation.cs" />
+    <Compile Include="Fabric\DetectionProbabilityMetricFactory.cs" />
+    <Compile Include="Fabric\AbstractMetricFactory.cs" />
+    <Compile Include="Fabric\F1MeasureMetricFactory.cs" />
+    <Compile Include="Fabric\FirstTypeErrorProbabilityMetricFactory.cs" />
+    <Compile Include="Fabric\MissingProbabilityMetricFactory.cs" />
+    <Compile Include="Fabric\PrecisionMetricFactory.cs" />
+    <Compile Include="Fabric\RecallMetricFactory.cs" />
+    <Compile Include="Fabric\SecondTypeErrorProbabilityMetricFactory.cs" />
+    <Compile Include="IO\XMLReader.cs" />
+    <Compile Include="IO\XMLWriter.cs" />
     <Compile Include="Metrics\DetectionProbability.cs" />
+    <Compile Include="Metrics\F1Measure.cs" />
     <Compile Include="Metrics\FirstTypeErrorProbability.cs" />
     <Compile Include="Metrics\Metric.cs" />
+    <Compile Include="Metrics\MissingProbability.cs" />
+    <Compile Include="Metrics\Precision.cs" />
+    <Compile Include="Metrics\Recall.cs" />
     <Compile Include="Metrics\SecondTypeErrorProbability.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Interface\" />
+    <ProjectReference Include="..\DigitalImageProcessingLib\DigitalImageProcessingLib.csproj">
+      <Project>{f498799a-9c7d-4d18-a780-f1993c682356}</Project>
+      <Name>DigitalImageProcessingLib</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
