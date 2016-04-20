@@ -20,6 +20,9 @@ namespace WPFVideoTextDetector.ViewModels
         private static int MAX_ELLIPSE_NUMBER = 16;
         private static int MIN_ELLIPSE_NUMBER = 1;
 
+        private System.Windows.Media.Brush darkBrush = (System.Windows.Media.Brush)Application.Current.MainWindow.FindResource("Brush8B4789");
+        private System.Windows.Media.Brush lightBrush = (System.Windows.Media.Brush)Application.Current.MainWindow.FindResource("Brushe5cde4");
+
         #region Brushes
         private System.Windows.Media.Brush ellipse_1_brush = null;
         private System.Windows.Media.Brush ellipse_2_brush = null;
@@ -261,22 +264,22 @@ namespace WPFVideoTextDetector.ViewModels
             this.Timer.Interval = this.timerInterval;
             this.Timer.Tick += this.RecolorEllipse;
 
-            this.Ellipse_1_Brush = (System.Windows.Media.Brush)Application.Current.MainWindow.FindResource("Brush8B4789");
-            this.Ellipse_2_Brush = (System.Windows.Media.Brush)Application.Current.MainWindow.FindResource("Brushe5cde4");
-            this.Ellipse_3_Brush = (System.Windows.Media.Brush)Application.Current.MainWindow.FindResource("Brushe5cde4");
-            this.Ellipse_4_Brush = (System.Windows.Media.Brush)Application.Current.MainWindow.FindResource("Brushe5cde4");
-            this.Ellipse_5_Brush = (System.Windows.Media.Brush)Application.Current.MainWindow.FindResource("Brushe5cde4");
-            this.Ellipse_6_Brush = (System.Windows.Media.Brush)Application.Current.MainWindow.FindResource("Brushe5cde4");
-            this.Ellipse_7_Brush = (System.Windows.Media.Brush)Application.Current.MainWindow.FindResource("Brushe5cde4");
-            this.Ellipse_8_Brush = (System.Windows.Media.Brush)Application.Current.MainWindow.FindResource("Brushe5cde4");
-            this.Ellipse_9_Brush = (System.Windows.Media.Brush)Application.Current.MainWindow.FindResource("Brushe5cde4");
-            this.Ellipse_10_Brush = (System.Windows.Media.Brush)Application.Current.MainWindow.FindResource("Brushe5cde4");
-            this.Ellipse_11_Brush = (System.Windows.Media.Brush)Application.Current.MainWindow.FindResource("Brushe5cde4");
-            this.Ellipse_12_Brush = (System.Windows.Media.Brush)Application.Current.MainWindow.FindResource("Brushe5cde4");
-            this.Ellipse_13_Brush = (System.Windows.Media.Brush)Application.Current.MainWindow.FindResource("Brushe5cde4");
-            this.Ellipse_14_Brush = (System.Windows.Media.Brush)Application.Current.MainWindow.FindResource("Brushe5cde4");
-            this.Ellipse_15_Brush = (System.Windows.Media.Brush)Application.Current.MainWindow.FindResource("Brushe5cde4");
-            this.Ellipse_16_Brush = (System.Windows.Media.Brush)Application.Current.MainWindow.FindResource("Brushe5cde4");
+            this.Ellipse_1_Brush = darkBrush;
+            this.Ellipse_2_Brush = lightBrush;
+            this.Ellipse_3_Brush = lightBrush;
+            this.Ellipse_4_Brush = lightBrush;
+            this.Ellipse_5_Brush = lightBrush;
+            this.Ellipse_6_Brush = lightBrush;
+            this.Ellipse_7_Brush = lightBrush;
+            this.Ellipse_8_Brush = lightBrush;
+            this.Ellipse_9_Brush = lightBrush;
+            this.Ellipse_10_Brush = lightBrush;
+            this.Ellipse_11_Brush = lightBrush;
+            this.Ellipse_12_Brush = lightBrush;
+            this.Ellipse_13_Brush = lightBrush;
+            this.Ellipse_14_Brush = lightBrush;
+            this.Ellipse_15_Brush = lightBrush;
+            this.Ellipse_16_Brush = lightBrush;
         }
 
         /// <summary>
@@ -289,68 +292,68 @@ namespace WPFVideoTextDetector.ViewModels
             switch (currentEllipseNumber)
             {
                 case 1:
-                    this.Ellipse_16_Brush = (System.Windows.Media.Brush)Application.Current.MainWindow.FindResource("Brushe5cde4");
-                    this.Ellipse_1_Brush = (System.Windows.Media.Brush)Application.Current.MainWindow.FindResource("Brush8B4789");
+                    this.Ellipse_16_Brush = lightBrush;
+                    this.Ellipse_1_Brush = darkBrush;
                     break;
                 case 2:
-                    this.Ellipse_1_Brush = (System.Windows.Media.Brush)Application.Current.MainWindow.FindResource("Brushe5cde4");
-                    this.Ellipse_2_Brush = (System.Windows.Media.Brush)Application.Current.MainWindow.FindResource("Brush8B4789");
+                    this.Ellipse_1_Brush = lightBrush;
+                    this.Ellipse_2_Brush = darkBrush;
                     break;
-                case 3: 
-                    this.Ellipse_2_Brush = (System.Windows.Media.Brush)Application.Current.MainWindow.FindResource("Brushe5cde4");
-                    this.Ellipse_3_Brush = (System.Windows.Media.Brush)Application.Current.MainWindow.FindResource("Brush8B4789");
+                case 3:
+                    this.Ellipse_2_Brush = lightBrush;
+                    this.Ellipse_3_Brush = darkBrush;
                     break;
                 case 4:
-                    this.Ellipse_3_Brush = (System.Windows.Media.Brush)Application.Current.MainWindow.FindResource("Brushe5cde4");
-                    this.Ellipse_4_Brush = (System.Windows.Media.Brush)Application.Current.MainWindow.FindResource("Brush8B4789");
+                    this.Ellipse_3_Brush = lightBrush;
+                    this.Ellipse_4_Brush = darkBrush;
                     break;
                 case 5:
-                    this.Ellipse_4_Brush = (System.Windows.Media.Brush)Application.Current.MainWindow.FindResource("Brushe5cde4");
-                    this.Ellipse_5_Brush = (System.Windows.Media.Brush)Application.Current.MainWindow.FindResource("Brush8B4789");
+                    this.Ellipse_4_Brush = lightBrush;
+                    this.Ellipse_5_Brush = darkBrush;
                     break;
                 case 6:
-                    this.Ellipse_5_Brush = (System.Windows.Media.Brush)Application.Current.MainWindow.FindResource("Brushe5cde4");
-                    this.Ellipse_6_Brush = (System.Windows.Media.Brush)Application.Current.MainWindow.FindResource("Brush8B4789");
+                    this.Ellipse_5_Brush = lightBrush;
+                    this.Ellipse_6_Brush = darkBrush;
                     break;
                 case 7:
-                    this.Ellipse_6_Brush = (System.Windows.Media.Brush)Application.Current.MainWindow.FindResource("Brushe5cde4");
-                    this.Ellipse_7_Brush = (System.Windows.Media.Brush)Application.Current.MainWindow.FindResource("Brush8B4789");
+                    this.Ellipse_6_Brush = lightBrush;
+                    this.Ellipse_7_Brush = darkBrush;
                     break;
                 case 8:
-                    this.Ellipse_7_Brush = (System.Windows.Media.Brush)Application.Current.MainWindow.FindResource("Brushe5cde4");
-                    this.Ellipse_8_Brush = (System.Windows.Media.Brush)Application.Current.MainWindow.FindResource("Brush8B4789");
+                    this.Ellipse_7_Brush = lightBrush;
+                    this.Ellipse_8_Brush = darkBrush;
                     break;
                 case 9:
-                    this.Ellipse_8_Brush = (System.Windows.Media.Brush)Application.Current.MainWindow.FindResource("Brushe5cde4");
-                    this.Ellipse_9_Brush = (System.Windows.Media.Brush)Application.Current.MainWindow.FindResource("Brush8B4789");
+                    this.Ellipse_8_Brush = lightBrush;
+                    this.Ellipse_9_Brush = darkBrush;
                     break;
                 case 10:
-                    this.Ellipse_9_Brush = (System.Windows.Media.Brush)Application.Current.MainWindow.FindResource("Brushe5cde4");
-                    this.Ellipse_10_Brush = (System.Windows.Media.Brush)Application.Current.MainWindow.FindResource("Brush8B4789");
+                    this.Ellipse_9_Brush = lightBrush;
+                    this.Ellipse_10_Brush = darkBrush;
                     break;
                 case 11:
-                    this.Ellipse_10_Brush = (System.Windows.Media.Brush)Application.Current.MainWindow.FindResource("Brushe5cde4");
-                    this.Ellipse_11_Brush = (System.Windows.Media.Brush)Application.Current.MainWindow.FindResource("Brush8B4789");
+                    this.Ellipse_10_Brush = lightBrush;
+                    this.Ellipse_11_Brush = darkBrush;
                     break;
                 case 12:
-                    this.Ellipse_11_Brush = (System.Windows.Media.Brush)Application.Current.MainWindow.FindResource("Brushe5cde4");
-                    this.Ellipse_12_Brush = (System.Windows.Media.Brush)Application.Current.MainWindow.FindResource("Brush8B4789");
+                    this.Ellipse_11_Brush = lightBrush;
+                    this.Ellipse_12_Brush = darkBrush;
                     break;
                 case 13:
-                    this.Ellipse_12_Brush = (System.Windows.Media.Brush)Application.Current.MainWindow.FindResource("Brushe5cde4");
-                    this.Ellipse_13_Brush = (System.Windows.Media.Brush)Application.Current.MainWindow.FindResource("Brush8B4789");
+                    this.Ellipse_12_Brush = lightBrush;
+                    this.Ellipse_13_Brush = darkBrush;
                     break;
                 case 14:
-                    this.Ellipse_13_Brush = (System.Windows.Media.Brush)Application.Current.MainWindow.FindResource("Brushe5cde4");
-                    this.Ellipse_14_Brush = (System.Windows.Media.Brush)Application.Current.MainWindow.FindResource("Brush8B4789");
+                    this.Ellipse_13_Brush = lightBrush;
+                    this.Ellipse_14_Brush = darkBrush;
                     break;
                 case 15:
-                    this.Ellipse_14_Brush = (System.Windows.Media.Brush)Application.Current.MainWindow.FindResource("Brushe5cde4");
-                    this.Ellipse_15_Brush = (System.Windows.Media.Brush)Application.Current.MainWindow.FindResource("Brush8B4789");
+                    this.Ellipse_14_Brush = lightBrush;
+                    this.Ellipse_15_Brush = darkBrush;
                     break;
                 case 16:
-                    this.Ellipse_15_Brush = (System.Windows.Media.Brush)Application.Current.MainWindow.FindResource("Brushe5cde4");
-                    this.Ellipse_16_Brush = (System.Windows.Media.Brush)Application.Current.MainWindow.FindResource("Brush8B4789");
+                    this.Ellipse_15_Brush = lightBrush;
+                    this.Ellipse_16_Brush = darkBrush;
                     break;
             }
             ++this.currentEllipseNumber;
