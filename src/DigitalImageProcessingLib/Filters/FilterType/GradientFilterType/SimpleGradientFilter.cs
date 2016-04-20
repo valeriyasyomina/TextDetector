@@ -22,17 +22,14 @@ namespace DigitalImageProcessingLib.Filters.FilterType.GradientFilterType
                 if (image == null)
                     throw new ArgumentNullException("Null image in Apply");
 
-                this._gradientXMap = new GreyImage(image.Width, image.Height);
-                this._gradientYMap = new GreyImage(image.Width, image.Height);
-
                 int imageHeight = image.Height - 1;
                 int imageWidth = image.Width - 1;
 
                 for (int i = 0; i < imageHeight; i++)
                     for (int j = 0; j < imageWidth; j++)
                     {
-                        this._gradientXMap.Pixels[i, j].Gradient.GradientX = image.Pixels[i, j].Color.Data - image.Pixels[i + 1, j].Color.Data;
-                        this._gradientYMap.Pixels[i, j].Gradient.GradientY = image.Pixels[i, j].Color.Data - image.Pixels[i, j + 1].Color.Data;
+                        image.Pixels[i, j].Gradient.GradientX = image.Pixels[i, j].Color.Data - image.Pixels[i + 1, j].Color.Data;
+                        image.Pixels[i, j].Gradient.GradientY = image.Pixels[i, j].Color.Data - image.Pixels[i, j + 1].Color.Data;
                     }
             }
             catch (Exception exception)
