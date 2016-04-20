@@ -7,6 +7,7 @@ using DigitalImageProcessingLib.IO;
 using DigitalImageProcessingLib.RegionData;
 using DigitalVideoProcessingLib.Algorithms.KeyFrameExtraction;
 using DigitalVideoProcessingLib.Algorithms.TextDetection;
+using DigitalVideoProcessingLib.Graphics;
 using DigitalVideoProcessingLib.IO;
 using DigitalVideoProcessingLib.VideoFrameType;
 using DigitalVideoProcessingLib.VideoType;
@@ -24,9 +25,12 @@ using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using System.Windows.Shapes;
+using TextDetectionAccuracyEstimationLib.AccuracyEstimation;
+using TextDetectionAccuracyEstimationLib.IO;
+using TextDetectionAccuracyEstimationLib.Metrics;
 using WPFVideoTextDetector.Command;
 using WPFVideoTextDetector.Convertors;
-using WPFVideoTextDetector.VideoSave;
 using WPFVideoTextDetector.Views;
 
 namespace WPFVideoTextDetector.ViewModels
@@ -57,6 +61,11 @@ namespace WPFVideoTextDetector.ViewModels
         private static string VIDEO_INITIALIZATION_STRING = "Инициализация видео файла";
         private static string LOAD_VIDEO_SUCCESS_STRING = "Видео было успешно загружено";
         private static string PROCESS_DATA_FOR_OUTPUT_STRING = "Подождите, идет обработка данных\nдля вывода на экран";
+        private static string XML_FILES_LOADED_SUCCESS_STRING = "XML - файлы были успешно загружены";
+        private static string XML_FILES_LOADED_STRING = "Загрузка XML - файлов";
+        private static string FILE_WAS_NOT_CHOOSEN_STRING = "Файл не был выбран";
+        private static string XML_FILES_SAVE_SUCCESS_STRING = "XML - файл был успешно сохранен";
+        private static string XML_FILES_SAVE_STRING = "Сохранение XML - файла";
         #endregion
 
         private bool isVideoTabSelected = true;
@@ -99,8 +108,7 @@ namespace WPFVideoTextDetector.ViewModels
         private Visibility previousProcessedFrameVisibility = Visibility.Hidden;
         private Visibility nextProcessedFrameVisibility = Visibility.Hidden;
         private Visibility videoWasNotLoaded = Visibility.Visible;
-        #endregion
-        
+        #endregion        
 
 
         #region Properties
@@ -222,6 +230,13 @@ namespace WPFVideoTextDetector.ViewModels
             get
             {
                 return new DelegateCommand(o => this.LoadVideoFrameFunction());
+            }
+        }
+        public ICommand AccuracyEstimationCommand
+        {
+            get
+            {
+                return new DelegateCommand(o => this.AccuracyEstimationFunction());
             }
         }
 
@@ -408,10 +423,14 @@ namespace WPFVideoTextDetector.ViewModels
                 dialog.Filter = "JPEG Image (.jpg)|*.jpg";
                 dialog.ShowDialog();
 
+                string pathToSaveFile = System.IO.Path.GetDirectoryName(dialog.FileName);
+                string XMLFileName = System.IO.Path.Combine(pathToSaveFile, System.IO.Path.GetFileNameWithoutExtension(dialog.FileName) + ".xml");
+
                 VideoSaver videoSaver = new VideoSaver();              
                 System.Drawing.Pen pen = new System.Drawing.Pen(System.Drawing.Color.Red, 2);
 
                 await videoSaver.SaveVideoFrameAsync(videoFrame, pen, dialog.FileName);
+                await DigitalVideoProcessingLib.IO.XMLWriter.WriteTextBlocksInformation(videoFrame, XMLFileName);
 
                 OkButtonWindow okButtonWindow = OkButtonWindow.InitializeOkButtonWindow();
                 okButtonWindow.capitalText.Text = SAVE_FRAME_STRING;
@@ -435,16 +454,21 @@ namespace WPFVideoTextDetector.ViewModels
                 SaveFileDialog dialog = new SaveFileDialog();
                 dialog.ShowDialog();
 
+                string pathToSaveFile = System.IO.Path.GetDirectoryName(dialog.FileName);
+                string XMLFileName = System.IO.Path.Combine(pathToSaveFile, System.IO.Path.GetFileNameWithoutExtension(dialog.FileName) + ".xml");
+                
                 VideoSaver videoSaver = new VideoSaver();
                 VideoSaver.videoFrameSavedEvent += this.VideoFrameSavedProcessing;
                 System.Drawing.Pen pen = new System.Drawing.Pen(System.Drawing.Color.Red, 2);
-                
+
+                progressWindow.pbStatus.Value = 0.0;
                 progressWindow.pbStatus.SmallChange = (double)progressWindow.pbStatus.Maximum / (double)this.video.Frames.Count;
                 progressWindow.capitalText.Text = SAVE_PROCESSED_VIDEO_FRAMES_STRING;
                 progressWindow.textInformation.Text = "";
 
                 progressWindow.Show();
                 await videoSaver.SaveVideoAsync(video, pen, dialog.FileName, "ProcessedFrames", ".jpg");
+                await DigitalVideoProcessingLib.IO.XMLWriter.WriteTextBlocksInformation(video, XMLFileName);
 
                 OkButtonWindow okButtonWindow = OkButtonWindow.InitializeOkButtonWindow();
                 okButtonWindow.capitalText.Text = SAVE_PROCESSED_VIDEO_FRAMES_STRING;
@@ -552,14 +576,13 @@ namespace WPFVideoTextDetector.ViewModels
             try
             {
                 this.processedVideoFramesBitmap = new List<BitmapImage>();
-
                 BitmapConvertor bitmapConvertor = new BitmapConvertor();
                 BitmapImageConvertor bitmapImageConvertor = new Convertors.BitmapImageConvertor();
 
                 for (int i = 0; i < this.video.Frames.Count; i++)
                 {
                     Bitmap bitmapFrame = bitmapConvertor.ToBitmap(this.video.Frames[i].Frame);
-                    VideoSaver.DrawTextBoundingBoxes(bitmapFrame, this.video.Frames[i].Frame.TextRegions, new System.Drawing.Pen(System.Drawing.Color.Red, 2));
+                    Draw.DrawTextBoundingBoxes(bitmapFrame, this.video.Frames[i].Frame.TextRegions, new System.Drawing.Pen(System.Drawing.Color.Red, 2));
                     this.processedVideoFramesBitmap.Add(bitmapImageConvertor.BitmapToBitmapImage(bitmapFrame));
                 }
             }
@@ -580,12 +603,7 @@ namespace WPFVideoTextDetector.ViewModels
         {
             try
             {
-                EdgeDetectionFilter sobel = new SobelFilter();
-                SmoothingFilter gauss = new GaussFilter(5, 1.4);
-                GradientFilter gradientFiler = new SimpleGradientFilter();
-                CannyEdgeDetection canny = new CannyEdgeDetection(gauss, sobel, 20, 80);
-
-                SWTVideoTextDetection SWTVideoTextDetection = new SWTVideoTextDetection(canny, gradientFiler, 0.5);
+                SWTVideoTextDetection SWTVideoTextDetection = new SWTVideoTextDetection(0.5);
                 
                 this.StartLoader(DETECT_TEXT_VIDEO_FRAME_STRING);
                 await SWTVideoTextDetection.DetectText(this.videoFrame, 4);
@@ -598,7 +616,7 @@ namespace WPFVideoTextDetector.ViewModels
 
                 BitmapConvertor bitmapConvertor = new BitmapConvertor();
                 Bitmap bitmapFrame = bitmapConvertor.ToBitmap(this.videoFrame.Frame);
-                VideoSaver.DrawTextBoundingBoxes(bitmapFrame, this.videoFrame.Frame.TextRegions, new System.Drawing.Pen(System.Drawing.Color.Red, 2));
+                Draw.DrawTextBoundingBoxes(bitmapFrame, this.videoFrame.Frame.TextRegions, new System.Drawing.Pen(System.Drawing.Color.Red, 2));
 
                 BitmapImageConvertor bitmapImageConvertor = new Convertors.BitmapImageConvertor();
                 this.ProcessedFrameSource = bitmapImageConvertor.BitmapToBitmapImage(bitmapFrame);
@@ -610,6 +628,7 @@ namespace WPFVideoTextDetector.ViewModels
             }
             catch (Exception exception)
             {
+                this.StopLoader();
                 ShowExceptionMessage(exception.Message);
             }
         }      
@@ -621,12 +640,7 @@ namespace WPFVideoTextDetector.ViewModels
         {
             try
             {
-                EdgeDetectionFilter sobel = new SobelFilter();
-                SmoothingFilter gauss = new GaussFilter(5, 1.4);
-                GradientFilter gradientFiler = new SimpleGradientFilter();
-                CannyEdgeDetection canny = new CannyEdgeDetection(gauss, sobel, 20, 80);
-
-                SWTVideoTextDetection SWTVideoTextDetection = new SWTVideoTextDetection(canny, gradientFiler, 0.5);
+                SWTVideoTextDetection SWTVideoTextDetection = new SWTVideoTextDetection(0.5);
                 this.StartLoader(DETECT_TEXT_VIDEO_STRING);
                 await SWTVideoTextDetection.DetectText(this.video, 4);
                 this.StopLoader();
@@ -648,6 +662,7 @@ namespace WPFVideoTextDetector.ViewModels
             }
             catch (Exception exception)
             {
+                this.StopLoader();
                 ShowExceptionMessage(exception.Message);              
             }
         }
@@ -715,18 +730,34 @@ namespace WPFVideoTextDetector.ViewModels
                 progressWindow.textInformation.Text = VIDEO_INITIALIZATION_STRING;
                 progressWindow.Show();
 
+                string videoFilePath = System.IO.Path.GetDirectoryName(dialog.FileName);
+                string videoFileName = System.IO.Path.GetFileName(dialog.FileName);
+                string keyFramesInormatyionFilePath = System.IO.Path.Combine(videoFilePath, videoFileName + ".txt");
+
                 IOData ioData = new IOData() { FileName = dialog.FileName, FrameHeight = 480, FrameWidth = 640 };
-                VideoLoader.frameLoadedEvent += this.LoadingFramesProcessing;
+
                 VideoLoader videoLoader = new VideoLoader();
-
                 int framesNumber = await videoLoader.CountFramesNumberAsync(ioData);
-                progressWindow.pbStatus.SmallChange = (double)progressWindow.pbStatus.Maximum / (double)framesNumber;           
+                progressWindow.pbStatus.SmallChange = (double)progressWindow.pbStatus.Maximum / (double)framesNumber;
 
-                EdgeBasedKeyFrameExtractor.keyFrameExtractedEvent += this.KeyFramesExtractionProcessing;
-                EdgeBasedKeyFrameExtractor.framesDifferenceEvent += this.FramesDifferenceCalculateProcessing;
-                EdgeBasedKeyFrameExtractor edgeBasedKeyFrameExtractor = new EdgeBasedKeyFrameExtractor();
-                this.video.Frames = await edgeBasedKeyFrameExtractor.ExtractKeyFramesTwoPassAsync(ioData);
+                /// Если существует файл с информацией о ключевых кадрах
+                if (System.IO.File.Exists(keyFramesInormatyionFilePath))
+                {
+                    FileReader fileReader = new FileReader();
+                    List<KeyFrameIOInformation> keyFrameIOInformation = await fileReader.ReadKeyFramesInformationAsync(keyFramesInormatyionFilePath);
+                    ioData.KeyFrameIOInformation = keyFrameIOInformation;                    
 
+                    EdgeBasedKeyFrameExtractor.keyFrameExtractedEvent += this.KeyFramesExtractionProcessing;
+                    EdgeBasedKeyFrameExtractor edgeBasedKeyFrameExtractor = new EdgeBasedKeyFrameExtractor();
+                    this.video.Frames = await edgeBasedKeyFrameExtractor.ExtractKeyFramesByListNumberAsync(ioData);
+                }
+                else   /// Если нет, то выделяем кадры алгоритмически
+                {
+                    EdgeBasedKeyFrameExtractor.keyFrameExtractedEvent += this.KeyFramesExtractionProcessing;
+                    EdgeBasedKeyFrameExtractor.framesDifferenceEvent += this.FramesDifferenceCalculateProcessing;
+                    EdgeBasedKeyFrameExtractor edgeBasedKeyFrameExtractor = new EdgeBasedKeyFrameExtractor();
+                    this.video.Frames = await edgeBasedKeyFrameExtractor.ExtractKeyFramesTwoPassAsync(ioData);
+                }
                 okButtonWindow = OkButtonWindow.InitializeOkButtonWindow();
                 okButtonWindow.capitalText.Text = LOAD_VIDEO_STRING;
                 okButtonWindow.textInformation.Text = LOAD_VIDEO_SUCCESS_STRING;
@@ -918,6 +949,60 @@ namespace WPFVideoTextDetector.ViewModels
 
         #endregion
 
+        #region Accuracy estimation
+        /// <summary>
+        /// Подсчет значений метрик для алгоритма локализации, вычисление точности обнаружения текстовых областей
+        /// </summary>
+        private async void AccuracyEstimationFunction()
+        {
+            try
+            {
+                OpenFileDialog dialog = new OpenFileDialog();
+                dialog.Title = "Выберите эталонный XML - файл";
+                dialog.Filter = "XML - files (.xml)|*.xml";
+                dialog.ShowDialog();
+                string patternXMLFileName = dialog.FileName;
+                if (patternXMLFileName.Length == 0)
+                    ShowExceptionMessage(FILE_WAS_NOT_CHOOSEN_STRING);
+                else
+                {
+                    dialog.Title = "Выберите XML файл, сгенерированный программой";
+                    dialog.ShowDialog();
+                    string generatedXMLFileName = dialog.FileName;
+                    if (generatedXMLFileName.Length == 0)
+                        ShowExceptionMessage(FILE_WAS_NOT_CHOOSEN_STRING);
+                    else
+                    {
+                        Dictionary<int, List<TextRegion>> patternFramesTextBlocksInformation = await XMLReader.ReadTextBlocksInformation(patternXMLFileName);
+                        Dictionary<int, List<TextRegion>> generatedFramesTextBlocksInformation = await XMLReader.ReadTextBlocksInformation(generatedXMLFileName);
 
+                        OkButtonWindow okButtonWindow = OkButtonWindow.InitializeOkButtonWindow();
+                        okButtonWindow.capitalText.Text = XML_FILES_LOADED_STRING;
+                        okButtonWindow.textInformation.Text = XML_FILES_LOADED_SUCCESS_STRING;
+                        okButtonWindow.ShowDialog();
+
+                        IAccuracyEstimation accuracyEstimator = new AccuracyEstimator();
+                        Dictionary<int, List<Metric>> metrics = await accuracyEstimator.CalculateMetrics(patternFramesTextBlocksInformation, generatedFramesTextBlocksInformation);
+                                                  
+                        SaveFileDialog saveDialog = new SaveFileDialog();
+                        saveDialog.Filter = "XML - files (.xml)|*.xml";
+                        saveDialog.ShowDialog();
+
+                        await TextDetectionAccuracyEstimationLib.IO.XMLWriter.WriteMetricsXML(saveDialog.FileName, metrics);
+
+                        okButtonWindow = OkButtonWindow.InitializeOkButtonWindow();
+                        okButtonWindow.capitalText.Text = XML_FILES_SAVE_STRING;
+                        okButtonWindow.textInformation.Text = XML_FILES_SAVE_SUCCESS_STRING;
+                        okButtonWindow.ShowDialog();
+                    }
+                }
+            }
+            catch (Exception exception)
+            {
+                ShowExceptionMessage(exception.Message);
+            }
+        }
+
+        #endregion
     }
 }
