@@ -120,6 +120,15 @@ namespace TextDetectionAccuracyEstimationLib.IO
                             xmlWriter.WriteString(metricsForFrame[i].Value.ToString());
                         xmlWriter.WriteEndElement();
                     }
+                    else if (metricsForFrame[i].GetType() == typeof(MissingProbability))
+                    {
+                        xmlWriter.WriteStartElement("MissingProbability");
+                        if (metricsForFrame[i].Value == Metric.UNDEFINED_METRIC)
+                            xmlWriter.WriteString("UNDEFINED_METRIC");
+                        else
+                            xmlWriter.WriteString(metricsForFrame[i].Value.ToString());
+                        xmlWriter.WriteEndElement();
+                    }
                     else if (metricsForFrame[i].GetType() == typeof(Precision))
                     {
                         xmlWriter.WriteStartElement("Precision");
