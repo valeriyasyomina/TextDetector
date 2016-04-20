@@ -14,7 +14,7 @@ namespace TextDetectionAccuracyEstimationLib.Metrics
         public abstract double Calculate();
         public double Calculate(double numerator, double denominator)
         {
-            if (denominator == 0)
+            if (denominator <= 0 || numerator < 0)
                 this.Value = UNDEFINED_METRIC;
             else
                 this.Value = numerator / denominator;    
