@@ -173,7 +173,7 @@ namespace TextDetectionAccuracyEstimationLib.AccuracyEstimation
                             metrics.Add(f1MeasureMetricFactory.GetMetric(precision, recall));
                         else
                         {
-                            double denominator = 1.0 / ((this.Alhpa / precision) + ((1 - this.Alhpa) / recall));
+                            double denominator = (this.Alhpa / precision) + ((1 - this.Alhpa) / recall);
                             metrics.Add(f1MeasureMetricFactory.GetMetric(1.0, denominator));
                         }
                         metricsList.Add(frameNumber, metrics);                    
