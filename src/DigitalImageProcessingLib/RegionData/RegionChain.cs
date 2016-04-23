@@ -16,6 +16,7 @@ namespace DigitalImageProcessingLib.RegionData
             this.DirectionX = DIRECTION_UNDEFINED;
             this.DirectionY = DIRECTION_UNDEFINED;
             this.DistanceSqr = DISTANCE_UNDEFINED;
+            this.AngleDirection = DIRECTION_UNDEFINED;
             this.FirstRegionNumber = UNDEFINED_REGION_NUMBER;
             this.LastRegionNumber = UNDEFINED_REGION_NUMBER;
             this.RegionsNumber = new List<int>();

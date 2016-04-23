@@ -12,5 +12,6 @@ namespace DigitalImageProcessingLib.RegionData
         public double DirectionX { get; set; }
         public double DirectionY { get; set; }
         public double DistanceSqr { get; set; }
+        public double AngleDirection { get; set; }
     }
 }
