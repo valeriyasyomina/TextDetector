@@ -67,6 +67,7 @@
     <Compile Include="IO\VideoLoader.cs" />
     <Compile Include="IO\VideoSaver.cs" />
     <Compile Include="IO\XMLWriter.cs" />
+    <Compile Include="Mediators\LoadDetectTextVideoMediator.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="VideoFrameType\GreyVideoFrame.cs" />
     <Compile Include="VideoType\GreyVideo.cs" />
