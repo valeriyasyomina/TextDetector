@@ -9,6 +9,6 @@ namespace DigitalVideoProcessingLib.Interface
 {
     public interface IFileReader
     {
-        Task<List<KeyFrameIOInformation>> ReadKeyFramesInformationAsync(string fileName);
+        Task<List<KeyFrameIOInformation>> ReadKeyFramesInformationAsync(string fileName, int frameWidth, int frameHeight);
     }
 }

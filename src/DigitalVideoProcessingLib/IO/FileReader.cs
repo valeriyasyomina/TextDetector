@@ -15,10 +15,14 @@ namespace DigitalVideoProcessingLib.IO
         /// </summary>
         /// <param name="fileName"></param>
         /// <returns></returns>
-        public Task<List<KeyFrameIOInformation>> ReadKeyFramesInformationAsync(string fileName)
+        public Task<List<KeyFrameIOInformation>> ReadKeyFramesInformationAsync(string fileName, int frameWidth, int frameHeight)
         {
             if (fileName == null)
                 throw new ArgumentNullException("Null fileName in ReadKeyFramesInformationAsync");
+            if (frameWidth <= 0)
+                throw new ArgumentException("Error frameWidth in ReadKeyFramesInformationAsync");
+            if (frameHeight <= 0)
+                throw new ArgumentException("Error frameHeight in ReadKeyFramesInformationAsync");
 
             return Task.Run(() =>
             {
@@ -32,6 +36,8 @@ namespace DigitalVideoProcessingLib.IO
                     KeyFrameIOInformation keyFrameIOInformation = new KeyFrameIOInformation();
                     keyFrameIOInformation.Number = informationList[0];
                     keyFrameIOInformation.NeedProcess = informationList[1] == 1 ? true : false;
+                    keyFrameIOInformation.Width = frameWidth;
+                    keyFrameIOInformation.Height = frameHeight;
                     keyFrameIOInformationList.Add(keyFrameIOInformation);
                 }
                 return keyFrameIOInformationList;
