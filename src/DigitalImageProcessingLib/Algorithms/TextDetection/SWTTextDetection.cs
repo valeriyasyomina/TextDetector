@@ -39,6 +39,7 @@ namespace DigitalImageProcessingLib.Algorithms.TextDetection
         private double _pairsOccupationRatio = 0.0;
 
         private int _minLettersNumberInTextRegion = 0;
+        private bool _mergeByDirectionAndChainEnds = false;
 
         private static double STRICTNESS = Math.PI / 6.0;
 
@@ -59,7 +60,7 @@ namespace DigitalImageProcessingLib.Algorithms.TextDetection
             double diamiterSWRatio = 10, double bbPixelsNumberMinRatio = 1.5, double bbPixelsNumberMaxRatio = 25.0,
             double imageRegionHeightRationMin = 1.5, double imageRegionWidthRatioMin = 1.5, double pairsHeightRatio = 2.0,
             double pairsIntensityRatio = 1.0, double pairsSWRatio = 1.5, double pairsWidthDistanceSqrRatio = 9.0,
-            double pairsOccupationRatio = 2.0, int minLettersNumberInTextRegion = 2)           
+            double pairsOccupationRatio = 2.0, int minLettersNumberInTextRegion = 2, bool mergeByDirectionAndChainEnds = false)           
         {
             if (edgeDetector == null)
                 throw new ArgumentNullException("Null edgeDetector in ctor");           
@@ -89,6 +90,7 @@ namespace DigitalImageProcessingLib.Algorithms.TextDetection
             this._pairsOccupationRatio = pairsOccupationRatio;
 
             this._minLettersNumberInTextRegion = minLettersNumberInTextRegion;
+            this._mergeByDirectionAndChainEnds = mergeByDirectionAndChainEnds;
 
             this._lightRegions = new Dictionary<int, Region>();
             this._darkRegions = new Dictionary<int, Region>();
@@ -439,7 +441,7 @@ namespace DigitalImageProcessingLib.Algorithms.TextDetection
                        textRegions.Add(textRegion);
                    }*/
 
-             /*   List<RegionChain> letterPairs = null;
+               /* List<RegionChain> letterPairs = null;
                 GetLetterPairs(regions, out letterPairs);
                 DeleteBigLetterPairs(letterPairs, imageWidth, imageHeight);
 
@@ -449,6 +451,8 @@ namespace DigitalImageProcessingLib.Algorithms.TextDetection
                        int n2 = letterPairs[i].LastRegionNumber;
 
                        Region fR = regions[n1];
+                       
+                       
                        Region sR = regions[n2];
 
                        TextRegion textRegion = new TextRegion()
@@ -468,7 +472,10 @@ namespace DigitalImageProcessingLib.Algorithms.TextDetection
 
                 List<RegionChain> mergedBigRegions = null;
                 DeleteRegionsThatDoesnotBelongToAnyRagionsPais(regions, letterPairs);
-                MergePairsToBigRegions(regions, letterPairs, out mergedBigRegions);
+                if (this._mergeByDirectionAndChainEnds)
+                    MergePairsToBigRegionsByDirectionAndChainEnds(regions, letterPairs, out mergedBigRegions);
+                else
+                    MergePairsToBigRegions(regions, letterPairs, out mergedBigRegions);
                 CreateTextRegions(regions, mergedBigRegions, out textRegions); 
             }
             catch (Exception exception)
@@ -609,6 +616,224 @@ namespace DigitalImageProcessingLib.Algorithms.TextDetection
             }
         }
 
+        private void MergePairsToBigRegionsByDirectionAndChainEnds(Dictionary<int, Region> regions, List<RegionChain> letterPairsNumbers, out List<RegionChain> mergedRegions)
+        {
+            try
+            {
+                mergedRegions = new List<RegionChain>();
+                foreach (var pair in regions)
+                {
+                    int currentRegionNumber = pair.Key;
+
+                    int numberOfMergedRegion = GetMergedRegionNumberByRegionNumber(mergedRegions, currentRegionNumber);
+                    if (numberOfMergedRegion == ERROR_VALUE)
+                    {
+                        RegionChain chain = new RegionChain();
+                        chain.RegionsNumber = new List<int>();
+                        chain.RegionsNumber.Add(currentRegionNumber);
+                        chain.FirstRegionNumber = currentRegionNumber;
+                        chain.LastRegionNumber = currentRegionNumber;
+                        mergedRegions.Add(chain);
+                        numberOfMergedRegion = mergedRegions.Count - 1;
+                    }
+
+                    List<int> listOfPairs = GetNumbersOfPairsByRegionNumber(letterPairsNumbers, currentRegionNumber);
+                    for (int i = 0; i < listOfPairs.Count; i++)
+                    {
+                        int currentPairNumber = listOfPairs[i];
+                        int differentPairElement = letterPairsNumbers[currentPairNumber].FirstRegionNumber != currentRegionNumber ?
+                                                   letterPairsNumbers[currentPairNumber].FirstRegionNumber : letterPairsNumbers[currentPairNumber].LastRegionNumber;
+                        int pairMergedRegionIndex = GetMergedRegionNumberByRegionNumber(mergedRegions, differentPairElement);
+
+                        if (pairMergedRegionIndex == ERROR_VALUE)
+                        {
+                            //-------------- ПРОВЕРКА НАПРАВЛЕНИЯ
+                            int deltaI = regions[currentRegionNumber].CenterPointIndexI - regions[differentPairElement].CenterPointIndexI;
+                            int deltaJ = regions[currentRegionNumber].CenterPointIndexJ - regions[differentPairElement].CenterPointIndexJ;
+                            double PairAngleDirection = Math.Atan((double)deltaI / (double)deltaJ) * (180 / Math.PI);
+                            //---------------
+
+                            // ЕСЛИ НАПРАВЛЕНИЕ СОВПАЛО, ТО ДОБАВЛЯЕМ РЕГИОН
+                            if (mergedRegions[numberOfMergedRegion].AngleDirection == 1000 || Math.Abs(mergedRegions[numberOfMergedRegion].AngleDirection - PairAngleDirection) < 30)
+                            {
+                                // mergedRegions[numberOfMergedRegion].RegionsNumber.Add(differentPairElement);
+
+                                int addingElementI = regions[differentPairElement].CenterPointIndexI;
+                                int addingElementJ = regions[differentPairElement].CenterPointIndexJ;
+
+                                int chainFirstElementI = regions[mergedRegions[numberOfMergedRegion].FirstRegionNumber].CenterPointIndexI;
+                                int chainFirstElementJ = regions[mergedRegions[numberOfMergedRegion].FirstRegionNumber].CenterPointIndexJ;
+
+                                int chainLastElementI = regions[mergedRegions[numberOfMergedRegion].LastRegionNumber].CenterPointIndexI;
+                                int chainLastElementJ = regions[mergedRegions[numberOfMergedRegion].LastRegionNumber].CenterPointIndexJ;
+
+                                int scalar = GetScalyar(addingElementI - chainFirstElementI, addingElementJ - chainFirstElementJ, addingElementI - chainLastElementI, addingElementJ - chainLastElementJ);
+
+                                if (mergedRegions[numberOfMergedRegion].FirstRegionNumber == currentRegionNumber ||
+                                    mergedRegions[numberOfMergedRegion].LastRegionNumber == currentRegionNumber)
+                                {
+                                    mergedRegions[numberOfMergedRegion].RegionsNumber.Add(differentPairElement);
+                                    if (scalar > 0)
+                                    {
+                                        //   mergedRegions[numberOfMergedRegion].FirstRegionNumber = differentPairElement;
+                                        double dist1 = GetDistanceSqrBetweenRegions(regions[differentPairElement].CenterPointIndexI, regions[differentPairElement].CenterPointIndexJ,
+                                            regions[mergedRegions[numberOfMergedRegion].FirstRegionNumber].CenterPointIndexI,
+                                            regions[mergedRegions[numberOfMergedRegion].FirstRegionNumber].CenterPointIndexJ);
+
+                                        double dist2 = GetDistanceSqrBetweenRegions(regions[differentPairElement].CenterPointIndexI, regions[differentPairElement].CenterPointIndexJ,
+                                            regions[mergedRegions[numberOfMergedRegion].LastRegionNumber].CenterPointIndexI,
+                                            regions[mergedRegions[numberOfMergedRegion].LastRegionNumber].CenterPointIndexJ);
+                                        if (dist1 <= dist2)
+                                            mergedRegions[numberOfMergedRegion].FirstRegionNumber = differentPairElement;
+                                        else
+                                            mergedRegions[numberOfMergedRegion].LastRegionNumber = differentPairElement;
+                                    }
+                                    RecalculateAngleDirectionForChain(mergedRegions[numberOfMergedRegion], regions);
+                                }
+                                /*    else if (mergedRegions[numberOfMergedRegion].LastRegionNumber == currentRegionNumber)
+                                    {
+                                        mergedRegions[numberOfMergedRegion].RegionsNumber.Add(differentPairElement);
+                                        if (scalar > 0)
+                                            mergedRegions[numberOfMergedRegion].LastRegionNumber = differentPairElement;
+                                        RecalculateAngleDirectionForChain(mergedRegions[numberOfMergedRegion], regions);
+                                    }*/
+
+                                //RecalculateAngleDirectionForChain(mergedRegions[numberOfMergedRegion], regions);
+                            }
+                            /*       else // В ПРОТИВНОМ СЛУЧАЕ, ЭТОТ РЕГИОН ВЫДЕЛЯЕТСЯ В ОТДЕЛЬНУЮ ОБЛАСТЬ
+                                   {
+                                       RegionChain chain = new RegionChain();
+                                       chain.RegionsNumber = new List<int>();
+                                       chain.RegionsNumber.Add(currentRegionNumber);
+                                       chain.RegionsNumber.Add(differentPairElement);
+                                       chain.FirstRegionNumber = currentRegionNumber;
+                                       chain.LastRegionNumber = differentPairElement;
+
+                                       RecalculateAngleDirectionForChain(chain, regions);
+                                       mergedRegions.Add(chain);
+                                   }*/
+                        }
+                        else
+                        {
+                            if (pairMergedRegionIndex != numberOfMergedRegion)
+                            {
+                                // ЕСЛИ ВСТРЕТИЛИСЬ ДВЕ ОБЛАСТИ ПО 1 РЕГИОНУ, ТО ПРОСТО СЛИВАЕМ ИХ
+                                if (mergedRegions[numberOfMergedRegion].RegionsNumber.Count == 1 && mergedRegions[pairMergedRegionIndex].RegionsNumber.Count == 1)
+                                {
+                                    mergedRegions[numberOfMergedRegion].RegionsNumber.Add(differentPairElement);
+                                    mergedRegions[numberOfMergedRegion].LastRegionNumber = differentPairElement;
+                                    RecalculateAngleDirectionForChain(mergedRegions[numberOfMergedRegion], regions);
+                                    mergedRegions.RemoveAt(pairMergedRegionIndex);
+                                }
+                                else // ИНАЧЕ ПРОВЕРКА НА НАПРАВЛЕНИЕ, КАК БЫЛО ВЫШЕ
+                                {
+                                    //------------ ПРОВЕРКА НАПРАВЛЕНИЯ
+                                    int deltaI = regions[currentRegionNumber].CenterPointIndexI - regions[differentPairElement].CenterPointIndexI;
+                                    int deltaJ = regions[currentRegionNumber].CenterPointIndexJ - regions[differentPairElement].CenterPointIndexJ;
+                                    double PairAngleDirection = Math.Atan((double)deltaI / (double)deltaJ) * (180 / Math.PI);
+                                    //---------------
+
+                                    // ЕСЛИ В ПЕРВОЙ ОБЛАСТИ ОДИН РЕГИОН, ТО ПРОБУЕМ ДОБАВИТЬ ЭТОТ РЕГИОН КО ВТОРОЙ ОБЛАСТИ
+                                    if (mergedRegions[numberOfMergedRegion].RegionsNumber.Count == 1)
+                                    {
+                                        if (Math.Abs(mergedRegions[pairMergedRegionIndex].AngleDirection - PairAngleDirection) < 30)
+                                        {
+                                            mergedRegions[pairMergedRegionIndex].RegionsNumber.Add(currentRegionNumber);
+
+                                            if (mergedRegions[pairMergedRegionIndex].FirstRegionNumber == differentPairElement)
+                                                mergedRegions[pairMergedRegionIndex].FirstRegionNumber = currentRegionNumber;
+                                            else if (mergedRegions[pairMergedRegionIndex].LastRegionNumber == differentPairElement)
+                                                mergedRegions[pairMergedRegionIndex].LastRegionNumber = currentRegionNumber;
+
+                                            RecalculateAngleDirectionForChain(mergedRegions[pairMergedRegionIndex], regions);
+                                            mergedRegions.RemoveAt(numberOfMergedRegion);
+                                        }
+                                    }
+                                    else // ЕСЛИ ВО ВТОРОЙ ОБЛАСТИ ОДИН РЕГИОН, ТО ПРОБУЕМ ДОБАВИТЬ ЭТОТ РЕГИОН К ПЕРВОЙ ОБЛАСТИ
+                                        if (mergedRegions[pairMergedRegionIndex].RegionsNumber.Count == 1)
+                                        {
+                                            if (Math.Abs(mergedRegions[numberOfMergedRegion].AngleDirection - PairAngleDirection) < 30)
+                                            {
+                                                mergedRegions[numberOfMergedRegion].RegionsNumber.Add(differentPairElement);
+
+
+                                                if (mergedRegions[numberOfMergedRegion].FirstRegionNumber == currentRegionNumber)
+                                                    mergedRegions[numberOfMergedRegion].FirstRegionNumber = differentPairElement;
+                                                else if (mergedRegions[numberOfMergedRegion].LastRegionNumber == currentRegionNumber)
+                                                    mergedRegions[numberOfMergedRegion].LastRegionNumber = differentPairElement;
+
+
+                                                RecalculateAngleDirectionForChain(mergedRegions[numberOfMergedRegion], regions);
+                                                mergedRegions.RemoveAt(pairMergedRegionIndex);
+                                            }
+                                        }
+                                        else // ЕСЛИ В ДВУХ ОБЛАСТЯХ МНОГО РЕГИОНОВ, ПЫТАЕМСЯ ИХ СЛИТЬ, КАК И РАНЬШЕ
+                                        {
+                                            //-------------- ПРОВЕРКА НАПРАВЛЕНИЯ
+                                            deltaI = regions[currentRegionNumber].CenterPointIndexI - regions[differentPairElement].CenterPointIndexI;
+                                            deltaJ = regions[currentRegionNumber].CenterPointIndexJ - regions[differentPairElement].CenterPointIndexJ;
+                                            PairAngleDirection = Math.Atan((double)deltaI / (double)deltaJ) * (180 / Math.PI);
+                                            //---------------
+
+                                            // ЕСЛИ НАПРАВЛЕНИЕ СОВПАЛО, ТО ДОБАВЛЯЕМ РЕГИОН
+                                            if (mergedRegions[numberOfMergedRegion].AngleDirection == 1000 || Math.Abs(mergedRegions[numberOfMergedRegion].AngleDirection - PairAngleDirection) < 30)
+                                            {
+                                                int addingElementI = regions[differentPairElement].CenterPointIndexI;
+                                                int addingElementJ = regions[differentPairElement].CenterPointIndexJ;
+
+                                                int chainFirstElementI = regions[mergedRegions[numberOfMergedRegion].FirstRegionNumber].CenterPointIndexI;
+                                                int chainFirstElementJ = regions[mergedRegions[numberOfMergedRegion].FirstRegionNumber].CenterPointIndexJ;
+
+                                                int chainLastElementI = regions[mergedRegions[numberOfMergedRegion].LastRegionNumber].CenterPointIndexI;
+                                                int chainLastElementJ = regions[mergedRegions[numberOfMergedRegion].LastRegionNumber].CenterPointIndexJ;
+
+                                                int scalar = GetScalyar(addingElementI - chainFirstElementI, addingElementJ - chainFirstElementJ, addingElementI - chainLastElementI, addingElementJ - chainLastElementJ);
+
+                                                if (mergedRegions[numberOfMergedRegion].RegionsNumber.Contains(currentRegionNumber)) //.FirstRegionNumber == currentRegionNumber ||
+                                                //mergedRegions[numberOfMergedRegion].LastRegionNumber == currentRegionNumber)
+                                                {
+                                                    mergedRegions[numberOfMergedRegion].RegionsNumber.Add(differentPairElement);
+                                                    if (scalar > 0)
+                                                    {
+                                                        //   mergedRegions[numberOfMergedRegion].FirstRegionNumber = differentPairElement;
+                                                        double dist1 = GetDistanceSqrBetweenRegions(regions[differentPairElement].CenterPointIndexI, regions[differentPairElement].CenterPointIndexJ,
+                                                            regions[mergedRegions[numberOfMergedRegion].FirstRegionNumber].CenterPointIndexI,
+                                                            regions[mergedRegions[numberOfMergedRegion].FirstRegionNumber].CenterPointIndexJ);
+
+                                                        double dist2 = GetDistanceSqrBetweenRegions(regions[differentPairElement].CenterPointIndexI, regions[differentPairElement].CenterPointIndexJ,
+                                                            regions[mergedRegions[numberOfMergedRegion].LastRegionNumber].CenterPointIndexI,
+                                                            regions[mergedRegions[numberOfMergedRegion].LastRegionNumber].CenterPointIndexJ);
+                                                        if (dist1 <= dist2)
+                                                            mergedRegions[numberOfMergedRegion].FirstRegionNumber = differentPairElement;
+                                                        else
+                                                            mergedRegions[numberOfMergedRegion].LastRegionNumber = differentPairElement;
+                                                    }
+                                                    RecalculateAngleDirectionForChain(mergedRegions[numberOfMergedRegion], regions);
+                                                    UniteTwoMergedRegionsByDirectionAndChainEnds(mergedRegions, regions, numberOfMergedRegion, pairMergedRegionIndex);
+                                                }
+                                            }
+
+
+                                        }
+                                }
+
+                                numberOfMergedRegion = GetMergedRegionNumberByRegionNumber(mergedRegions, currentRegionNumber);
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception exception)
+            {
+                throw exception;
+            }
+        }
+
+        private int GetScalyar(int firstPointI, int firstPointJ, int secondPointI, int secondPointJ)
+        {
+            return firstPointI * secondPointI + firstPointJ * secondPointJ;           
+        }
+
         /// <summary>
         /// Находит номер "большой" области по номеру региона. Большая область может включать себя разное кол-во регионов
         /// </summary>
@@ -662,6 +887,52 @@ namespace DigitalImageProcessingLib.Algorithms.TextDetection
         /// <param name="mergedRegions">Больште области</param>
         /// <param name="firstRegionIndexToUnit">Номер первой большой области для объединения</param>
         /// <param name="secondRegionIndexToUnit">Номер второй большой области для объединения</param>
+        private void UniteTwoMergedRegionsByDirectionAndChainEnds(List<RegionChain> mergedRegions, Dictionary<int, Region> regions, int firstRegionIndexToUnit, int secondRegionIndexToUnit)
+        {
+            try
+            {
+                RegionChain firstChain = mergedRegions[firstRegionIndexToUnit];
+                int firstChainNumber = firstChain.RegionsNumber.Count;
+
+                RegionChain secondChain = mergedRegions[secondRegionIndexToUnit];
+                int secondChainNumber = secondChain.RegionsNumber.Count;
+
+                if (Math.Abs(firstChain.AngleDirection - secondChain.AngleDirection) < 30  && (firstChain.FirstRegionNumber == secondChain.FirstRegionNumber ||
+                    firstChain.FirstRegionNumber == secondChain.LastRegionNumber ||
+                    firstChain.LastRegionNumber == secondChain.FirstRegionNumber ||
+                    firstChain.LastRegionNumber == secondChain.LastRegionNumber))
+                {
+                    if (secondChain.FirstRegionNumber == firstChain.FirstRegionNumber)
+                        firstChain.FirstRegionNumber = secondChain.LastRegionNumber;
+                    else if (secondChain.FirstRegionNumber == firstChain.LastRegionNumber)
+                         firstChain.LastRegionNumber = secondChain.LastRegionNumber;
+                    else  if (secondChain.LastRegionNumber == firstChain.LastRegionNumber)
+                        firstChain.LastRegionNumber = secondChain.FirstRegionNumber;
+                    else  if (secondChain.LastRegionNumber == firstChain.FirstRegionNumber)
+                        firstChain.FirstRegionNumber = secondChain.FirstRegionNumber;
+
+                    for (int i = 0; i < secondChainNumber; i++)
+                    {
+                        int indexFromRegion = secondChain.RegionsNumber[i];
+                        if (!mergedRegions[firstRegionIndexToUnit].RegionsNumber.Contains(indexFromRegion))
+                            mergedRegions[firstRegionIndexToUnit].RegionsNumber.Add(indexFromRegion);
+                    }
+                    RecalculateAngleDirectionForChain(mergedRegions[firstRegionIndexToUnit], regions); 
+                    mergedRegions.RemoveAt(secondRegionIndexToUnit);
+                }
+            }
+            catch (Exception exception)
+            {
+                throw exception;
+            }
+        }
+
+        /// <summary>
+        /// Объединение двух больших областей
+        /// </summary>
+        /// <param name="mergedRegions">Больште области</param>
+        /// <param name="firstRegionIndexToUnit">Номер первой большой области для объединения</param>
+        /// <param name="secondRegionIndexToUnit">Номер второй большой области для объединения</param>
         private void UniteTwoMergedRegions(List<RegionChain> mergedRegions, Dictionary<int, Region> regions, int firstRegionIndexToUnit, int secondRegionIndexToUnit)
         {
             try
@@ -672,20 +943,20 @@ namespace DigitalImageProcessingLib.Algorithms.TextDetection
                 RegionChain secondChain = mergedRegions[secondRegionIndexToUnit];
                 int secondChainNumber = secondChain.RegionsNumber.Count;
 
-             /*   if (Math.Abs(firstChain.AngleDirection - secondChain.AngleDirection) < 15  && (firstChain.RegionsNumber[0] == secondChain.RegionsNumber[0] ||
-                    firstChain.RegionsNumber[0] == secondChain.RegionsNumber[secondChainNumber - 1] ||
-                    firstChain.RegionsNumber[firstChainNumber - 1] == secondChain.RegionsNumber[0] ||
-                    firstChain.RegionsNumber[firstChainNumber - 1] == secondChain.RegionsNumber[secondChainNumber - 1]))
-                {*/
-                    for (int i = 0; i < secondChainNumber; i++)
-                    {
-                        int indexFromRegion = secondChain.RegionsNumber[i];
-                        if (!mergedRegions[firstRegionIndexToUnit].RegionsNumber.Contains(indexFromRegion))
-                            mergedRegions[firstRegionIndexToUnit].RegionsNumber.Add(indexFromRegion);
-                    }
-                 //   RecalculateAngleDirectionForChain(mergedRegions[firstRegionIndexToUnit], regions);  РАСКОММЕНТИИТЬ!!
-                    mergedRegions.RemoveAt(secondRegionIndexToUnit);
-               // }
+                /*   if (Math.Abs(firstChain.AngleDirection - secondChain.AngleDirection) < 15  && (firstChain.RegionsNumber[0] == secondChain.RegionsNumber[0] ||
+                       firstChain.RegionsNumber[0] == secondChain.RegionsNumber[secondChainNumber - 1] ||
+                       firstChain.RegionsNumber[firstChainNumber - 1] == secondChain.RegionsNumber[0] ||
+                       firstChain.RegionsNumber[firstChainNumber - 1] == secondChain.RegionsNumber[secondChainNumber - 1]))
+                   {*/
+                for (int i = 0; i < secondChainNumber; i++)
+                {
+                    int indexFromRegion = secondChain.RegionsNumber[i];
+                    if (!mergedRegions[firstRegionIndexToUnit].RegionsNumber.Contains(indexFromRegion))
+                        mergedRegions[firstRegionIndexToUnit].RegionsNumber.Add(indexFromRegion);
+                }
+                //   RecalculateAngleDirectionForChain(mergedRegions[firstRegionIndexToUnit], regions);  РАСКОММЕНТИИТЬ!!
+                mergedRegions.RemoveAt(secondRegionIndexToUnit);
+                // }
             }
             catch (Exception exception)
             {
@@ -693,12 +964,12 @@ namespace DigitalImageProcessingLib.Algorithms.TextDetection
             }
         }
 
-     /*   private void RecalculateAngleDirectionForChain(RegionChain chain, Dictionary<int, Region> regions)
+        private void RecalculateAngleDirectionForChain(RegionChain chain, Dictionary<int, Region> regions)
         {
             try
             {
-                int firstRegionNumber = chain.RegionsNumber[0];
-                int lastRegionNumber = chain.RegionsNumber[chain.RegionsNumber.Count - 1];
+                int firstRegionNumber = chain.FirstRegionNumber;
+                int lastRegionNumber = chain.LastRegionNumber;
 
                 int deltaI = regions[firstRegionNumber].CenterPointIndexI - regions[lastRegionNumber].CenterPointIndexI;
                 int deltaJ = regions[firstRegionNumber].CenterPointIndexJ - regions[lastRegionNumber].CenterPointIndexJ;
@@ -709,7 +980,7 @@ namespace DigitalImageProcessingLib.Algorithms.TextDetection
             {
                 throw exception;
             }
-        }*/
+        }
 
         /// <summary>
         /// Составляет 1 текстовый регион по номерам областей, входящим в него
@@ -805,8 +1076,13 @@ namespace DigitalImageProcessingLib.Algorithms.TextDetection
                             pair.RegionsNumber.Add(listOfRegions[i].Value.Number);  ///new
                             pair.RegionsNumber.Add(listOfRegions[j].Value.Number);   // new
 
-                            double dx = listOfRegions[i].Value.CenterPointIndexI - listOfRegions[j].Value.CenterPointIndexI;
-                            double dy = listOfRegions[i].Value.CenterPointIndexJ - listOfRegions[j].Value.CenterPointIndexJ;
+                          //  double dx = listOfRegions[i].Value.CenterPointIndexI - listOfRegions[j].Value.CenterPointIndexI;
+                           // double dy = listOfRegions[i].Value.CenterPointIndexJ - listOfRegions[j].Value.CenterPointIndexJ;
+
+                            int deltaI = listOfRegions[i].Value.CenterPointIndexI - listOfRegions[j].Value.CenterPointIndexI;
+                            int deltaJ = listOfRegions[i].Value.CenterPointIndexJ - listOfRegions[j].Value.CenterPointIndexJ;
+
+                            pair.AngleDirection = Math.Atan((double)deltaI / (double)deltaJ) * (180 / Math.PI);
 
                           //  double magnitude = Math.Sqrt(distance);
 
