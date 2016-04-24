@@ -50,6 +50,43 @@ namespace DigitalVideoProcessingLib.IO
             }
         }
         /// <summary>
+        /// Запись инфориации о текстовых блоках видеопотока в XML - файл 
+        /// </summary>
+        /// <param name="textRegions">Словарь текстовых блоков дял каждого обработанного кадра видеопотока</param>
+        /// <param name="fileName">Имя файла</param>
+        /// <returns>true</returns>
+        public static Task<bool> WriteTextBlocksInformation(Dictionary<int, List<TextRegion>> textRegions, string fileName)
+        {
+            if (textRegions == null )
+                throw new ArgumentNullException("Null textRegions in WriteTextBlocksInformation");
+            if (fileName == null || fileName.Length == 0)
+                throw new ArgumentNullException("Null fileName in WriteTextBlocksInformation");
+            try
+            {
+                return Task.Run(() =>
+                {
+                    XmlWriterSettings settings = new XmlWriterSettings();
+                    settings.Indent = true;
+                    settings.IndentChars = "\t";
+                    System.Xml.XmlWriter xmlWriter = System.Xml.XmlWriter.Create(fileName, settings);
+                    xmlWriter.WriteStartDocument();
+                    xmlWriter.WriteStartElement("Video");
+
+                    foreach (var pair in textRegions)
+                        XMLWriter.WriteTextBlocksInformation(pair.Value, xmlWriter, pair.Key, fileName);
+
+                    xmlWriter.WriteEndDocument();
+                    xmlWriter.Flush();
+                    xmlWriter.Close();
+                    return true;
+                });
+            }
+            catch (Exception exception)
+            {
+                throw exception;
+            }
+        }
+        /// <summary>
         /// Запись инфориации о текстовых блоках кадра видеопотока в XML - файл 
         /// </summary>
         /// <param name="videoFrame">Фрейм видео</param>
