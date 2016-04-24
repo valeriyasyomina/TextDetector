@@ -168,20 +168,24 @@ namespace DigitalVideoProcessingLib.Algorithms.TextDetection
             {
                 if (videoFrame == null || videoFrame.Frame == null)
                     throw new ArgumentNullException("Null frame in DetectText");
-
-                EdgeDetectionFilter sobel = new SobelFilter();
-                SmoothingFilter gauss = new GaussFilter(this.GaussFilterSize, this.GaussFilterSigma);
-                GradientFilter gradientFiler = new SimpleGradientFilter();
-                CannyEdgeDetection canny = new CannyEdgeDetection(gauss, sobel, this.CannyLowTreshold, this.CannyHighTreshold);
-
-                SWTTextDetection SWTTextDetection = new SWTTextDetection(canny, gradientFiler, this.VarienceAverageSWRation,
-                                this.AspectRatio, this.DiamiterSWRatio, this.BbPixelsNumberMinRatio, this.BbPixelsNumberMaxRatio, this.ImageRegionHeightRationMin,
-                                this.ImageRegionWidthRatioMin, this.PairsHeightRatio, this.PairsIntensityRatio, this.PairsSWRatio,
-                                this.PairsWidthDistanceSqrRatio, this.PairsOccupationRatio, this.MinLettersNumberInTextRegion);
+                
                 return Task.Run(() =>
                 {
+                    if (videoFrame.NeedProcess)
+                    {
+                        EdgeDetectionFilter sobel = new SobelFilter();
+                        SmoothingFilter gauss = new GaussFilter(this.GaussFilterSize, this.GaussFilterSigma);
+                        GradientFilter gradientFiler = new SimpleGradientFilter();
+                        CannyEdgeDetection canny = new CannyEdgeDetection(gauss, sobel, this.CannyLowTreshold, this.CannyHighTreshold);
+
+                        SWTTextDetection SWTTextDetection = new SWTTextDetection(canny, gradientFiler, this.VarienceAverageSWRation,
+                                        this.AspectRatio, this.DiamiterSWRatio, this.BbPixelsNumberMinRatio, this.BbPixelsNumberMaxRatio, this.ImageRegionHeightRationMin,
+                                        this.ImageRegionWidthRatioMin, this.PairsHeightRatio, this.PairsIntensityRatio, this.PairsSWRatio,
+                                        this.PairsWidthDistanceSqrRatio, this.PairsOccupationRatio, this.MinLettersNumberInTextRegion);
+
                         SWTTextDetection.DetectText(videoFrame.Frame, threadsNumber);
-                        return true;
+                    }
+                    return true;
                 });
             }
             catch (Exception exception)
