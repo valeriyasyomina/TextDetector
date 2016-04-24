@@ -87,13 +87,17 @@ namespace DigitalVideoProcessingLib.Algorithms.TextDetection
         /// Верхний порог для Кенни
         /// </summary>
         public int CannyHighTreshold { get; set; }
+        /// <summary>
+        /// Объединять ли цепочки по направлению и конечным элементам
+        /// </summary>
+        bool MergeByDirectionAndChainEnds { get; set; }
         #endregion
         public SWTVideoTextDetection(double varienceAverageSWRation, int gaussFilterSize = 5,
             double gaussFilterSigma = 1.4, int cannyLowTreshold = 20, int CannyHighTreshold = 80,  double aspectRatio = 5.0,
             double diamiterSWRatio = 10, double bbPixelsNumberMinRatio = 1.5, double bbPixelsNumberMaxRatio = 25.0,
             double imageRegionHeightRationMin = 1.5, double imageRegionWidthRatioMin = 1.5, double pairsHeightRatio = 2.0,
             double pairsIntensityRatio = 1.0, double pairsSWRatio = 1.5, double pairsWidthDistanceSqrRatio = 9.0,
-            double pairsOccupationRatio = 2.0, int minLettersNumberInTextRegion = 2)
+            double pairsOccupationRatio = 2.0, int minLettersNumberInTextRegion = 2, bool mergeByDirectionAndChainEnds = false)
         {
             this.GaussFilterSize = gaussFilterSize;
             this.GaussFilterSigma = gaussFilterSigma;
@@ -115,6 +119,7 @@ namespace DigitalVideoProcessingLib.Algorithms.TextDetection
             this.PairsOccupationRatio = pairsOccupationRatio;
 
             this.MinLettersNumberInTextRegion = minLettersNumberInTextRegion;
+            this.MergeByDirectionAndChainEnds = mergeByDirectionAndChainEnds;
         }
 
         /// <summary>
@@ -144,7 +149,7 @@ namespace DigitalVideoProcessingLib.Algorithms.TextDetection
                             SWTTextDetection SWTTextDetection = new SWTTextDetection(canny, gradientFiler, this.VarienceAverageSWRation,
                                 this.AspectRatio, this.DiamiterSWRatio, this.BbPixelsNumberMinRatio, this.BbPixelsNumberMaxRatio, this.ImageRegionHeightRationMin, 
                                 this.ImageRegionWidthRatioMin, this.PairsHeightRatio, this.PairsIntensityRatio, this.PairsSWRatio,
-                                this.PairsWidthDistanceSqrRatio, this.PairsOccupationRatio, this.MinLettersNumberInTextRegion);
+                                this.PairsWidthDistanceSqrRatio, this.PairsOccupationRatio, this.MinLettersNumberInTextRegion, this.MergeByDirectionAndChainEnds);
 
                             SWTTextDetection.DetectText(video.Frames[i].Frame, threadsNumber);
                         }
@@ -181,7 +186,7 @@ namespace DigitalVideoProcessingLib.Algorithms.TextDetection
                         SWTTextDetection SWTTextDetection = new SWTTextDetection(canny, gradientFiler, this.VarienceAverageSWRation,
                                         this.AspectRatio, this.DiamiterSWRatio, this.BbPixelsNumberMinRatio, this.BbPixelsNumberMaxRatio, this.ImageRegionHeightRationMin,
                                         this.ImageRegionWidthRatioMin, this.PairsHeightRatio, this.PairsIntensityRatio, this.PairsSWRatio,
-                                        this.PairsWidthDistanceSqrRatio, this.PairsOccupationRatio, this.MinLettersNumberInTextRegion);
+                                        this.PairsWidthDistanceSqrRatio, this.PairsOccupationRatio, this.MinLettersNumberInTextRegion, this.MergeByDirectionAndChainEnds);
 
                         SWTTextDetection.DetectText(videoFrame.Frame, threadsNumber);
                     }
