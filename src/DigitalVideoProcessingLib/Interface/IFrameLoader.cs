@@ -1,4 +1,5 @@
-﻿using DigitalVideoProcessingLib.VideoFrameType;
+﻿using DigitalVideoProcessingLib.IO;
+using DigitalVideoProcessingLib.VideoFrameType;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,5 +11,6 @@ namespace DigitalVideoProcessingLib.Interface
     public interface IFrameLoader
     {
         Task<GreyVideoFrame> LoadFrameAsync(object data);
+        Task<GreyVideoFrame> LoadFrameAsync(string videoFileName, KeyFrameIOInformation keyFrameIOInformation);
     }
 }
