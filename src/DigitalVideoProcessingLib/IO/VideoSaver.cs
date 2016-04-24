@@ -35,12 +35,60 @@ namespace DigitalVideoProcessingLib.IO
                     throw new ArgumentNullException("Null video");
                 if (fileName == null || fileName.Length == 0)
                     throw new ArgumentNullException("Null pathToSave");
+                if (framesSubDir == null || framesSubDir.Length == 0)
+                    throw new ArgumentNullException("Null framesSubDir");
+                if (framesExpansion == null || framesExpansion.Length == 0)
+                    throw new ArgumentNullException("Null framesExpansion");
                 if (pen == null)
                     throw new ArgumentNullException("Null pen");
 
                 return Task.Run(() =>
                 {
                     SaveVideoFrames(video, pen, fileName, framesSubDir, framesExpansion);
+                    return true;
+                });
+            }
+            catch (Exception exception)
+            {
+                throw exception;
+            }
+        }
+        /// <summary>
+        /// Сохранение обработанных кадров видео в виде массива bitmap
+        /// </summary>
+        /// <param name="bitmapFrames">bitmap</param>
+        /// <param name="fileName">Путь для сохранения</param>
+        /// <param name="framesSubDir">Имя подкаталога</param>
+        /// <param name="frameExpansion">Расширения кадрво</param>
+        /// <returns>true</returns>
+        public Task<bool> SaveVideoAsync(List<Bitmap> bitmapFrames, string fileName, string framesSubDir, string frameExpansion)
+        {
+            try
+            {
+                if (bitmapFrames == null)
+                    throw new ArgumentNullException("Null bitmapFrames in SaveVideoAsync");
+                if (fileName == null || fileName.Length == 0)
+                    throw new ArgumentNullException("Null pathToSave");
+                if (framesSubDir == null || framesSubDir.Length == 0)
+                    throw new ArgumentNullException("Null framesSubDir");
+                if (frameExpansion == null || frameExpansion.Length == 0)
+                    throw new ArgumentNullException("Null frameExpansion");
+                return Task.Run(() =>
+                {
+                    int framesNumber = bitmapFrames.Count;
+                    string framesDirName = Path.Combine(fileName, framesSubDir);
+                    if (!Directory.Exists(framesDirName))
+                        Directory.CreateDirectory(framesDirName);
+
+                    for (int i = 0; i < framesNumber; i++)
+                    {
+                        string frameFileName = Path.Combine(framesDirName, i.ToString() + frameExpansion);
+                        bitmapFrames[i].Save(frameFileName);
+                        if (i == framesNumber - 1)
+                            videoFrameSavedEvent(i, true);
+                        else
+                            videoFrameSavedEvent(i, false);
+                    }
                     return true;
                 });
             }
@@ -118,7 +166,7 @@ namespace DigitalVideoProcessingLib.IO
             {
                 throw exception;
             }
-        }
-
+        }       
+        
     }
 }
