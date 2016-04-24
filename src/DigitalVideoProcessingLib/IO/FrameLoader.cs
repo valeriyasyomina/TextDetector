@@ -15,6 +15,11 @@ namespace DigitalVideoProcessingLib.IO
 {
     public class FrameLoader : IFrameLoader
     {
+        /// <summary>
+        /// Загрузка одного кадра (с изображения)
+        /// </summary>
+        /// <param name="data">Информация о кадре</param>
+        /// <returns>Кадр</returns>
         public Task<GreyVideoFrame> LoadFrameAsync(object data)
         {
             try
@@ -41,8 +46,12 @@ namespace DigitalVideoProcessingLib.IO
                 throw exception;
             }
         }
-
-
+        /// <summary>
+        /// Загрузка кадра по номеру (с видео)
+        /// </summary>
+        /// <param name="videoFileName">Имя видеофайла</param>
+        /// <param name="keyFrameIOInformation">Информация о кадре</param>
+        /// <returns>Кард</returns>
         public Task<GreyVideoFrame> LoadFrameAsync(string videoFileName, KeyFrameIOInformation keyFrameIOInformation)
         {
             try
@@ -90,7 +99,13 @@ namespace DigitalVideoProcessingLib.IO
                 throw exception;
             }
         }
-
+        /// <summary>
+        /// Создание кадра видео 
+        /// </summary>
+        /// <param name="frameFileName">Имя файла</param>
+        /// <param name="frameNumber">Номер кадра</param>
+        /// <param name="needProcess">Нуждается ли кадр в обработке</param>
+        /// <returns>Кадр</returns>
         private GreyVideoFrame CreateVideoFrame(string frameFileName, int frameNumber, bool needProcess)
         {
             try

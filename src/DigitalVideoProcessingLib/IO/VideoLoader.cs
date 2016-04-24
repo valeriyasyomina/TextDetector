@@ -13,7 +13,11 @@ namespace DigitalVideoProcessingLib.IO
     {
         public delegate void FrameLoaded(int frameNumber, bool isLastFrame);
         public static event FrameLoaded frameLoadedEvent;
-        
+        /// <summary>
+        /// Подсчет количества кадров видео
+        /// </summary>
+        /// <param name="data">Информация о видео</param>
+        /// <returns>Количество кадров</returns>
         public Task<int> CountFramesNumberAsync(object data)
         {
             try
@@ -48,6 +52,11 @@ namespace DigitalVideoProcessingLib.IO
                 throw exception;
             }
         }
+        /// <summary>
+        /// Загрузка кадров
+        /// </summary>
+        /// <param name="data">Информация о видео</param>
+        /// <returns>Кадры</returns>
         public Task<List<Image<Bgr, Byte>>> LoadFramesAsync(object data)
         {
             try

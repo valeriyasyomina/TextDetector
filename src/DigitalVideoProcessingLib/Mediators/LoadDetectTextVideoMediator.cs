@@ -12,7 +12,19 @@ namespace DigitalVideoProcessingLib.Mediators
     public delegate void FrameWasProcessed(GreyVideoFrame videoFrame);
     public class LoadDetectTextVideoMediator
     {
+        /// <summary>
+        /// Событие, связанное с завершением одного кадра видепотока
+        /// </summary>
         public static event FrameWasProcessed FrameWasProcessedEvent;
+        /// <summary>
+        /// Одновременное считывание и обработка кадра видеопотока
+        /// </summary>
+        /// <param name="sWTVideoTextDetection">Детектор текста</param>
+        /// <param name="frameLoader">Загрузчик кадра</param>
+        /// <param name="keyFrameIOInformation">Информация об извлекаемом кадре</param>
+        /// <param name="videoFileName">Имя видеофайла</param>
+        /// <param name="threadsNumber">Число потоков для выделения текста</param>
+        /// <returns></returns>
         public async static Task LoadDetectTextVideo(SWTVideoTextDetection sWTVideoTextDetection, FrameLoader frameLoader,
             List<KeyFrameIOInformation> keyFrameIOInformation, string videoFileName, int threadsNumber)
         {
