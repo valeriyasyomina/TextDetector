@@ -454,8 +454,7 @@ namespace WPFVideoTextDetector.ViewModels
                 SaveFileDialog dialog = new SaveFileDialog();
                 dialog.ShowDialog();
 
-                string pathToSaveFile = System.IO.Path.GetDirectoryName(dialog.FileName);
-                string XMLFileName = System.IO.Path.Combine(pathToSaveFile, System.IO.Path.GetFileNameWithoutExtension(dialog.FileName) + ".xml");
+                string XMLFileName = System.IO.Path.Combine(dialog.FileName, System.IO.Path.GetFileNameWithoutExtension(dialog.FileName) + ".xml");
                 
                 VideoSaver videoSaver = new VideoSaver();
                 VideoSaver.videoFrameSavedEvent += this.VideoFrameSavedProcessing;
@@ -731,7 +730,7 @@ namespace WPFVideoTextDetector.ViewModels
                 progressWindow.Show();
 
                 string videoFilePath = System.IO.Path.GetDirectoryName(dialog.FileName);
-                string videoFileName = System.IO.Path.GetFileName(dialog.FileName);
+                string videoFileName = System.IO.Path.GetFileNameWithoutExtension(dialog.FileName);
                 string keyFramesInormatyionFilePath = System.IO.Path.Combine(videoFilePath, videoFileName + ".txt");
 
                 IOData ioData = new IOData() { FileName = dialog.FileName, FrameHeight = 480, FrameWidth = 640 };
