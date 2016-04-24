@@ -9,6 +9,7 @@ using DigitalVideoProcessingLib.Algorithms.KeyFrameExtraction;
 using DigitalVideoProcessingLib.Algorithms.TextDetection;
 using DigitalVideoProcessingLib.Graphics;
 using DigitalVideoProcessingLib.IO;
+using DigitalVideoProcessingLib.Mediators;
 using DigitalVideoProcessingLib.VideoFrameType;
 using DigitalVideoProcessingLib.VideoType;
 using Emgu.CV;
@@ -77,6 +78,7 @@ namespace WPFVideoTextDetector.ViewModels
         private GreyVideo video = null;
         private GreyVideoFrame videoFrame = null;
         private Uri videoFileName = null;
+        private string videoFileNameString = null;
 
         #region Image source variables
         private ImageSource processedFrameSource = null;
@@ -87,6 +89,7 @@ namespace WPFVideoTextDetector.ViewModels
         #endregion
 
         private List<BitmapImage> processedVideoFramesBitmap = null;
+        private List<KeyFrameIOInformation> keyFrameIOInformation = null;
 
         private int currentProcessedVideoFrameNumber = UNDEFINED_FRAME_INDEX;
         private int nextProcessedVideoFrameNumber = UNDEFINED_FRAME_INDEX;
@@ -640,19 +643,32 @@ namespace WPFVideoTextDetector.ViewModels
             try
             {
                 SWTVideoTextDetection SWTVideoTextDetection = new SWTVideoTextDetection(0.5);
-                this.StartLoader(DETECT_TEXT_VIDEO_STRING);
-                await SWTVideoTextDetection.DetectText(this.video, 4);
-                this.StopLoader();
-
+                if (this.keyFrameIOInformation != null)
+                {
+                    FrameLoader frameLoader = new FrameLoader();
+                    this.StartLoader(DETECT_TEXT_VIDEO_STRING);
+                    LoadDetectTextVideoMediator.FrameWasProcessedEvent += this.AddProcessedFrameToBitmapArray;
+                    await LoadDetectTextVideoMediator.LoadDetectTextVideo(SWTVideoTextDetection, frameLoader, this.keyFrameIOInformation, this.videoFileNameString, 4);                                   
+                    this.StopLoader();
+                }
+                else
+                {
+                    this.StartLoader(DETECT_TEXT_VIDEO_STRING);
+                    await SWTVideoTextDetection.DetectText(this.video, 4);
+                    this.StopLoader();
+                }
                 OkButtonWindow okButtonWindow = OkButtonWindow.InitializeOkButtonWindow();
                 okButtonWindow.capitalText.Text = VIDEO_PROCESS_STRING;
                 okButtonWindow.textInformation.Text = VIDEO_PROCESS_SUCCESS_STRING;
                 okButtonWindow.ShowDialog();
-
-                this.StartLoader(PROCESS_DATA_FOR_OUTPUT_STRING);
-                this.CreateBitmapsFromProcessedVideoFrames();
-                this.InitializeProcessedVideoFramesGallery();
-                this.StopLoader();
+             
+                if (this.keyFrameIOInformation == null)
+                {
+                    this.StartLoader(PROCESS_DATA_FOR_OUTPUT_STRING);
+                    this.CreateBitmapsFromProcessedVideoFrames();
+                    this.StopLoader();
+                }
+                this.InitializeProcessedVideoFramesGallery();            
 
                 this.IsVideoFrameTabSelected = false;
                 this.IsProcessedVideoFramesTabSelected = true;
@@ -736,19 +752,19 @@ namespace WPFVideoTextDetector.ViewModels
                 IOData ioData = new IOData() { FileName = dialog.FileName, FrameHeight = 480, FrameWidth = 640 };
 
                 VideoLoader videoLoader = new VideoLoader();
-                int framesNumber = await videoLoader.CountFramesNumberAsync(ioData);
+                int framesNumber = await videoLoader.CountFramesNumberAsync(ioData);            
                 progressWindow.pbStatus.SmallChange = (double)progressWindow.pbStatus.Maximum / (double)framesNumber;
 
                 /// Если существует файл с информацией о ключевых кадрах
                 if (System.IO.File.Exists(keyFramesInormatyionFilePath))
                 {
                     FileReader fileReader = new FileReader();
-                    List<KeyFrameIOInformation> keyFrameIOInformation = await fileReader.ReadKeyFramesInformationAsync(keyFramesInormatyionFilePath);
+                    keyFrameIOInformation = await fileReader.ReadKeyFramesInformationAsync(keyFramesInormatyionFilePath, 640, 480);
                     ioData.KeyFrameIOInformation = keyFrameIOInformation;                    
 
-                    EdgeBasedKeyFrameExtractor.keyFrameExtractedEvent += this.KeyFramesExtractionProcessing;
-                    EdgeBasedKeyFrameExtractor edgeBasedKeyFrameExtractor = new EdgeBasedKeyFrameExtractor();
-                    this.video.Frames = await edgeBasedKeyFrameExtractor.ExtractKeyFramesByListNumberAsync(ioData);
+                   // EdgeBasedKeyFrameExtractor.keyFrameExtractedEvent += this.KeyFramesExtractionProcessing;
+                   // EdgeBasedKeyFrameExtractor edgeBasedKeyFrameExtractor = new EdgeBasedKeyFrameExtractor();
+                  //  this.video.Frames = await edgeBasedKeyFrameExtractor.ExtractKeyFramesByListNumberAsync(ioData);
                 }
                 else   /// Если нет, то выделяем кадры алгоритмически
                 {
@@ -764,6 +780,7 @@ namespace WPFVideoTextDetector.ViewModels
 
                 progressWindow.Close();                
                 this.VideoFileName = new Uri(dialog.FileName);
+                this.videoFileNameString = dialog.FileName;
                 this.MediaPlayerNavigationVisibility = Visibility.Visible;
                 this.VideoWasNotLoaded = Visibility.Hidden;
 
@@ -782,6 +799,25 @@ namespace WPFVideoTextDetector.ViewModels
 
 
         #region Event handlers region
+
+        private void AddProcessedFrameToBitmapArray(GreyVideoFrame videoFrame)
+        {
+            try
+            {
+                if (this.processedVideoFramesBitmap == null)
+                    this.processedVideoFramesBitmap = new List<BitmapImage>();
+                BitmapConvertor bitmapConvertor = new BitmapConvertor();
+                BitmapImageConvertor bitmapImageConvertor = new Convertors.BitmapImageConvertor();
+
+                Bitmap bitmapFrame = bitmapConvertor.ToBitmap(videoFrame.Frame);
+                Draw.DrawTextBoundingBoxes(bitmapFrame, videoFrame.Frame.TextRegions, new System.Drawing.Pen(System.Drawing.Color.Red, 2));
+                this.processedVideoFramesBitmap.Add(bitmapImageConvertor.BitmapToBitmapImage(bitmapFrame)); 
+            }
+            catch (Exception exception)
+            {
+                throw exception;
+            }
+        }
 
         private void VideoFrameSavedProcessing(int frameNumber, bool isLastFrame)
         {
