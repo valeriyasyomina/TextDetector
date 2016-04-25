@@ -13,7 +13,7 @@
                 <MenuItem.Icon>
                     <Image Width="20" Height="20" Source="/WPFVideoTextDetector;component/icons/sheet.png" />
                 </MenuItem.Icon>
-                <MenuItem Style="{StaticResource MenuSubItemStyle}" Header="Загрузить видео - файл"
+                <MenuItem Style="{StaticResource MenuSubItemStyle}" Header="Загрузить видео"
                           Command="{Binding LoadVideoFileCommand}">
                     <MenuItem.Icon>
                         <Image Width="20" Height="20" Source="/WPFVideoTextDetector;component/icons/upload_video.png" />
@@ -48,7 +48,7 @@
                           Command="{Binding DetectTextOnFrameCommand}">                    
                 </MenuItem>
                 <Separator></Separator>
-                <MenuItem Style="{StaticResource MenuSubItemStyle}" Header="Тестирование"
+                <MenuItem Style="{StaticResource MenuSubItemStyle}" Header="Оценка качества локализации"
                           Command="{Binding AccuracyEstimationCommand}">
                     <MenuItem.Icon>
                         <Image Width="20" Height="20" Source="/WPFVideoTextDetector;component/icons/science.png" />
@@ -71,6 +71,8 @@
                 </MenuItem.Icon>
                 <MenuItem Style="{StaticResource MenuSubItemStyle}" Header="О программе"
                           Command="{Binding AboutProgramCommand}">                    
+                </MenuItem>
+                <MenuItem Style="{StaticResource MenuSubItemStyle}" Header="Помощь">                         
                 </MenuItem>
             </MenuItem>
         </Menu>
