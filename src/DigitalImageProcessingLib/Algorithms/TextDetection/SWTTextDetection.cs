@@ -39,11 +39,12 @@ namespace DigitalImageProcessingLib.Algorithms.TextDetection
         private double _pairsOccupationRatio = 0.0;
 
         private int _minLettersNumberInTextRegion = 0;
-        private bool _mergeByDirectionAndChainEnds = false;
+        private bool _mergeByDirectionAndChainEnds = false;       
 
         private static double STRICTNESS = Math.PI / 6.0;
 
-        private GradientFilter _gradientFilter = null;       
+        private GradientFilter _gradientFilter = null;
+        private SmoothingFilter _smoothingFilter = null;
 
         private GreyImage _darkTextLightBg = null;
         private GreyImage _lightTextDarkBg = null;
@@ -56,19 +57,22 @@ namespace DigitalImageProcessingLib.Algorithms.TextDetection
 
         private static int ERROR_VALUE = -1;
 
-        public SWTTextDetection(IEdgeDetection edgeDetector, GradientFilter gradientFiler, double varienceAverageSWRation, double aspectRatio = 5.0,
+        public SWTTextDetection(IEdgeDetection edgeDetector, SmoothingFilter smoothingFilter, GradientFilter gradientFiler, double varienceAverageSWRation, double aspectRatio = 5.0,
             double diamiterSWRatio = 10, double bbPixelsNumberMinRatio = 1.5, double bbPixelsNumberMaxRatio = 25.0,
             double imageRegionHeightRationMin = 1.5, double imageRegionWidthRatioMin = 1.5, double pairsHeightRatio = 2.0,
             double pairsIntensityRatio = 1.0, double pairsSWRatio = 1.5, double pairsWidthDistanceSqrRatio = 9.0,
-            double pairsOccupationRatio = 2.0, int minLettersNumberInTextRegion = 2, bool mergeByDirectionAndChainEnds = false)           
+            double pairsOccupationRatio = 2.0, int minLettersNumberInTextRegion = 2, bool mergeByDirectionAndChainEnds = false)                       
         {
             if (edgeDetector == null)
                 throw new ArgumentNullException("Null edgeDetector in ctor");           
             if (gradientFiler == null)
                 throw new ArgumentNullException("Null gradientFiler in ctor");
+            if (smoothingFilter == null)
+                throw new ArgumentNullException("Null smoothingFilter in ctor");
             
             this._edgeDetector = edgeDetector;         
             this._gradientFilter = gradientFiler;
+            this._smoothingFilter = smoothingFilter;
 
             this._lightTextConnectedComponent = new TwoPassCCAlgorithm(DigitalImageProcessingLib.Interface.UnifyingFeature.StrokeWidth,
                                                             DigitalImageProcessingLib.Interface.ConnectivityType.EightConnectedRegion);
@@ -90,7 +94,7 @@ namespace DigitalImageProcessingLib.Algorithms.TextDetection
             this._pairsOccupationRatio = pairsOccupationRatio;
 
             this._minLettersNumberInTextRegion = minLettersNumberInTextRegion;
-            this._mergeByDirectionAndChainEnds = mergeByDirectionAndChainEnds;
+            this._mergeByDirectionAndChainEnds = mergeByDirectionAndChainEnds;          
 
             this._lightRegions = new Dictionary<int, Region>();
             this._darkRegions = new Dictionary<int, Region>();
@@ -111,7 +115,11 @@ namespace DigitalImageProcessingLib.Algorithms.TextDetection
                     throw new ArgumentNullException("Null image in DetectText");                
 
                 GreyImage imageCanny = this._edgeDetector.Detect(image, threadsNumber);
-                GreyImage smoothedImage = this._edgeDetector.GreySmoothedImage();
+                GreyImage smoothedImage = null;
+                if (this._edgeDetector.SmoothingFilter.GetType() != this._smoothingFilter.GetType())                
+                    smoothedImage = this._smoothingFilter.Apply(image, threadsNumber);                
+                else
+                    smoothedImage = this._edgeDetector.GreySmoothedImage();
                 this._gradientFilter.Apply(smoothedImage);   // threadsNumber
 
               //  GreyImage gradienMapX = this._gradientFilter.GradientXMap();
