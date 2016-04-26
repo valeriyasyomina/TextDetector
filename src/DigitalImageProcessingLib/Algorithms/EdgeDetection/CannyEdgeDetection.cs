@@ -12,8 +12,8 @@ namespace DigitalImageProcessingLib.Algorithms.EdgeDetection
 {
     public class CannyEdgeDetection: IEdgeDetection
     {
-        private SmoothingFilter _smoothingFilter = null;
-        private EdgeDetectionFilter _edgeDetectionFilter = null;
+        public SmoothingFilter SmoothingFilter { get; set; }
+        public EdgeDetectionFilter EdgeDetectionFilter { get; set; }
         private GreyImage _greySmoothedImage = null;
         public int LowTreshold { get; set; }
         public int HighTreshold { get; set; }
@@ -31,8 +31,8 @@ namespace DigitalImageProcessingLib.Algorithms.EdgeDetection
                 throw new ArgumentException("highTreshold must be > 0");
             if (lowTreshold >= highTreshold)
                 throw new ArgumentException("highTreshold must be > lowTreshold");
-            this._smoothingFilter = smoothingFilter;
-            this._edgeDetectionFilter = edgeDetectionFilter;
+            this.SmoothingFilter = smoothingFilter;
+            this.EdgeDetectionFilter = edgeDetectionFilter;
             this.LowTreshold = lowTreshold;
             this.HighTreshold = highTreshold;
         }
@@ -53,9 +53,9 @@ namespace DigitalImageProcessingLib.Algorithms.EdgeDetection
                 if (threadsNumber <= 0)
                     throw new ArgumentException("Error threadsNumber in Detect");
 
-                GreyImage smoothedImage = _smoothingFilter.Apply(image, threadsNumber);
+                GreyImage smoothedImage = this.SmoothingFilter.Apply(image, threadsNumber);
                 _greySmoothedImage = (GreyImage)smoothedImage.Copy();
-                smoothedImage = _edgeDetectionFilter.Apply(smoothedImage, threadsNumber);
+                smoothedImage = this.EdgeDetectionFilter.Apply(smoothedImage, threadsNumber);
                 SetGradientDirection(smoothedImage);
                 NonMaximaSuppression(smoothedImage);
                 DoubleTresholding(smoothedImage);
@@ -80,9 +80,9 @@ namespace DigitalImageProcessingLib.Algorithms.EdgeDetection
             {
                 if (image == null)
                     throw new ArgumentNullException("Null image in Detect");
-                _smoothingFilter.Apply(image);
+                this.SmoothingFilter.Apply(image);
                 _greySmoothedImage = (GreyImage)image.Copy();
-                _edgeDetectionFilter.Apply(image);
+                this.EdgeDetectionFilter.Apply(image);
                 SetGradientDirection(image);
                 NonMaximaSuppression(image);
                 DoubleTresholding(image);
@@ -111,7 +111,7 @@ namespace DigitalImageProcessingLib.Algorithms.EdgeDetection
                 if (image == null)
                     throw new ArgumentNullException("Null image in SetGradientDirection");
 
-                int lowIndex = _edgeDetectionFilter.Size / 2;
+                int lowIndex = this.EdgeDetectionFilter.Size / 2;
                 int highIndexI = image.Height - lowIndex;
                 int highIndexJ = image.Width - lowIndex;
                 for (int i = lowIndex; i < highIndexI; i++)
@@ -150,7 +150,7 @@ namespace DigitalImageProcessingLib.Algorithms.EdgeDetection
                 if (copyImage == null)
                     throw new NullReferenceException("Null copy image in NonMaximaSuppression");
 
-                int lowIndex = _edgeDetectionFilter.Size / 2;
+                int lowIndex = this.EdgeDetectionFilter.Size / 2;
                 int highIndexI = image.Height - lowIndex;
                 int highIndexJ = image.Width - lowIndex;
                 for (int i = lowIndex; i < highIndexI; i++)
@@ -204,7 +204,7 @@ namespace DigitalImageProcessingLib.Algorithms.EdgeDetection
                 if (image == null)
                     throw new ArgumentNullException("Null image in DoubleTresholding");
 
-                int lowIndex = this._edgeDetectionFilter.Size / 2;
+                int lowIndex = this.EdgeDetectionFilter.Size / 2;
                 int imageHeight = image.Height - lowIndex;
                 int imageWidth = image.Width - lowIndex;
 
@@ -257,7 +257,7 @@ namespace DigitalImageProcessingLib.Algorithms.EdgeDetection
         {
             try
             {
-                int lowIndex = _edgeDetectionFilter.Size / 2;
+                int lowIndex = this.EdgeDetectionFilter.Size / 2;
                 int imageWidth = image.Width - lowIndex;
                 int imageHeight = image.Height - lowIndex;
                 for (int i = lowIndex; i < imageWidth; i++)
@@ -302,7 +302,7 @@ namespace DigitalImageProcessingLib.Algorithms.EdgeDetection
         {
             try
             {
-                int lowIndex = _edgeDetectionFilter.Size / 2;
+                int lowIndex = this.EdgeDetectionFilter.Size / 2;
                 int imageHeight = image.Height - lowIndex;
                 int imageWidth = image.Width - lowIndex;
                 for (int i = lowIndex; i < imageHeight; i++)
@@ -347,7 +347,7 @@ namespace DigitalImageProcessingLib.Algorithms.EdgeDetection
         {
             try
             {
-                int lowIndex = _edgeDetectionFilter.Size / 2;
+                int lowIndex = this.EdgeDetectionFilter.Size / 2;
                 int imageHeight = image.Height - lowIndex;
                 int imageWidth = image.Width - lowIndex;
 
