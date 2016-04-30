@@ -66,7 +66,19 @@
     </ApplicationDefinition>
     <Compile Include="Convertors\BitmapImageConvertor.cs" />
     <Compile Include="Convertors\IImageConvertor.cs" />
+    <Compile Include="ViewModels\AlgorithmParametersViewModel.cs" />
+    <Compile Include="ViewModels\EvristicsWindowViewModel.cs" />
+    <Compile Include="ViewModels\FrameSizeViewModel.cs" />
     <Compile Include="ViewModels\LoaderWindowViewModel.cs" />
+    <Compile Include="Views\AlgorithmParametersWindow.xaml.cs">
+      <DependentUpon>AlgorithmParametersWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\EvristicsWindow.xaml.cs">
+      <DependentUpon>EvristicsWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\FrameSizeWindow.xaml.cs">
+      <DependentUpon>FrameSizeWindow.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\LoaderWindow.xaml.cs">
       <DependentUpon>LoaderWindow.xaml</DependentUpon>
     </Compile>
@@ -88,6 +100,18 @@
     <Compile Include="Views\TabViews\VideoUserControl.xaml.cs">
       <DependentUpon>VideoUserControl.xaml</DependentUpon>
     </Compile>
+    <Page Include="Views\AlgorithmParametersWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\EvristicsWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\FrameSizeWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Views\LoaderWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
