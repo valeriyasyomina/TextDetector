@@ -1,0 +1,50 @@
+﻿<Window x:Class="WPFVideoTextDetector.Views.FrameSizeWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="FrameSizeWindow" Height="170" Width="400" WindowStyle="None" WindowStartupLocation="CenterScreen">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="auto"></RowDefinition>
+            <RowDefinition></RowDefinition>
+        </Grid.RowDefinitions>
+
+        <TextBlock Name="capitalText" Grid.Row="0" Style="{StaticResource HeaderTextBlockStyle}">Text</TextBlock>
+
+        <Grid Margin="30" Grid.Row="1">
+            <Grid.RowDefinitions>
+                <RowDefinition></RowDefinition>
+                <RowDefinition></RowDefinition>            
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition></ColumnDefinition>
+                <ColumnDefinition></ColumnDefinition>               
+            </Grid.ColumnDefinitions>
+
+            <Grid Grid.Row="0" Grid.Column="0">
+                <Grid.RowDefinitions>
+                    <RowDefinition></RowDefinition>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition></ColumnDefinition>
+                    <ColumnDefinition></ColumnDefinition>
+                </Grid.ColumnDefinitions>
+                <TextBlock TextWrapping="Wrap" Grid.Row="0" Grid.Column="0" 
+                       Style="{StaticResource TextBlockStyle}">Ширина кадра</TextBlock>
+                <TextBox Text="{Binding FrameWidth}" Grid.Row="0" Grid.Column="1"></TextBox>
+            </Grid>
+            <Grid Grid.Row="0" Grid.Column="1">
+                <Grid.RowDefinitions>
+                    <RowDefinition></RowDefinition>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition></ColumnDefinition>
+                    <ColumnDefinition></ColumnDefinition>
+                </Grid.ColumnDefinitions>
+                <TextBlock TextWrapping="Wrap" Grid.Row="0" Grid.Column="0" 
+                       Style="{StaticResource TextBlockStyle}">Высота кадра</TextBlock>
+                <TextBox Text="{Binding FrameHeight}" Grid.Row="0" Grid.Column="1"></TextBox>
+            </Grid>
+            <Button Style="{StaticResource ButtonStyle}" Grid.Row="1" Grid.ColumnSpan="2" Click="Button_Click">Ok</Button>
+        </Grid>
+    </Grid>
+</Window>
