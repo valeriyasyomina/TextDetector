@@ -91,13 +91,18 @@ namespace DigitalVideoProcessingLib.Algorithms.TextDetection
         /// Объединять ли цепочки по направлению и конечным элементам
         /// </summary>
         bool MergeByDirectionAndChainEnds { get; set; }
+        /// <summary>
+        /// Использовать или нет адаптивное сглаживание
+        /// </summary>
+        bool UseAdaptiveSmoothing { get; set; }
         #endregion
         public SWTVideoTextDetection(double varienceAverageSWRation, int gaussFilterSize = 5,
             double gaussFilterSigma = 1.4, int cannyLowTreshold = 20, int CannyHighTreshold = 80,  double aspectRatio = 5.0,
             double diamiterSWRatio = 10, double bbPixelsNumberMinRatio = 1.5, double bbPixelsNumberMaxRatio = 25.0,
             double imageRegionHeightRationMin = 1.5, double imageRegionWidthRatioMin = 1.5, double pairsHeightRatio = 2.0,
             double pairsIntensityRatio = 1.0, double pairsSWRatio = 1.5, double pairsWidthDistanceSqrRatio = 9.0,
-            double pairsOccupationRatio = 2.0, int minLettersNumberInTextRegion = 2, bool mergeByDirectionAndChainEnds = false)
+            double pairsOccupationRatio = 2.0, int minLettersNumberInTextRegion = 2, bool mergeByDirectionAndChainEnds = false,
+            bool useAdaptiveSmoothing = false)
         {
             this.GaussFilterSize = gaussFilterSize;
             this.GaussFilterSigma = gaussFilterSigma;
@@ -120,6 +125,7 @@ namespace DigitalVideoProcessingLib.Algorithms.TextDetection
 
             this.MinLettersNumberInTextRegion = minLettersNumberInTextRegion;
             this.MergeByDirectionAndChainEnds = mergeByDirectionAndChainEnds;
+            this.UseAdaptiveSmoothing = useAdaptiveSmoothing;
         }
 
         /// <summary>
@@ -146,7 +152,7 @@ namespace DigitalVideoProcessingLib.Algorithms.TextDetection
                             GradientFilter gradientFiler = new SimpleGradientFilter();
                             CannyEdgeDetection canny = new CannyEdgeDetection(gauss, sobel, this.CannyLowTreshold, this.CannyHighTreshold);
 
-                            SWTTextDetection SWTTextDetection = new SWTTextDetection(canny, gradientFiler, this.VarienceAverageSWRation,
+                            SWTTextDetection SWTTextDetection = new SWTTextDetection(canny, null, gradientFiler, this.VarienceAverageSWRation,
                                 this.AspectRatio, this.DiamiterSWRatio, this.BbPixelsNumberMinRatio, this.BbPixelsNumberMaxRatio, this.ImageRegionHeightRationMin, 
                                 this.ImageRegionWidthRatioMin, this.PairsHeightRatio, this.PairsIntensityRatio, this.PairsSWRatio,
                                 this.PairsWidthDistanceSqrRatio, this.PairsOccupationRatio, this.MinLettersNumberInTextRegion, this.MergeByDirectionAndChainEnds);
@@ -179,19 +185,69 @@ namespace DigitalVideoProcessingLib.Algorithms.TextDetection
                     if (videoFrame.NeedProcess)
                     {
                         EdgeDetectionFilter sobel = new SobelFilter();
-                        SmoothingFilter gauss = new GaussFilter(this.GaussFilterSize, this.GaussFilterSigma);
                         GradientFilter gradientFiler = new SimpleGradientFilter();
-                        CannyEdgeDetection canny = new CannyEdgeDetection(gauss, sobel, this.CannyLowTreshold, this.CannyHighTreshold);
+                        SmoothingFilter gauss = null; //new GaussFilter(this.GaussFilterSize, this.GaussFilterSigma);
+                        SmoothingFilter gaussForCanny = null;                        
 
-                        SWTTextDetection SWTTextDetection = new SWTTextDetection(canny, gradientFiler, this.VarienceAverageSWRation,
-                                        this.AspectRatio, this.DiamiterSWRatio, this.BbPixelsNumberMinRatio, this.BbPixelsNumberMaxRatio, this.ImageRegionHeightRationMin,
-                                        this.ImageRegionWidthRatioMin, this.PairsHeightRatio, this.PairsIntensityRatio, this.PairsSWRatio,
-                                        this.PairsWidthDistanceSqrRatio, this.PairsOccupationRatio, this.MinLettersNumberInTextRegion, this.MergeByDirectionAndChainEnds);
+                        SWTTextDetection sWTTextDetection = null;
+                        if (ParametersUndefined(videoFrame))
+                        {
+                            if (this.UseAdaptiveSmoothing)
+                                gaussForCanny = new AdaptiveGaussFilter(this.GaussFilterSigma);
+                            else
+                                gaussForCanny = new GaussFilter(this.GaussFilterSize, this.GaussFilterSigma);
+                            gauss = new GaussFilter(this.GaussFilterSize, this.GaussFilterSigma);
+                            CannyEdgeDetection canny = new CannyEdgeDetection(gaussForCanny, sobel, this.CannyLowTreshold, this.CannyHighTreshold);
 
-                        SWTTextDetection.DetectText(videoFrame.Frame, threadsNumber);
+                            sWTTextDetection = new SWTTextDetection(canny, gauss, gradientFiler, this.VarienceAverageSWRation,
+                                            this.AspectRatio, this.DiamiterSWRatio, this.BbPixelsNumberMinRatio, this.BbPixelsNumberMaxRatio, this.ImageRegionHeightRationMin,
+                                            this.ImageRegionWidthRatioMin, this.PairsHeightRatio, this.PairsIntensityRatio, this.PairsSWRatio,
+                                            this.PairsWidthDistanceSqrRatio, this.PairsOccupationRatio, this.MinLettersNumberInTextRegion, this.MergeByDirectionAndChainEnds);
+                        }
+                        else
+                        {
+                            if (videoFrame.UseAdaptiveSmoothing)
+                                gaussForCanny = new AdaptiveGaussFilter(videoFrame.GaussFilterSigma);
+                            else
+                                gaussForCanny = new GaussFilter(videoFrame.GaussFilterSize, videoFrame.GaussFilterSigma);
+                            gauss = new GaussFilter(videoFrame.GaussFilterSize, videoFrame.GaussFilterSigma); 
+                            CannyEdgeDetection canny = new CannyEdgeDetection(gaussForCanny, sobel, videoFrame.CannyLowTreshold, videoFrame.CannyHighTreshold);
+
+                            sWTTextDetection = new SWTTextDetection(canny, gauss, gradientFiler, videoFrame.VarienceAverageSWRation, videoFrame.AspectRatio,
+                                videoFrame.DiamiterSWRatio, videoFrame.BbPixelsNumberMinRatio, videoFrame.BbPixelsNumberMaxRatio, videoFrame.ImageRegionHeightRationMin,
+                                videoFrame.ImageRegionWidthRatioMin, videoFrame.PairsHeightRatio, videoFrame.PairsIntensityRatio, videoFrame.PairsSWRatio,
+                                videoFrame.PairsWidthDistanceSqrRatio, videoFrame.PairsOccupationRatio, videoFrame.MinLettersNumberInTextRegion, videoFrame.MergeByDirectionAndChainEnds);
+                        }
+                        sWTTextDetection.DetectText(videoFrame.Frame, threadsNumber);
                     }
                     return true;
                 });
+            }
+            catch (Exception exception)
+            {
+                throw exception;
+            }
+        }
+        /// <summary>
+        /// Выяснение, есть ли неопределенные параметры у кадра (эвристки)
+        /// </summary>
+        /// <param name="videoFrame">Кард</param>
+        /// <returns>1 - есть неопределенные параметр(ы), 0 - иначе</returns>
+        private bool ParametersUndefined(GreyVideoFrame videoFrame)
+        {
+            try
+            {
+                bool result = false;
+                int undefinedParameter = GreyVideoFrame.UNDEFINED_PARAMETER;
+
+                if (videoFrame.AspectRatio == undefinedParameter || videoFrame.BbPixelsNumberMaxRatio == undefinedParameter ||
+                    videoFrame.BbPixelsNumberMinRatio == undefinedParameter || videoFrame.DiamiterSWRatio == undefinedParameter ||
+                    videoFrame.ImageRegionHeightRationMin == undefinedParameter || videoFrame.ImageRegionWidthRatioMin == undefinedParameter ||
+                    videoFrame.PairsHeightRatio == undefinedParameter || videoFrame.PairsIntensityRatio == undefinedParameter ||
+                    videoFrame.PairsOccupationRatio == undefinedParameter || videoFrame.PairsSWRatio == undefinedParameter ||
+                    videoFrame.PairsWidthDistanceSqrRatio == undefinedParameter || videoFrame.VarienceAverageSWRation == undefinedParameter)
+                    return true;
+                return result;
             }
             catch (Exception exception)
             {
