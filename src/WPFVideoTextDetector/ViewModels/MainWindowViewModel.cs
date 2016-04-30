@@ -67,6 +67,7 @@ namespace WPFVideoTextDetector.ViewModels
         private static string FILE_WAS_NOT_CHOOSEN_STRING = "Файл не был выбран";
         private static string XML_FILES_SAVE_SUCCESS_STRING = "XML - файл был успешно сохранен";
         private static string XML_FILES_SAVE_STRING = "Сохранение XML - файла";
+        private static string PARAMETERS_SETTING_STRING = "Настройка параметров";
         #endregion
 
         private bool isVideoTabSelected = true;
@@ -89,7 +90,10 @@ namespace WPFVideoTextDetector.ViewModels
         #endregion
 
         private List<BitmapImage> processedVideoFramesBitmap = null;
+        private List<Bitmap> processedVideoFramesBitmapForSave = null;
         private List<KeyFrameIOInformation> keyFrameIOInformation = null;
+
+        private Dictionary<int, List<TextRegion>> textRegionsDictionary = null;
 
         private int currentProcessedVideoFrameNumber = UNDEFINED_FRAME_INDEX;
         private int nextProcessedVideoFrameNumber = UNDEFINED_FRAME_INDEX;
@@ -464,13 +468,22 @@ namespace WPFVideoTextDetector.ViewModels
                 System.Drawing.Pen pen = new System.Drawing.Pen(System.Drawing.Color.Red, 2);
 
                 progressWindow.pbStatus.Value = 0.0;
-                progressWindow.pbStatus.SmallChange = (double)progressWindow.pbStatus.Maximum / (double)this.video.Frames.Count;
+                if (this.video != null && this.video.Frames != null)
+                    progressWindow.pbStatus.SmallChange = (double)progressWindow.pbStatus.Maximum / (double)this.video.Frames.Count;
                 progressWindow.capitalText.Text = SAVE_PROCESSED_VIDEO_FRAMES_STRING;
                 progressWindow.textInformation.Text = "";
 
                 progressWindow.Show();
-                await videoSaver.SaveVideoAsync(video, pen, dialog.FileName, "ProcessedFrames", ".jpg");
-                await DigitalVideoProcessingLib.IO.XMLWriter.WriteTextBlocksInformation(video, XMLFileName);
+                if (this.video != null && this.video.Frames != null)
+                {
+                    await videoSaver.SaveVideoAsync(this.video, pen, dialog.FileName, "ProcessedFrames", ".jpg");
+                    await DigitalVideoProcessingLib.IO.XMLWriter.WriteTextBlocksInformation(video, XMLFileName);
+                }
+                else
+                {
+                    await videoSaver.SaveVideoAsync(this.processedVideoFramesBitmapForSave, dialog.FileName, "ProcessedFrames", ".jpg");
+                    await DigitalVideoProcessingLib.IO.XMLWriter.WriteTextBlocksInformation(this.textRegionsDictionary, XMLFileName);
+                }           
 
                 OkButtonWindow okButtonWindow = OkButtonWindow.InitializeOkButtonWindow();
                 okButtonWindow.capitalText.Text = SAVE_PROCESSED_VIDEO_FRAMES_STRING;
@@ -605,8 +618,26 @@ namespace WPFVideoTextDetector.ViewModels
         {
             try
             {
-                SWTVideoTextDetection SWTVideoTextDetection = new SWTVideoTextDetection(0.5);
-                
+                EvristicsWindow evristicsWindow = EvristicsWindow.InitializeEvristicsWindow();
+                evristicsWindow.capitalText.Text = PARAMETERS_SETTING_STRING;
+                evristicsWindow.ShowDialog();
+
+                AlgorithmParametersWindow algorithmParametersWindow = AlgorithmParametersWindow.InitializeAlgorithmParametersWindow();
+                algorithmParametersWindow.capitalText.Text = PARAMETERS_SETTING_STRING;
+                algorithmParametersWindow.ShowDialog();
+
+                EvristicsWindowViewModel evristicsWindowDataContext = (EvristicsWindowViewModel)evristicsWindow.DataContext;
+                AlgorithmParametersViewModel algorithmParametersWindowDataContext = (AlgorithmParametersViewModel)algorithmParametersWindow.DataContext;
+
+                SWTVideoTextDetection SWTVideoTextDetection = new SWTVideoTextDetection(evristicsWindowDataContext.VarienceAverageSWRation,
+                    algorithmParametersWindowDataContext.GaussFilterSize, algorithmParametersWindowDataContext.GaussSigma, algorithmParametersWindowDataContext.CannyLowTreshold,
+                    algorithmParametersWindowDataContext.CannyHighTreshold, evristicsWindowDataContext.AspectRatio, evristicsWindowDataContext.DiamiterSWRatio,
+                    evristicsWindowDataContext.BbPixelsNumberMinRatio, evristicsWindowDataContext.BbPixelsNumberMaxRatio,
+                    evristicsWindowDataContext.ImageRegionHeightRationMin, evristicsWindowDataContext.ImageRegionWidthRatioMin, evristicsWindowDataContext.PairsHeightRatio,
+                    evristicsWindowDataContext.PairsIntensityRatio, evristicsWindowDataContext.PairsSWRatio, evristicsWindowDataContext.PairsWidthDistanceSqrRatio,
+                    evristicsWindowDataContext.PairsOccupationRatio, evristicsWindowDataContext.MinLettersNumberInTextRegion,
+                    evristicsWindowDataContext.MergeByDirectionAndChainEnds, evristicsWindowDataContext.UseAdaptiveSmoothing);
+
                 this.StartLoader(DETECT_TEXT_VIDEO_FRAME_STRING);
                 await SWTVideoTextDetection.DetectText(this.videoFrame, 4);
                 this.StopLoader();
@@ -641,10 +672,10 @@ namespace WPFVideoTextDetector.ViewModels
         private async void DetectVideoTextFunction()
         {
             try
-            {
-                SWTVideoTextDetection SWTVideoTextDetection = new SWTVideoTextDetection(0.5);
+            {                
                 if (this.keyFrameIOInformation != null)
                 {
+                    SWTVideoTextDetection SWTVideoTextDetection = new SWTVideoTextDetection(0.5);
                     FrameLoader frameLoader = new FrameLoader();
                     this.StartLoader(DETECT_TEXT_VIDEO_STRING);
                     LoadDetectTextVideoMediator.FrameWasProcessedEvent += this.AddProcessedFrameToBitmapArray;
@@ -653,6 +684,26 @@ namespace WPFVideoTextDetector.ViewModels
                 }
                 else
                 {
+                    EvristicsWindow evristicsWindow = EvristicsWindow.InitializeEvristicsWindow();
+                    evristicsWindow.capitalText.Text = PARAMETERS_SETTING_STRING;
+                    evristicsWindow.ShowDialog();
+
+                    AlgorithmParametersWindow algorithmParametersWindow = AlgorithmParametersWindow.InitializeAlgorithmParametersWindow();
+                    algorithmParametersWindow.capitalText.Text = PARAMETERS_SETTING_STRING;
+                    algorithmParametersWindow.ShowDialog();
+
+                    EvristicsWindowViewModel evristicsWindowDataContext = (EvristicsWindowViewModel)evristicsWindow.DataContext;
+                    AlgorithmParametersViewModel algorithmParametersWindowDataContext = (AlgorithmParametersViewModel)algorithmParametersWindow.DataContext;
+
+                    SWTVideoTextDetection SWTVideoTextDetection = new SWTVideoTextDetection(evristicsWindowDataContext.VarienceAverageSWRation,
+                        algorithmParametersWindowDataContext.GaussFilterSize, algorithmParametersWindowDataContext.GaussSigma, algorithmParametersWindowDataContext.CannyLowTreshold,
+                        algorithmParametersWindowDataContext.CannyHighTreshold, evristicsWindowDataContext.AspectRatio, evristicsWindowDataContext.DiamiterSWRatio,
+                        evristicsWindowDataContext.BbPixelsNumberMinRatio, evristicsWindowDataContext.BbPixelsNumberMaxRatio,
+                        evristicsWindowDataContext.ImageRegionHeightRationMin, evristicsWindowDataContext.ImageRegionWidthRatioMin, evristicsWindowDataContext.PairsHeightRatio,
+                        evristicsWindowDataContext.PairsIntensityRatio, evristicsWindowDataContext.PairsSWRatio, evristicsWindowDataContext.PairsWidthDistanceSqrRatio,
+                        evristicsWindowDataContext.PairsOccupationRatio, evristicsWindowDataContext.MinLettersNumberInTextRegion,
+                        evristicsWindowDataContext.MergeByDirectionAndChainEnds, evristicsWindowDataContext.UseAdaptiveSmoothing);
+
                     this.StartLoader(DETECT_TEXT_VIDEO_STRING);
                     await SWTVideoTextDetection.DetectText(this.video, 4);
                     this.StopLoader();
@@ -697,7 +748,13 @@ namespace WPFVideoTextDetector.ViewModels
                 dialog.Filter = "JPEG Image (.jpg)|*.jpg";
                 dialog.ShowDialog();
 
-                IOData ioData = new IOData() { FileName = dialog.FileName, FrameHeight = 600, FrameWidth = 800 };
+                FrameSizeWindow frameSizeWindow = FrameSizeWindow.InitializeFrameSizeWindow();
+                frameSizeWindow.capitalText.Text = PARAMETERS_SETTING_STRING;
+                frameSizeWindow.ShowDialog();
+
+                FrameSizeViewModel frameSizeViewModel = (FrameSizeViewModel)frameSizeWindow.DataContext;
+
+                IOData ioData = new IOData() { FileName = dialog.FileName, FrameHeight = frameSizeViewModel.FrameHeight, FrameWidth = frameSizeViewModel.FrameWidth };
                 VideoLoader.frameLoadedEvent += this.LoadingFramesProcessing;
                 VideoLoader videoLoader = new VideoLoader();
 
@@ -741,6 +798,12 @@ namespace WPFVideoTextDetector.ViewModels
                 dialog.Filter = "MP4 Image (.mp4)|*.mp4|3gp (.3gp)|*.3gp|Avi (.avi)|*.avi";
                 dialog.ShowDialog();
 
+                FrameSizeWindow frameSizeWindow = FrameSizeWindow.InitializeFrameSizeWindow();
+                frameSizeWindow.capitalText.Text = PARAMETERS_SETTING_STRING;
+                frameSizeWindow.ShowDialog();
+
+                FrameSizeViewModel frameSizeViewModel = (FrameSizeViewModel)frameSizeWindow.DataContext;
+
                 progressWindow.capitalText.Text = LOAD_VIDEO_STRING;
                 progressWindow.textInformation.Text = VIDEO_INITIALIZATION_STRING;
                 progressWindow.Show();
@@ -749,7 +812,7 @@ namespace WPFVideoTextDetector.ViewModels
                 string videoFileName = System.IO.Path.GetFileNameWithoutExtension(dialog.FileName);
                 string keyFramesInormatyionFilePath = System.IO.Path.Combine(videoFilePath, videoFileName + ".txt");
 
-                IOData ioData = new IOData() { FileName = dialog.FileName, FrameHeight = 480, FrameWidth = 640 };
+                IOData ioData = new IOData() { FileName = dialog.FileName, FrameHeight = frameSizeViewModel.FrameHeight, FrameWidth = frameSizeViewModel.FrameWidth };
 
                 VideoLoader videoLoader = new VideoLoader();
                 int framesNumber = await videoLoader.CountFramesNumberAsync(ioData);            
@@ -759,7 +822,8 @@ namespace WPFVideoTextDetector.ViewModels
                 if (System.IO.File.Exists(keyFramesInormatyionFilePath))
                 {
                     FileReader fileReader = new FileReader();
-                    keyFrameIOInformation = await fileReader.ReadKeyFramesInformationAsync(keyFramesInormatyionFilePath, 640, 480);
+                    FileReader.ExceptionOccuredEvent += this.ExceptionOccuredEventHandler;
+                    keyFrameIOInformation = await fileReader.ReadKeyFramesInformationAsync(keyFramesInormatyionFilePath, frameSizeViewModel.FrameWidth, frameSizeViewModel.FrameHeight);
                     ioData.KeyFrameIOInformation = keyFrameIOInformation;                    
 
                    // EdgeBasedKeyFrameExtractor.keyFrameExtractedEvent += this.KeyFramesExtractionProcessing;
@@ -800,18 +864,30 @@ namespace WPFVideoTextDetector.ViewModels
 
         #region Event handlers region
 
+        private void ExceptionOccuredEventHandler(string message)
+        {
+            this.ShowExceptionMessage(message);
+        }
         private void AddProcessedFrameToBitmapArray(GreyVideoFrame videoFrame)
         {
             try
             {
                 if (this.processedVideoFramesBitmap == null)
                     this.processedVideoFramesBitmap = new List<BitmapImage>();
+                if (this.processedVideoFramesBitmapForSave == null)
+                    this.processedVideoFramesBitmapForSave = new List<Bitmap>();
+                if (this.textRegionsDictionary == null)
+                    this.textRegionsDictionary = new Dictionary<int, List<TextRegion>>();
+
+                this.textRegionsDictionary.Add(videoFrame.FrameNumber, videoFrame.Frame.TextRegions);
+
                 BitmapConvertor bitmapConvertor = new BitmapConvertor();
                 BitmapImageConvertor bitmapImageConvertor = new Convertors.BitmapImageConvertor();
 
                 Bitmap bitmapFrame = bitmapConvertor.ToBitmap(videoFrame.Frame);
                 Draw.DrawTextBoundingBoxes(bitmapFrame, videoFrame.Frame.TextRegions, new System.Drawing.Pen(System.Drawing.Color.Red, 2));
-                this.processedVideoFramesBitmap.Add(bitmapImageConvertor.BitmapToBitmapImage(bitmapFrame)); 
+                this.processedVideoFramesBitmapForSave.Add(bitmapFrame);
+                this.processedVideoFramesBitmap.Add(bitmapImageConvertor.BitmapToBitmapImage(bitmapFrame));      
             }
             catch (Exception exception)
             {
