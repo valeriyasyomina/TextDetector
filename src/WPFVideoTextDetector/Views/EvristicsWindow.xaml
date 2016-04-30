@@ -1,0 +1,211 @@
+﻿<Window x:Class="WPFVideoTextDetector.Views.EvristicsWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="EvristicsWindow" Height="300" Width="900" WindowStyle="None" WindowStartupLocation="CenterScreen">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="auto"></RowDefinition>
+            <RowDefinition></RowDefinition>
+        </Grid.RowDefinitions>
+
+        <TextBlock Name="capitalText" Grid.Row="0" Style="{StaticResource HeaderTextBlockStyle}">Text</TextBlock>
+
+        <Grid Margin="30" Grid.Row="1">
+            <Grid.RowDefinitions>
+                <RowDefinition></RowDefinition>
+                <RowDefinition></RowDefinition>
+                <RowDefinition></RowDefinition>
+                <RowDefinition></RowDefinition>
+                <RowDefinition></RowDefinition>
+                <RowDefinition></RowDefinition>
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition></ColumnDefinition>
+                <ColumnDefinition></ColumnDefinition>
+                <ColumnDefinition></ColumnDefinition>                
+            </Grid.ColumnDefinitions>
+
+            <Grid Grid.Row="0" Grid.Column="0">
+                <Grid.RowDefinitions>
+                    <RowDefinition></RowDefinition>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition></ColumnDefinition>
+                    <ColumnDefinition></ColumnDefinition>
+                </Grid.ColumnDefinitions>
+                <TextBlock TextWrapping="Wrap" Grid.Row="0" Grid.Column="0" 
+                       Style="{StaticResource TextBlockStyle}">Вариация ширины штриха</TextBlock>
+                <TextBox Text="{Binding VarienceAverageSWRation}" Grid.Row="0" Grid.Column="1"></TextBox>
+            </Grid>
+            <Grid Grid.Row="1" Grid.Column="0">
+                <Grid.RowDefinitions>
+                    <RowDefinition></RowDefinition>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition></ColumnDefinition>
+                    <ColumnDefinition></ColumnDefinition>
+                </Grid.ColumnDefinitions>
+                <TextBlock TextWrapping="Wrap" Grid.Row="0" Grid.Column="0" 
+                       Style="{StaticResource TextBlockStyle}">Соотношение сторон</TextBlock>
+                <TextBox Text="{Binding AspectRatio}" Grid.Row="0" Grid.Column="1"></TextBox>
+            </Grid>
+            <Grid Grid.Row="2" Grid.Column="0">
+                <Grid.RowDefinitions>
+                    <RowDefinition></RowDefinition>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition></ColumnDefinition>
+                    <ColumnDefinition></ColumnDefinition>
+                </Grid.ColumnDefinitions>
+                <TextBlock TextWrapping="Wrap" Grid.Row="0" Grid.Column="0" 
+                       Style="{StaticResource TextBlockStyle}">Соотношение диаметра и ширины штриха</TextBlock>
+                <TextBox Text="{Binding DiamiterSWRatio}" Grid.Row="0" Grid.Column="1"></TextBox>
+            </Grid>            
+            <Grid Grid.Row="3" Grid.Column="0">
+                <Grid.RowDefinitions>
+                    <RowDefinition></RowDefinition>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition></ColumnDefinition>
+                    <ColumnDefinition></ColumnDefinition>
+                </Grid.ColumnDefinitions>
+                <TextBlock TextWrapping="Wrap" Grid.Row="0" Grid.Column="0" 
+                       Style="{StaticResource TextBlockStyle}">Мин. кол-во пикселей в рамке</TextBlock>
+                <TextBox Text="{Binding BbPixelsNumberMinRatio}" Grid.Row="0" Grid.Column="1"></TextBox>
+            </Grid>
+            <Grid Grid.Row="4" Grid.Column="0">
+                <Grid.RowDefinitions>
+                    <RowDefinition></RowDefinition>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition></ColumnDefinition>
+                    <ColumnDefinition></ColumnDefinition>
+                </Grid.ColumnDefinitions>
+                <TextBlock TextWrapping="Wrap" Grid.Row="0" Grid.Column="0" 
+                       Style="{StaticResource TextBlockStyle}">Макс. кол-во пикселей в рамке</TextBlock>
+                <TextBox Text="{Binding BbPixelsNumberMaxRatio}" Grid.Row="0" Grid.Column="1"></TextBox>
+            </Grid>
+            <Grid Grid.Row="0" Grid.Column="1">
+                <Grid.RowDefinitions>
+                    <RowDefinition></RowDefinition>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition></ColumnDefinition>
+                    <ColumnDefinition></ColumnDefinition>
+                </Grid.ColumnDefinitions>
+                <TextBlock TextWrapping="Wrap" Grid.Row="0" Grid.Column="0" 
+                       Style="{StaticResource TextBlockStyle}">Соотношение высоты региона и кадра</TextBlock>
+                <TextBox Text="{Binding ImageRegionHeightRationMin}" Grid.Row="0" Grid.Column="1"></TextBox>
+            </Grid>
+            <Grid Grid.Row="1" Grid.Column="1">
+                <Grid.RowDefinitions>
+                    <RowDefinition></RowDefinition>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition></ColumnDefinition>
+                    <ColumnDefinition></ColumnDefinition>
+                </Grid.ColumnDefinitions>
+                <TextBlock TextWrapping="Wrap" Grid.Row="0" Grid.Column="0" 
+                       Style="{StaticResource TextBlockStyle}">Соотношение ширины региона и кадра</TextBlock>
+                <TextBox Text="{Binding ImageRegionWidthRatioMin}" Grid.Row="0" Grid.Column="1"></TextBox>
+            </Grid>
+            <Grid Grid.Row="2" Grid.Column="1">
+                <Grid.RowDefinitions>
+                    <RowDefinition></RowDefinition>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition></ColumnDefinition>
+                    <ColumnDefinition></ColumnDefinition>
+                </Grid.ColumnDefinitions>
+                <TextBlock TextWrapping="Wrap" Grid.Row="0" Grid.Column="0" 
+                       Style="{StaticResource TextBlockStyle}">Соотношение высот пар регионов</TextBlock>
+                <TextBox Text="{Binding PairsHeightRatio}" Grid.Row="0" Grid.Column="1"></TextBox>
+            </Grid>
+            <Grid Grid.Row="3" Grid.Column="1">
+                <Grid.RowDefinitions>
+                    <RowDefinition></RowDefinition>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition></ColumnDefinition>
+                    <ColumnDefinition></ColumnDefinition>
+                </Grid.ColumnDefinitions>
+                <TextBlock TextWrapping="Wrap" Grid.Row="0" Grid.Column="0" 
+                       Style="{StaticResource TextBlockStyle}">Соотношение интенсивности пар регионов</TextBlock>
+                <TextBox Text="{Binding PairsIntensityRatio}" Grid.Row="0" Grid.Column="1"></TextBox>
+            </Grid>
+            <Grid Grid.Row="4" Grid.Column="1">
+                <Grid.RowDefinitions>
+                    <RowDefinition></RowDefinition>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition></ColumnDefinition>
+                    <ColumnDefinition></ColumnDefinition>
+                </Grid.ColumnDefinitions>
+                <TextBlock TextWrapping="Wrap" Grid.Row="0" Grid.Column="0" 
+                       Style="{StaticResource TextBlockStyle}">Соотношение ширин штрихов пар регионов</TextBlock>
+                <TextBox Text="{Binding PairsSWRatio}" Grid.Row="0" Grid.Column="1"></TextBox>
+            </Grid>
+            <Grid Grid.Row="0" Grid.Column="2">
+                <Grid.RowDefinitions>
+                    <RowDefinition></RowDefinition>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition></ColumnDefinition>
+                    <ColumnDefinition></ColumnDefinition>
+                </Grid.ColumnDefinitions>
+                <TextBlock TextWrapping="Wrap" Grid.Row="0" Grid.Column="0" 
+                       Style="{StaticResource TextBlockStyle}">Соотношение расстояния и ширин пар регионов</TextBlock>
+                <TextBox Text="{Binding PairsWidthDistanceSqrRatio}" Grid.Row="0" Grid.Column="1"></TextBox>
+            </Grid>
+            <Grid Grid.Row="1" Grid.Column="2">
+                <Grid.RowDefinitions>
+                    <RowDefinition></RowDefinition>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition></ColumnDefinition>
+                    <ColumnDefinition></ColumnDefinition>
+                </Grid.ColumnDefinitions>
+                <TextBlock TextWrapping="Wrap" Grid.Row="0" Grid.Column="0" 
+                       Style="{StaticResource TextBlockStyle}">Соотношение числа пикселей пар регионов</TextBlock>
+                <TextBox Text="{Binding PairsOccupationRatio}" Grid.Row="0" Grid.Column="1"></TextBox>
+            </Grid>
+            <Grid Grid.Row="2" Grid.Column="2">
+                <Grid.RowDefinitions>
+                    <RowDefinition></RowDefinition>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition></ColumnDefinition>
+                    <ColumnDefinition></ColumnDefinition>
+                </Grid.ColumnDefinitions>
+                <TextBlock TextWrapping="Wrap" Grid.Row="0" Grid.Column="0" 
+                       Style="{StaticResource TextBlockStyle}">Мин. число символов в текстовой области</TextBlock>
+                <TextBox Text="{Binding MinLettersNumberInTextRegion}" Grid.Row="0" Grid.Column="1"></TextBox>
+            </Grid>
+            <Grid Grid.Row="3" Grid.Column="2">
+                <Grid.RowDefinitions>
+                    <RowDefinition></RowDefinition>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition></ColumnDefinition>
+                    <ColumnDefinition></ColumnDefinition>
+                </Grid.ColumnDefinitions>
+                <TextBlock TextWrapping="Wrap" Grid.Row="0" Grid.Column="0" 
+                       Style="{StaticResource TextBlockStyle}">Объединять цепочки по направлению</TextBlock>
+                <CheckBox IsChecked="{Binding MergeByDirectionAndChainEnds}" VerticalAlignment="Center" HorizontalAlignment="Center" Grid.Row="0" Grid.Column="1"></CheckBox>
+            </Grid>
+            <Grid Grid.Row="4" Grid.Column="2">
+                <Grid.RowDefinitions>
+                    <RowDefinition></RowDefinition>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition></ColumnDefinition>
+                    <ColumnDefinition></ColumnDefinition>
+                </Grid.ColumnDefinitions>
+                <TextBlock TextWrapping="Wrap" Grid.Row="0" Grid.Column="0" 
+                       Style="{StaticResource TextBlockStyle}">Использовать адаптивное сглаживание</TextBlock>
+                <CheckBox IsChecked="{Binding UseAdaptiveSmoothing}" VerticalAlignment="Center" HorizontalAlignment="Center" Grid.Row="0" Grid.Column="1"></CheckBox>
+            </Grid>
+            <Button Style="{StaticResource ButtonStyle}" Grid.Row="5" Grid.ColumnSpan="3" Click="Button_Click">Ok</Button>
+        </Grid>
+    </Grid>
+</Window>
