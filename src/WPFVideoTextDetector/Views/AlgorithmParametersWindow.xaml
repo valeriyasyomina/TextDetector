@@ -1,0 +1,75 @@
+﻿<Window x:Class="WPFVideoTextDetector.Views.AlgorithmParametersWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="AlgorithmParametersWindow" Height="200" Width="500" WindowStyle="None" WindowStartupLocation="CenterScreen">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="auto"></RowDefinition>
+            <RowDefinition></RowDefinition>
+        </Grid.RowDefinitions>
+
+        <TextBlock Name="capitalText" Grid.Row="0" Style="{StaticResource HeaderTextBlockStyle}">Text</TextBlock>
+
+        <Grid Margin="30" Grid.Row="1">
+            <Grid.RowDefinitions>
+                <RowDefinition></RowDefinition>
+                <RowDefinition></RowDefinition>
+                <RowDefinition></RowDefinition>              
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>                
+                <ColumnDefinition></ColumnDefinition>
+                <ColumnDefinition></ColumnDefinition>               
+            </Grid.ColumnDefinitions>
+
+            <Grid Grid.Row="0" Grid.Column="0">
+                <Grid.RowDefinitions>
+                    <RowDefinition></RowDefinition>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition></ColumnDefinition>
+                    <ColumnDefinition></ColumnDefinition>
+                </Grid.ColumnDefinitions>
+                <TextBlock TextWrapping="Wrap" Grid.Row="0" Grid.Column="0" 
+                       Style="{StaticResource TextBlockStyle}">Размер фильтра Гаусса</TextBlock>
+                <TextBox Text="{Binding GaussFilterSize}" Grid.Row="0" Grid.Column="1"></TextBox>
+            </Grid>
+            <Grid Grid.Row="1" Grid.Column="0">
+                <Grid.RowDefinitions>
+                    <RowDefinition></RowDefinition>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition></ColumnDefinition>
+                    <ColumnDefinition></ColumnDefinition>
+                </Grid.ColumnDefinitions>
+                <TextBlock TextWrapping="Wrap" Grid.Row="0" Grid.Column="0" 
+                       Style="{StaticResource TextBlockStyle}">Параметр фильтра Гаусса</TextBlock>
+                <TextBox Text="{Binding GaussSigma}" Grid.Row="0" Grid.Column="1"></TextBox>
+            </Grid>
+            <Grid Grid.Row="0" Grid.Column="1">
+                <Grid.RowDefinitions>
+                    <RowDefinition></RowDefinition>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition></ColumnDefinition>
+                    <ColumnDefinition></ColumnDefinition>
+                </Grid.ColumnDefinitions>
+                <TextBlock TextWrapping="Wrap" Grid.Row="0" Grid.Column="0" 
+                       Style="{StaticResource TextBlockStyle}">Нижний порог алгоритма Canny</TextBlock>
+                <TextBox Text="{Binding CannyLowTreshold}" Grid.Row="0" Grid.Column="1"></TextBox>
+            </Grid>
+            <Grid Grid.Row="1" Grid.Column="1">
+                <Grid.RowDefinitions>
+                    <RowDefinition></RowDefinition>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition></ColumnDefinition>
+                    <ColumnDefinition></ColumnDefinition>
+                </Grid.ColumnDefinitions>
+                <TextBlock TextWrapping="Wrap" Grid.Row="0" Grid.Column="0" 
+                       Style="{StaticResource TextBlockStyle}">Верхний порог алгоритма Canny</TextBlock>
+                <TextBox Text="{Binding CannyHighTreshold}" Grid.Row="0" Grid.Column="1"></TextBox>
+            </Grid>               
+            <Button Style="{StaticResource ButtonStyle}" Grid.Row="2" Grid.ColumnSpan="2" Click="Button_Click">Ok</Button>
+        </Grid>        
+    </Grid>
+</Window>
