@@ -25,15 +25,22 @@ namespace DigitalVideoProcessingLib.IO
             try
             {
                 if (data == null)
-                    throw new ArgumentNullException("Null data in LoadFrames");
+                    throw new ArgumentNullException("Null data in LoadFrameAsync");
                 IOData ioData = (IOData)data;
                 string frameFileName = ioData.FileName;
                 if (frameFileName == null || frameFileName.Length == 0)
-                    throw new ArgumentNullException("Null frameFileName in LoadFrames");                
+                    throw new ArgumentNullException("Null frameFileName in LoadFrameAsync");
+                if (ioData.FrameHeight <= 0)
+                    throw new ArgumentException("Error frameHeight value in LoadFrameAsync");
+                if (ioData.FrameWidth <= 0)
+                    throw new ArgumentException("Error frameWidth value in LoadFrameAsync");
 
                 return Task.Run(() =>
                 {
-                    Bitmap bitmapFrame = new Bitmap(frameFileName);
+                    Size size = new Size(ioData.FrameWidth, ioData.FrameHeight);
+                    Bitmap bitmapFrame = new Bitmap(frameFileName);                    
+                    
+                  //  bitmapFrame.SetResolution(ioData.FrameWidth, ioData.FrameHeight);
                     BitmapConvertor bitmapConvertor = new BitmapConvertor();
                     GreyVideoFrame greyVideoFrame = new GreyVideoFrame();
 
@@ -69,10 +76,10 @@ namespace DigitalVideoProcessingLib.IO
 
                 return Task.Run(() =>
                 {
-                    string videoPath = System.IO.Path.GetDirectoryName(videoFileName);
+                  /*  string videoPath = System.IO.Path.GetDirectoryName(videoFileName);
                     string framesDirName = System.IO.Path.Combine(videoPath, "VideoFrames");
                     if (!Directory.Exists(framesDirName))
-                        Directory.CreateDirectory(framesDirName);
+                        Directory.CreateDirectory(framesDirName);*/
 
                     GreyVideoFrame videoFrame = null;
 
@@ -86,11 +93,12 @@ namespace DigitalVideoProcessingLib.IO
                     }
                     if (frame != null)
                     {
-                        string frameFileName = Path.Combine(framesDirName, keyFrameIOInformation.Number.ToString() + ".jpg");
+                       // string frameFileName = Path.Combine(framesDirName, keyFrameIOInformation.Number.ToString() + ".jpg");
                         frame = frame.Resize(keyFrameIOInformation.Width, keyFrameIOInformation.Height, Emgu.CV.CvEnum.INTER.CV_INTER_LINEAR);
-                        frame.Save(frameFileName);
-                        videoFrame = CreateVideoFrame(frameFileName, keyFrameIOInformation.Number, keyFrameIOInformation.NeedProcess);                        
+                      //  frame.Save(frameFileName);
+                        videoFrame = CreateVideoFrame(frame, keyFrameIOInformation);                        
                     }
+                    capture.Dispose();
                     return videoFrame;
                 });
             }
@@ -102,21 +110,44 @@ namespace DigitalVideoProcessingLib.IO
         /// <summary>
         /// Создание кадра видео 
         /// </summary>
-        /// <param name="frameFileName">Имя файла</param>
-        /// <param name="frameNumber">Номер кадра</param>
-        /// <param name="needProcess">Нуждается ли кадр в обработке</param>
+        /// <param name="frame">Кадр</param>
+        /// <param name="keyFrameIOInformation">Информация о кадре</param>      
         /// <returns>Кадр</returns>
-        private GreyVideoFrame CreateVideoFrame(string frameFileName, int frameNumber, bool needProcess)
+        private GreyVideoFrame CreateVideoFrame(Image<Gray, byte> frame, KeyFrameIOInformation keyFrameIOInformation)
         {
             try
             {
-                Bitmap bitmapFrame = new Bitmap(frameFileName);
-                GreyVideoFrame keyFrame = new GreyVideoFrame();
-                keyFrame.FrameNumber = frameNumber;
-                BitmapConvertor bitmapConvertor = new BitmapConvertor();
-                keyFrame.Frame = bitmapConvertor.ToGreyImage(bitmapFrame);
-                keyFrame.NeedProcess = needProcess;
+              //  Bitmap bitmapFrame = new Bitmap(frameFileName);
 
+                ImageConvertor ImageConvertor = new DigitalVideoProcessingLib.IO.ImageConvertor();
+                
+
+                GreyVideoFrame keyFrame = new GreyVideoFrame();
+                keyFrame.FrameNumber = keyFrameIOInformation.Number;
+                BitmapConvertor bitmapConvertor = new BitmapConvertor();
+
+                keyFrame.Frame = ImageConvertor.ConvertColor(frame);//bitmapConvertor.ToGreyImage(bitmapFrame);
+
+                keyFrame.NeedProcess = keyFrameIOInformation.NeedProcess;
+                keyFrame.AspectRatio = keyFrameIOInformation.AspectRatio;
+                keyFrame.BbPixelsNumberMaxRatio = keyFrameIOInformation.BbPixelsNumberMaxRatio;
+                keyFrame.BbPixelsNumberMinRatio = keyFrameIOInformation.BbPixelsNumberMinRatio;
+                keyFrame.DiamiterSWRatio = keyFrameIOInformation.DiamiterSWRatio;
+                keyFrame.ImageRegionHeightRationMin = keyFrameIOInformation.ImageRegionHeightRationMin;
+                keyFrame.ImageRegionWidthRatioMin = keyFrameIOInformation.ImageRegionWidthRatioMin;
+                keyFrame.MergeByDirectionAndChainEnds = keyFrameIOInformation.MergeByDirectionAndChainEnds;
+                keyFrame.MinLettersNumberInTextRegion = keyFrameIOInformation.MinLettersNumberInTextRegion;
+                keyFrame.PairsHeightRatio = keyFrameIOInformation.PairsHeightRatio;
+                keyFrame.PairsIntensityRatio = keyFrameIOInformation.PairsIntensityRatio;
+                keyFrame.PairsOccupationRatio = keyFrameIOInformation.PairsOccupationRatio;
+                keyFrame.PairsSWRatio = keyFrameIOInformation.PairsSWRatio;
+                keyFrame.PairsWidthDistanceSqrRatio = keyFrameIOInformation.PairsWidthDistanceSqrRatio;
+                keyFrame.UseAdaptiveSmoothing = keyFrameIOInformation.UseAdaptiveSmoothing;
+                keyFrame.VarienceAverageSWRation = keyFrameIOInformation.VarienceAverageSWRation;
+                keyFrame.GaussFilterSize = keyFrameIOInformation.GaussFilterSize;
+                keyFrame.GaussFilterSigma = keyFrameIOInformation.GaussFilterSigma;
+                keyFrame.CannyLowTreshold = keyFrameIOInformation.CannyLowTreshold;
+                keyFrame.CannyHighTreshold = keyFrameIOInformation.CannyHighTreshold;
                 return keyFrame;
             }
             catch (Exception exception)
