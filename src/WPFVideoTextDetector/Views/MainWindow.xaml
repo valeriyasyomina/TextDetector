@@ -54,6 +54,12 @@
                         <Image Width="20" Height="20" Source="/WPFVideoTextDetector;component/icons/science.png" />
                     </MenuItem.Icon>
                 </MenuItem>
+                <MenuItem Style="{StaticResource MenuSubItemStyle}" Header="Построение гистограммы"
+                          Command="{Binding HistogramCreatingCommand}">
+                    <MenuItem.Icon>
+                        <Image Width="20" Height="20" Source="/WPFVideoTextDetector;component/icons/graphic.png" />
+                    </MenuItem.Icon>
+                </MenuItem>
             </MenuItem>
             <MenuItem Style="{StaticResource MainMenuItemStyle}" Header="Настройка">
                 <MenuItem.Icon>
