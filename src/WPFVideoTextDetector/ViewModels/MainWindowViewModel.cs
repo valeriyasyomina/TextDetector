@@ -28,6 +28,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 using TextDetectionAccuracyEstimationLib.AccuracyEstimation;
+using TextDetectionAccuracyEstimationLib.Histogram;
 using TextDetectionAccuracyEstimationLib.IO;
 using TextDetectionAccuracyEstimationLib.Metrics;
 using WPFVideoTextDetector.Command;
@@ -244,6 +245,13 @@ namespace WPFVideoTextDetector.ViewModels
             get
             {
                 return new DelegateCommand(o => this.AccuracyEstimationFunction());
+            }
+        }
+        public ICommand HistogramCreatingCommand
+        {
+            get
+            {
+                return new DelegateCommand(o => this.HistogramCreatingFunction());
             }
         }
 
@@ -1106,6 +1114,44 @@ namespace WPFVideoTextDetector.ViewModels
                         okButtonWindow.textInformation.Text = XML_FILES_SAVE_SUCCESS_STRING;
                         okButtonWindow.ShowDialog();
                     }
+                }
+            }
+            catch (Exception exception)
+            {
+                ShowExceptionMessage(exception.Message);
+            }
+        }
+
+        private async void HistogramCreatingFunction()
+        {
+            try
+            {
+                OpenFileDialog openDialog = new OpenFileDialog();
+                openDialog.Title = "Выберите XML - файл";
+                openDialog.Filter = "XML - files (.xml)|*.xml";
+                openDialog.ShowDialog();
+                string XMLFileName = openDialog.FileName;
+                if (XMLFileName.Length == 0)
+                    ShowExceptionMessage(FILE_WAS_NOT_CHOOSEN_STRING);
+                else
+                {
+                    SaveFileDialog saveDialog = new SaveFileDialog();
+                    saveDialog.Filter = "XLS file (.xls)|*.xls|XLSX file (.xlsx)|*.xlsx";
+                    saveDialog.ShowDialog();
+                    Dictionary<int, List<Metric>> metrics = await XMLReader.ReadMetricsXML(XMLFileName);
+                    StartLoader("Построение гистограммы");
+                    await HistogramBuilder.BuildMetricsHistogram(metrics, saveDialog.FileName);
+                    StopLoader();
+                  
+
+                    OkButtonWindow okButtonWindow = OkButtonWindow.InitializeOkButtonWindow();
+                    okButtonWindow.capitalText.Text = XML_FILES_LOADED_STRING;
+                    okButtonWindow.textInformation.Text = XML_FILES_LOADED_SUCCESS_STRING;
+                    okButtonWindow.ShowDialog();
+
+
+                  //  Dictionary<int, List<TextRegion>> patternFramesTextBlocksInformation = await XMLReader.ReadTextBlocksInformation(patternXMLFileName);
+
                 }
             }
             catch (Exception exception)
