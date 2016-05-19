@@ -57,18 +57,18 @@ namespace TextDetector
                     }      */
 
 
-            Capture capture = new Capture(@"C:\Users\valeriya\Desktop\TestDataDiploma\SDC11644\SDC11644.AVI");
-             Image<Gray, Byte> currentFrame = capture.QueryGrayFrame().Resize(800, 600, Emgu.CV.CvEnum.INTER.CV_INTER_LINEAR);
+           // Capture capture = new Capture(@"C:\Users\valeriya\Desktop\TestDataDiploma\Video_45\Video_45_6_4.mp4");
+           //  Image<Gray, Byte> currentFrame = capture.QueryGrayFrame().Resize(1024, 600, Emgu.CV.CvEnum.INTER.CV_INTER_LINEAR);
 
-              for (int i = 1; i <= 145; i++ )
-                  currentFrame = capture.QueryGrayFrame().Resize(800, 600, Emgu.CV.CvEnum.INTER.CV_INTER_LINEAR);
+           //  for (int i = 1; i <= 103; i++)
+             //    currentFrame = capture.QueryGrayFrame().Resize(1024, 600, Emgu.CV.CvEnum.INTER.CV_INTER_LINEAR);
 
             // currentFrame.Save("100500.jpg");
 
-           // Bitmap bitmap = new Bitmap(@"C:\Users\valeriya\Desktop\TestDataDiploma\Photo\11.jpg");
+            Bitmap bitmap = new Bitmap(@"C:\Users\valeriya\Desktop\Diploma_exporing\Font\Grotesc\Гуман\frames\0.jpg");
 
             BitmapConvertor conv = new BitmapConvertor();
-           // GreyImage image1 = conv.ToGreyImage(bitmap);
+            GreyImage image1 = conv.ToGreyImage(bitmap);
 
             //  GreyImage image2 = (GreyImage)image1.Copy();
 
@@ -80,7 +80,7 @@ namespace TextDetector
 
 
                ImageConvertor ImageConvertor = new DigitalVideoProcessingLib.IO.ImageConvertor();
-             GreyImage image1 = ImageConvertor.ConvertColor(currentFrame);
+           //  GreyImage image1 = ImageConvertor.ConvertColor(currentFrame);
 
             //   GreyImage imageCopy = conv.ToGreyImage(bitmap);
 
@@ -122,7 +122,7 @@ namespace TextDetector
             SmoothingFilter gauss1 = new AdaptiveGaussFilter(1.4);
 
 
-            CannyEdgeDetection canny = new CannyEdgeDetection(gauss1, sobel, 20, 80);
+            CannyEdgeDetection canny = new CannyEdgeDetection(gauss, sobel, 20, 80);
 
             // Stopwatch time10kOperations = Stopwatch.StartNew();
             // GreyImage imageCanny = canny.Detect(image1, 4);
@@ -139,7 +139,7 @@ namespace TextDetector
 
 
 
-            //   canny.Detect(copyImageCanny);
+             //  image1 = canny.Detect(image1, 4);
             //  gauss.Apply(copyImageGauss);
 
 
@@ -175,7 +175,7 @@ namespace TextDetector
             {
                 SimpleGradientFilter simpleGradintFilter = new DigitalImageProcessingLib.Filters.FilterType.GradientFilterType.SimpleGradientFilter();
 
-                SWTTextDetection stext1 = new SWTTextDetection(canny, gaussForSmooth, simpleGradintFilter, 0.8, 5, 10, 2.5, 25, 1.5, 1.5, 2.0, 1, 1.5, 9, 2, 2, true);
+                SWTTextDetection stext1 = new SWTTextDetection(canny, gaussForSmooth, simpleGradintFilter, 1, 2, 10, 1.5, 25, 0, 0, 2.0, 1, 1.5, 9, 2, 3, false);
 
 
                 stext1.DetectText(image1, 4);

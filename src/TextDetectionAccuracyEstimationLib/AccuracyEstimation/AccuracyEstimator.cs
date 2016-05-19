@@ -49,9 +49,71 @@ namespace TextDetectionAccuracyEstimationLib.AccuracyEstimation
                 return Task.Run(() =>
                 {
                     CalculateMetricsForFrames(metricsList, patternTextBlocks, generatedTextBlocks);
-                    CalculateMetricsForVideo(metricsList);
+                    CalculateMetricsForVideo(metricsList, TextRegionDictionaryToList(patternTextBlocks), TextRegionDictionaryToList(generatedTextBlocks));
+                   // CalculateMetricsForVideo(metricsList);
                     return metricsList;
                 });
+            }
+            catch (Exception exception)
+            {
+                throw exception;
+            }
+        }
+        /// <summary>
+        /// Конвертация словаря регионов в массив регионов
+        /// </summary>
+        /// <param name="textRegionsDictionary">Словарь регионов</param>
+        /// <returns>Массив регионов</returns>
+        private List<TextRegion> TextRegionDictionaryToList(Dictionary<int, List<TextRegion>> textRegionsDictionary)
+        {
+            List<TextRegion> textRegionsList = new List<TextRegion>();
+            foreach (var pair in textRegionsDictionary)
+                textRegionsList.AddRange(pair.Value);
+            return textRegionsList;
+        }
+        /// <summary>
+        /// Вычисление метрик для видеоряда
+        /// </summary>
+        /// <param name="metricsList">Метрики</param>
+        /// <param name="patternTextBlocks">Эталонные текстовые блоки</param>
+        /// <param name="generatedTextBlocks">Сгенерированные текстовые блоки</param>
+        private void CalculateMetricsForVideo(Dictionary<int, List<Metric>> metricsList, List<TextRegion> patternTextBlocks, List<TextRegion> generatedTextBlocks)
+        {
+            try
+            {
+                AbstractMetricFactory firstTypeErrorProbabilityMF = new FirstTypeErrorProbabilityMetricFactory();
+                AbstractMetricFactory secondTypeErrorProbabilityMF = new SecondTypeErrorProbabilityMetricFactory();
+                AbstractMetricFactory missingTypeErrorProbabilityMF = new MissingProbabilityMetricFactory();
+                AbstractMetricFactory precisionMetricFactory = new PrecisionMetricFactory();
+                AbstractMetricFactory recallMetricFactory = new RecallMetricFactory();
+                AbstractMetricFactory f1MeasureMetricFactory = new F1MeasureMetricFactory();
+
+                int textBlocksWithMissedDataNumber = 0;
+                int falseTextBlockNumber = 0;
+                int notDetectedTextBlocksNumber = 0;
+                double precision = 0.0;
+                CalculateTextBlocksTypesNumber(patternTextBlocks, generatedTextBlocks, out textBlocksWithMissedDataNumber,
+                    out falseTextBlockNumber, out notDetectedTextBlocksNumber, out precision);
+
+                List<Metric> metrics = new List<Metric>();
+                metrics.Add(secondTypeErrorProbabilityMF.GetMetric(falseTextBlockNumber, generatedTextBlocks.Count));
+                metrics.Add(firstTypeErrorProbabilityMF.GetMetric(notDetectedTextBlocksNumber, patternTextBlocks.Count));
+                metrics.Add(missingTypeErrorProbabilityMF.GetMetric(textBlocksWithMissedDataNumber, generatedTextBlocks.Count - falseTextBlockNumber));
+                metrics.Add(precisionMetricFactory.GetMetric(precision));
+
+                double recall = 0.0;
+                CalculateTextBlocksTypesNumber(generatedTextBlocks, patternTextBlocks, out textBlocksWithMissedDataNumber,
+                    out falseTextBlockNumber, out notDetectedTextBlocksNumber, out recall);
+
+                metrics.Add(recallMetricFactory.GetMetric(recall));
+                if (precision == Metric.UNDEFINED_METRIC || recall == Metric.UNDEFINED_METRIC)
+                    metrics.Add(f1MeasureMetricFactory.GetMetric(precision, recall));
+                else
+                {
+                    double denominator = (this.Alhpa / precision) + ((1 - this.Alhpa) / recall);
+                    metrics.Add(f1MeasureMetricFactory.GetMetric(1.0, denominator));
+                }
+                metricsList.Add(VIDEO_METRICS, metrics);                 
             }
             catch (Exception exception)
             {
@@ -237,7 +299,7 @@ namespace TextDetectionAccuracyEstimationLib.AccuracyEstimation
                     precision = squareSum / (double)generatedTextBlocksNumber;
                 else
                     precision = Metric.UNDEFINED_METRIC;
-                notDetectedTextBlocksNumber = patternTextBlocks.Count - detectedTextBlocksNumber;
+                notDetectedTextBlocksNumber = patternTextBlocks.Count - detectedTextBlocksNumber > 0 ? patternTextBlocks.Count - detectedTextBlocksNumber : 0;
             }
             catch (Exception exception)
             {
