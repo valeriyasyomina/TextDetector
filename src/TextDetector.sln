@@ -3,8 +3,6 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
 VisualStudioVersion = 12.0.40629.0
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TextDetector", "TextDetector\TextDetector.csproj", "{7A1EBF77-F990-414B-919F-74406FBC2831}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DigitalImageProcessingLib", "DigitalImageProcessingLib\DigitalImageProcessingLib.csproj", "{F498799A-9C7D-4D18-A780-F1993C682356}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DigitalImageProcessingTest", "DigitalImageProcessingTest\DigitalImageProcessingTest.csproj", "{0C8C0737-3DB0-417A-9745-923A6939B390}"
@@ -15,16 +13,14 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WPFVideoTextDetector", "WPF
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TextDetectionAccuracyEstimationLib", "TextDetectionAccuracyEstimationLib\TextDetectionAccuracyEstimationLib.csproj", "{C3500900-C2A8-43BD-98F8-ABFA2655E9D8}"
 EndProject
+Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "VideoTextDetector", "VideoTextDetector\VideoTextDetector.vdproj", "{42527FBD-C704-43F7-B30A-EA86690129D8}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{7A1EBF77-F990-414B-919F-74406FBC2831}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{7A1EBF77-F990-414B-919F-74406FBC2831}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{7A1EBF77-F990-414B-919F-74406FBC2831}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{7A1EBF77-F990-414B-919F-74406FBC2831}.Release|Any CPU.Build.0 = Release|Any CPU
 		{F498799A-9C7D-4D18-A780-F1993C682356}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{F498799A-9C7D-4D18-A780-F1993C682356}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F498799A-9C7D-4D18-A780-F1993C682356}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -45,6 +41,8 @@ Global
 		{C3500900-C2A8-43BD-98F8-ABFA2655E9D8}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C3500900-C2A8-43BD-98F8-ABFA2655E9D8}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C3500900-C2A8-43BD-98F8-ABFA2655E9D8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{42527FBD-C704-43F7-B30A-EA86690129D8}.Debug|Any CPU.ActiveCfg = Debug
+		{42527FBD-C704-43F7-B30A-EA86690129D8}.Release|Any CPU.ActiveCfg = Release
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

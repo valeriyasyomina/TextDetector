@@ -1121,7 +1121,9 @@ namespace WPFVideoTextDetector.ViewModels
                 ShowExceptionMessage(exception.Message);
             }
         }
-
+        /// <summary>
+        /// Построение гистограмм распределения значений метрик
+        /// </summary>
         private async void HistogramCreatingFunction()
         {
             try
@@ -1141,17 +1143,12 @@ namespace WPFVideoTextDetector.ViewModels
                     Dictionary<int, List<Metric>> metrics = await XMLReader.ReadMetricsXML(XMLFileName);
                     StartLoader("Построение гистограммы");
                     await HistogramBuilder.BuildMetricsHistogram(metrics, saveDialog.FileName);
-                    StopLoader();
-                  
+                    StopLoader();                  
 
                     OkButtonWindow okButtonWindow = OkButtonWindow.InitializeOkButtonWindow();
                     okButtonWindow.capitalText.Text = XML_FILES_LOADED_STRING;
                     okButtonWindow.textInformation.Text = XML_FILES_LOADED_SUCCESS_STRING;
                     okButtonWindow.ShowDialog();
-
-
-                  //  Dictionary<int, List<TextRegion>> patternFramesTextBlocksInformation = await XMLReader.ReadTextBlocksInformation(patternXMLFileName);
-
                 }
             }
             catch (Exception exception)
